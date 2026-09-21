@@ -1,0 +1,5 @@
+{
+  "extends": "../../apps/ui/tsconfig.json",
+  "compilerOptions": { "tsBuildInfoFile": "../../node_modules/.tmp/tsconfig.fixtures.tsbuildinfo" },
+  "include": ["*.tsx", "../../apps/ui/src/vite-env.d.ts"]
+}

@@ -1,0 +1,37 @@
+name: Bug report
+description: Describe a reproducible problem in BetterC0de.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: "For vulnerabilities, follow SECURITY.md. Remove credentials and personal data from logs."
+  - type: input
+    id: version
+    attributes:
+      label: BetterC0de version
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Operating system and architecture
+      placeholder: Windows 11 x64, macOS Apple Silicon, or Linux x64
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Additional context
+      description: Provider, screenshots, and sanitized logs if relevant.

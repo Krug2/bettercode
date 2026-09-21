@@ -1,2 +1,18 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Force LF for source + config files so Windows checkins never leak CRLF
+# into scripts that get executed on macOS/Linux (where a stray \r breaks
+# shebangs, regex matches against shell stdout, and JSON parsers in older
+# tools).
+*.ts text eol=lf
+*.tsx text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.plist text eol=lf

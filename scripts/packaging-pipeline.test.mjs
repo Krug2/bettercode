@@ -1,0 +1,350 @@
+import assert from "node:assert/strict"
+import fs from "node:fs"
+import { createRequire } from "node:module"
+import path from "node:path"
+import test from "node:test"
+
+const require = createRequire(import.meta.url)
+const { createSubprocessRunner, main: packageMain, buildSigningMetadataArgs } = require("./pack-electron.cjs")
+const { configureBuildCommand, normalizeOptions } = require("electron-builder/out/builder")
+const { getMainFileMatchers } = require("app-builder-lib/out/fileMatcher")
+const {
+  getConfig: loadElectronBuilderConfig,
+} = require("app-builder-lib/out/util/config/config")
+const postinstall = require("./postinstall.cjs")
+const root = path.resolve(import.meta.dirname, "..")
+
+test("electron-builder files cover the shell main-process relative-require closure", () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"))
+  const patterns = manifest.build.files.filter(
+    (entry) => typeof entry === "string" && !entry.startsWith("!")
+  )
+  const closure = collectRelativeRequireClosure(path.join(root, manifest.main))
+    .map((file) => path.relative(root, file).replaceAll("\\", "/"))
+    .filter((file) => file.startsWith("apps/shell/"))
+  const missing = closure.filter(
+    (file) => !patterns.some((pattern) => matchesGlob(file, pattern))
+  )
+
+  assert.deepEqual(
+    missing,
+    [],
+    `packaged shell require closure is missing: ${missing.join(", ")}`
+  )
+})
+
+test("backend runtime dependencies are roots of the packaged production graph", () => {
+  const manifest = readJson("package.json")
+  const backendManifest = readJson("apps/backend/package.json")
+  const packagedRootDependencies = new Set(Object.keys(manifest.dependencies ?? {}))
+  const explicitlyPackaged = explicitNodeModuleDestinations(manifest.build.files)
+  const missing = Object.keys(backendManifest.dependencies ?? {})
+    .filter((dependency) => !dependency.startsWith("@types/"))
+    .filter(
+      (dependency) =>
+        !packagedRootDependencies.has(dependency) &&
+        !explicitlyPackaged.has(dependency)
+    )
+
+  assert.deepEqual(
+    missing,
+    [],
+    `electron-builder cannot discover backend runtime dependencies: ${missing.join(", ")}`
+  )
+})
+
+test("effective Windows files stay allowlisted after electron-builder normalization", async () => {
+  const config = await loadElectronBuilderConfig(root, null, null)
+  const matchers = getMainFileMatchers(
+    root,
+    path.join(root, ".packaging-test-app"),
+    (pattern) => pattern,
+    config.win,
+    {
+      info: {
+        projectDir: root,
+        buildResourcesDir: path.resolve(
+          root,
+          config.directories.buildResources
+        ),
+        isPrepackedAppAsar: false,
+        config,
+        debugLogger: { isEnabled: false },
+      },
+    },
+    path.resolve(root, config.directories.output),
+    false
+  )
+
+  assert.equal(
+    matchers.some((matcher) => matcher.patterns.includes("**/*")),
+    false,
+    "a negative-only platform matcher makes electron-builder synthesize a broad **/* include"
+  )
+
+  for (const forbidden of [
+    "Example/reference-fixture/package.json",
+    "Another_Example/reference-fixture/package.json",
+    "apps/mobile/dist/index.js",
+    "apps/ui/public/index.html",
+    "apps/ui/dist/sounds/mechvibes/cherrymx-black-abs/config.json",
+    "apps/ui/public/sounds/mechvibes/cherrymx-black-abs/config.json",
+    "apps/backend/dist/index.js.map",
+    "apps/ui/dist/assets/index.js.map",
+    "packages/schema/dist/index.js.map",
+    "node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-linux/rg",
+    "node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/arm64-win32/rg.exe",
+  ]) {
+    assert.equal(
+      isIncludedByMatchers(matchers, forbidden),
+      false,
+      `Windows package unexpectedly includes ${forbidden}`
+    )
+  }
+
+  for (const required of [
+    "package.json",
+    "apps/shell/main.cjs",
+    "apps/shell/preview-request-capture.cjs",
+    "apps/ui/dist/index.html",
+    "apps/backend/dist/index.js",
+    "packages/schema/dist/index.js",
+    "node_modules/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-win32/rg.exe",
+  ]) {
+    assert.equal(
+      isIncludedByMatchers(matchers, required),
+      true,
+      `Windows package allowlist unexpectedly excludes ${required}`
+    )
+  }
+})
+
+for (const result of [
+  { status: null, signal: "SIGTERM" },
+  { status: null, signal: null },
+]) {
+  test(`packaging subprocess stages fail on ${JSON.stringify(result)}`, () => {
+    const runner = createSubprocessRunner({
+      spawnSyncImpl: () => result,
+      logger: silentLogger(),
+    })
+
+    assert.equal(runner.run("vendor-workspace-deps.cjs"), 1)
+    assert.equal(runner.runNpm(["run", "backend:rebuild"]), 1)
+    assert.equal(runner.runElectronBuilder(["--win"]), 1)
+  })
+}
+
+test("postinstall fails closed when the rebuild exits non-zero", () => {
+  assert.throws(
+    () =>
+      postinstall.main({
+        env: {},
+        existsSync: () => true,
+        spawnSyncImpl: () => ({ status: 7, signal: null }),
+        logger: silentLogger(),
+        repoRoot: root,
+      }),
+    /npm exited 7/
+  )
+})
+
+test("postinstall CLI reports a failing exit code for top-level errors", () => {
+  assert.equal(
+    postinstall.runCli({
+      env: {},
+      existsSync: () => {
+        throw new Error("filesystem unavailable")
+      },
+      logger: silentLogger(),
+      repoRoot: root,
+    }),
+    1
+  )
+})
+
+test("postinstall fails closed when the rebuild is signal-terminated", () => {
+  assert.throws(
+    () =>
+      postinstall.main({
+        env: {},
+        existsSync: () => true,
+        spawnSyncImpl: () => ({ status: null, signal: "SIGTERM" }),
+        logger: silentLogger(),
+        repoRoot: root,
+      }),
+    /terminated without an exit code \(SIGTERM\)/
+  )
+})
+
+test("postinstall explicit opt-out avoids the rebuild", () => {
+  let spawned = false
+  postinstall.main({
+    env: { BETTERC0DE_SKIP_POSTINSTALL: "1" },
+    existsSync: () => true,
+    spawnSyncImpl: () => {
+      spawned = true
+      return { status: 0, signal: null }
+    },
+    logger: silentLogger(),
+    repoRoot: root,
+  })
+
+  assert.equal(spawned, false)
+})
+
+test("postinstall does not silently opt out merely because CI is set", () => {
+  assert.equal(postinstall.shouldSkip({ CI: "true" }), null)
+})
+
+function collectRelativeRequireClosure(entry) {
+  const seen = new Set()
+
+  function visit(file) {
+    const absolute = path.resolve(file)
+    if (seen.has(absolute)) return
+    seen.add(absolute)
+
+    const source = fs.readFileSync(absolute, "utf8")
+    const relativeRequire = /\brequire\s*\(\s*["'](\.[^"']+)["']\s*\)/g
+    for (const match of source.matchAll(relativeRequire)) {
+      visit(resolveRelativeModule(path.dirname(absolute), match[1]))
+    }
+  }
+
+  visit(entry)
+  return [...seen].sort()
+}
+
+function resolveRelativeModule(directory, request) {
+  const unresolved = path.resolve(directory, request)
+  for (const candidate of [
+    unresolved,
+    `${unresolved}.cjs`,
+    `${unresolved}.js`,
+    path.join(unresolved, "index.cjs"),
+    path.join(unresolved, "index.js"),
+  ]) {
+    if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) {
+      return candidate
+    }
+  }
+  throw new Error(`Cannot resolve relative require ${request} from ${directory}`)
+}
+
+function matchesGlob(file, pattern) {
+  const normalized = pattern.replaceAll("\\", "/")
+  let expression = "^"
+  for (let index = 0; index < normalized.length; index += 1) {
+    const char = normalized[index]
+    if (
+      char === "*" &&
+      normalized[index + 1] === "*" &&
+      normalized[index + 2] === "/"
+    ) {
+      expression += "(?:.*/)?"
+      index += 2
+    } else if (char === "*" && normalized[index + 1] === "*") {
+      expression += ".*"
+      index += 1
+    } else if (char === "*") {
+      expression += "[^/]*"
+    } else {
+      expression += char.replace(/[|\\{}()[\]^$+?.]/g, "\\$&")
+    }
+  }
+  return new RegExp(`${expression}$`).test(file)
+}
+
+function readJson(relativePath) {
+  return JSON.parse(fs.readFileSync(path.join(root, relativePath), "utf8"))
+}
+
+function explicitNodeModuleDestinations(files) {
+  const destinations = new Set()
+  for (const entry of files) {
+    if (
+      typeof entry !== "object" ||
+      entry === null ||
+      typeof entry.to !== "string" ||
+      !entry.to.startsWith("node_modules/")
+    ) {
+      continue
+    }
+    const segments = entry.to.slice("node_modules/".length).split("/")
+    destinations.add(
+      segments[0].startsWith("@")
+        ? `${segments[0]}/${segments[1]}`
+        : segments[0]
+    )
+  }
+  return destinations
+}
+
+function isIncludedByMatchers(matchers, relativePath) {
+  const absolutePath = path.resolve(root, ...relativePath.split("/"))
+  const fileStat = { isDirectory: () => false }
+  return matchers.some((matcher) => {
+    const relativeToSource = path.relative(matcher.from, absolutePath)
+    if (
+      relativeToSource === ".." ||
+      relativeToSource.startsWith(`..${path.sep}`) ||
+      path.isAbsolute(relativeToSource)
+    ) {
+      return false
+    }
+    return matcher.createFilter()(absolutePath, fileStat)
+  })
+}
+
+function silentLogger() {
+  return { log() {}, error() {} }
+}
+
+test("packaging restores workspace links even when vendoring or native rebuild fails", () => {
+  for (const failure of ["vendor", "native"]) {
+    const calls = []
+    const runner = {
+      run(file) {
+        const stage = file.includes("restore-workspace") ? "restore" : "vendor"
+        calls.push(stage)
+        return stage === failure ? 7 : 0
+      },
+      runNpm(args) {
+        const stage = args[0] === "run" ? "native" : "node-restore"
+        calls.push(stage)
+        if (stage === failure) throw new Error("rebuild unavailable")
+        return 0
+      },
+      runElectronBuilder() { calls.push("builder"); return 0 },
+    }
+    if (failure === "vendor") assert.equal(packageMain(["--win"], runner), 7)
+    else assert.throws(() => packageMain(["--win"], runner), /rebuild unavailable/)
+    assert.ok(calls.includes("restore"), failure)
+    assert.ok(calls.includes("node-restore"), failure)
+    assert.equal(calls.includes("builder"), false)
+  }
+})
+
+test("packaging reports failed restoration and attempts both cleanup stages", () => {
+  let restoredNode = false
+  const runner = {
+    run(file) { if (file.includes("restore-workspace")) throw new Error("restore unavailable"); return 0 },
+    runNpm(args) { if (args[0] === "rebuild") restoredNode = true; return 0 },
+    runElectronBuilder() { return 0 },
+  }
+  assert.equal(packageMain(["--win"], runner), 1)
+  assert.equal(restoredNode, true)
+})
+
+test("CI includes signing metadata and electron-builder preserves its boolean type", () => {
+  const action = fs.readFileSync(path.join(root, ".github/actions/package-platform/action.yml"), "utf8")
+  assert.match(action, /buildSigningMetadataArgs/)
+  assert.match(action, /--dir --publish never "\$SIGNING_METADATA"/)
+  for (const env of [{}, { WIN_CSC_LINK: "test-cert", CSC_LINK: "test-cert" }]) {
+    const args = buildSigningMetadataArgs(env)
+    const parsed = configureBuildCommand(require("yargs/yargs")([])).parse(args)
+    const normalized = normalizeOptions(parsed)
+    assert.equal(typeof normalized.config.extraMetadata.betterc0deCodeSigned, "boolean")
+  }
+})

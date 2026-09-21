@@ -1,0 +1,37 @@
+{
+  "name": "@betterc0de/backend",
+  "version": "0.1.0-beta.1",
+  "private": true,
+  "type": "commonjs",
+  "description": "BetterC0de Node.js backend (Hono HTTP + ws + better-sqlite3).",
+  "main": "dist/inProcess.cjs",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
+    "@betterc0de/schema": "*",
+    "@hono/node-server": "^1.13.7",
+    "@types/better-sqlite3": "^7.6.13",
+    "better-sqlite3": "^12.9.0",
+    "fast-glob": "^3.3.3",
+    "hono": "^4.6.14",
+    "ignore": "^7.0.5",
+    "node-pty": "^1.1.0",
+    "openai": "^6.34.0",
+    "pino": "^9.5.0",
+    "ws": "^8.18.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "@types/ws": "^8.5.13",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.4"
+  }
+}

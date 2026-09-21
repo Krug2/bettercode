@@ -1,0 +1,165 @@
+/* Scoped to rendered Markdown: tool rows and composer controls share .chat-prose. */
+.message-response {
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+.message-response p {
+  margin: 0.75em 0;
+}
+.message-response :is(h1, h2, h3, h4) {
+  text-wrap: pretty;
+}
+.message-response :is(ul, ol) {
+  list-style-position: outside;
+  padding-inline-start: 1.65em;
+  margin: 0.85em 0;
+}
+.message-response li {
+  padding-inline-start: 0.3em;
+  margin: 0.5em 0;
+}
+.message-response li > :first-child {
+  margin-top: 0;
+}
+.message-response li > :last-child {
+  margin-bottom: 0;
+}
+.message-response li > :is(ul, ol) {
+  margin-block: 0.35em;
+}
+.message-response li::marker {
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.message-response blockquote {
+  margin-block: 1em;
+  border-inline-start: 2px solid var(--border);
+  padding-inline-start: 1em;
+  font-style: normal;
+  color: var(--muted-foreground);
+}
+.message-response hr {
+  margin-block: 1.75em;
+  border-color: var(--border);
+}
+.message-response .message-inline-code {
+  display: inline;
+  max-width: 100%;
+  padding: 0.1em 0.32em;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  font-weight: 450;
+  line-height: inherit;
+  background: color-mix(in srgb, var(--muted) 65%, transparent);
+  color: var(--foreground);
+  overflow-wrap: anywhere;
+  word-break: normal;
+  box-decoration-break: clone;
+}
+.message-response .message-source-link {
+  cursor: pointer;
+  text-align: start;
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+}
+.message-response .message-source-link:hover {
+  color: var(--primary);
+  text-decoration-color: currentColor;
+}
+.message-response :is(button, a):focus-visible,
+.message-table-scroll:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.message-response .message-table {
+  min-width: 0;
+  max-width: 100%;
+  margin-block: 1em;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  overflow: hidden;
+}
+.message-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 34px;
+  padding: 3px 8px 3px 12px;
+  background: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.message-table-toolbar > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.message-table-toolbar > div {
+  display: flex;
+  gap: 2px;
+}
+.message-table-toolbar svg {
+  width: 13px;
+  height: 13px;
+}
+.message-table-toolbar button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  color: var(--muted-foreground);
+  cursor: pointer;
+}
+.message-table-toolbar button:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+.message-table-scroll {
+  max-width: 100%;
+  overflow: auto;
+  scrollbar-color: var(--border) transparent;
+  scrollbar-width: thin;
+}
+.message-response .message-table-scroll table {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.95em;
+  line-height: 1.55;
+  text-align: start;
+}
+.message-response .message-table-scroll th {
+  padding: 9px 12px;
+  font-size: 10px;
+  font-weight: 550;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted-foreground);
+  background: var(--background);
+  white-space: nowrap;
+}
+.message-response .message-table-scroll td {
+  min-width: 110px;
+  padding: 10px 12px;
+  vertical-align: top;
+  border-top: 1px solid var(--border);
+  border-bottom: 0;
+  overflow-wrap: normal;
+}
+.message-response .message-table-scroll tbody tr:hover td {
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+}
+.message-response .message-table-scroll :is(code, .message-inline-code) {
+  white-space: nowrap;
+}
+.message-response .message-table-scroll td strong {
+  font-weight: 550;
+}

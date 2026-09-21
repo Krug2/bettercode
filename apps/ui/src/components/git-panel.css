@@ -1,0 +1,331 @@
+/* Agent Git shares Diff's panel, toolbar, tabs, filter and footer primitives.
+ *
+ * Spacing system (agent pane only):
+ *   --git-gutter   12px  every block's horizontal padding — text edges align
+ *   --git-gap       8px  inside a block (label → control, control → control)
+ *   --git-section  16px  between blocks (toolbar → commit → remote → list)
+ *   --git-row      32px  one interactive row (file, section heading)
+ *   --git-control  28px  one button / input
+ * Type: 12px for anything the user reads, 11px for meta, headings 12px/600
+ * in `--foreground`, meta in full `--muted-foreground` (no /70 fades).
+ */
+.git-panel-agent {
+  --git-gutter: 12px;
+  --git-gap: 8px;
+  --git-section: 16px;
+  --git-row: 32px;
+  --git-control: 28px;
+  overflow: hidden;
+}
+.git-panel-agent .git-repository-summary,
+.git-panel-agent .git-commit-form {
+  flex-shrink: 0;
+}
+
+/* ── Toolbar + branch line ─────────────────────────────────────────── */
+.git-panel-agent .diff-toolbar {
+  gap: var(--git-gap);
+  padding: var(--git-gap) var(--git-gutter);
+}
+.git-panel-agent .diff-tabs button {
+  min-height: var(--git-control);
+  font-size: 12px;
+}
+.git-panel-agent .diff-tabs button span {
+  font-size: 11px;
+}
+.git-panel-agent .git-repository-summary {
+  min-height: var(--git-row);
+  padding: var(--git-gap) var(--git-gutter) 0;
+  gap: var(--git-gap);
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+.git-panel-agent .git-repository-summary > svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Commit composer ───────────────────────────────────────────────── */
+.git-panel-agent .git-commit-form {
+  padding: var(--git-section) var(--git-gutter) 0;
+}
+.git-panel-agent .git-commit-form > div:first-child {
+  margin-bottom: var(--git-gap);
+  font-size: 11px;
+}
+.git-panel-agent .git-commit-form > div:first-child > span:first-child {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.git-panel-agent .git-commit-card {
+  background: color-mix(in oklab, var(--muted) 45%, transparent);
+}
+.git-panel-agent .git-commit-card:focus-within {
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+}
+.git-panel-agent .git-commit-form textarea {
+  display: block;
+  min-height: 88px;
+  padding: 10px var(--git-gutter);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--foreground);
+}
+.git-panel-agent .git-commit-form textarea::placeholder {
+  color: var(--muted-foreground);
+}
+.git-panel-agent .git-commit-actions {
+  gap: 4px;
+  padding: 0 var(--git-gap) var(--git-gap);
+}
+.git-panel-agent .git-commit-actions button {
+  height: var(--git-control);
+  font-size: 12px;
+}
+.git-panel-agent .git-commit-actions button[data-variant="outline"],
+.git-panel-agent .git-remote-actions button[data-variant="outline"] {
+  border-color: var(--border);
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
+.git-panel-agent .git-commit-actions button[data-variant="outline"]:hover:not(:disabled),
+.git-panel-agent .git-remote-actions button[data-variant="outline"]:hover:not(:disabled) {
+  color: var(--foreground);
+}
+.git-panel-agent .git-commit-form > p {
+  margin-top: var(--git-gap);
+  font-size: 11px;
+}
+
+/* ── Remote ────────────────────────────────────────────────────────── */
+.git-panel-agent .git-remote-sync {
+  margin-top: var(--git-section);
+}
+.git-panel-agent .git-remote-heading {
+  margin-bottom: var(--git-gap);
+  font-size: 11px;
+}
+.git-panel-agent .git-remote-heading > :first-child {
+  font-size: 12px;
+  font-weight: 600;
+}
+.git-panel-agent .git-remote-actions {
+  gap: 4px;
+}
+.git-panel-agent .git-remote-actions button {
+  height: var(--git-control);
+  font-size: 12px;
+}
+.git-panel-agent .git-remote-status {
+  margin-top: var(--git-gap);
+  font-size: 11px;
+}
+
+/* ── File list ─────────────────────────────────────────────────────── */
+.git-panel-agent .diff-file-list-header {
+  min-height: 0;
+  padding: var(--git-section) var(--git-gutter) 0;
+}
+.git-panel-agent .diff-filter {
+  min-height: var(--git-control);
+  padding: 0 10px;
+  border-color: transparent;
+  background: color-mix(in oklab, var(--muted) 45%, transparent);
+}
+.git-panel-agent .diff-filter input {
+  font-size: 12px;
+}
+.git-panel-agent .git-tab-content {
+  flex: 1;
+  min-height: 0;
+  overscroll-behavior: contain;
+  border-color: transparent;
+}
+.git-panel-agent .git-bulk-actions {
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: var(--git-gap) var(--git-gutter) 0;
+}
+.git-panel-agent .git-bulk-actions button {
+  min-height: var(--git-control);
+  padding: 0 10px;
+  border-color: var(--border);
+  font-size: 12px;
+}
+.git-panel-agent .git-section-heading {
+  min-height: var(--git-row);
+  padding: 0 var(--git-gutter);
+  gap: var(--git-gap);
+  background: transparent;
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: normal;
+  text-transform: none;
+}
+.git-panel-agent .git-section-heading svg {
+  width: 12px;
+  height: 12px;
+  color: var(--muted-foreground);
+}
+.git-panel-agent .git-section-heading > span:last-child {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.git-panel-agent .git-file-row {
+  width: auto;
+  min-height: var(--git-row);
+  margin: 0 6px 2px;
+  padding: 0 4px 0 6px;
+  gap: var(--git-gap);
+  border-radius: 7px;
+}
+.git-panel-agent .git-file-row:hover,
+.git-panel-agent .git-file-row:focus-within,
+.git-panel-agent .git-log-entry:hover,
+.git-panel-agent .git-branch-row:hover {
+  background: color-mix(in oklab, var(--muted) 55%, transparent);
+}
+.git-panel-agent .git-file-select {
+  gap: var(--git-gap);
+  border-radius: 7px;
+}
+.git-panel-agent .git-file-select img {
+  width: 16px;
+  height: 16px;
+}
+.git-panel-agent .git-file-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.git-panel-agent .git-file-label > span {
+  margin-left: var(--git-gap);
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 400;
+}
+.git-panel-agent .git-file-stats {
+  gap: 6px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+}
+.git-panel-agent .git-file-row > span:not(.git-file-stats) {
+  font-size: 11px;
+}
+.git-panel-agent .git-file-row > button {
+  display: flex;
+  min-width: 24px;
+  min-height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+.git-panel-agent .git-file-row:hover > button,
+.git-panel-agent .git-file-row:focus-within > button {
+  opacity: 1;
+}
+
+/* ── Log + branches ────────────────────────────────────────────────── */
+.git-panel-agent .git-log-entry,
+.git-panel-agent .git-branch-row {
+  min-height: 40px;
+  padding: var(--git-gap) var(--git-gutter);
+  border-color: var(--border);
+  font-size: 12px;
+}
+.git-panel-agent .git-log-entry p {
+  font-size: 12px;
+}
+.git-panel-agent .git-log-entry p + div {
+  color: var(--muted-foreground);
+  font-size: 11px;
+}
+.git-panel-agent .git-new-branch {
+  gap: var(--git-gap);
+  padding: var(--git-gap) var(--git-gutter);
+  border-color: var(--border);
+}
+.git-panel-agent .git-new-branch input {
+  width: 0;
+  min-width: 0;
+  min-height: var(--git-control);
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+}
+.git-panel-agent .git-new-branch input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+/* ── Remote block (all modes) ──────────────────────────────────────── */
+.git-remote-sync {
+  margin-top: 12px;
+}
+.git-remote-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 6px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.git-remote-heading > :first-child {
+  flex-shrink: 0;
+  color: var(--foreground);
+  font-size: 11px;
+  font-weight: 500;
+}
+.git-remote-upstream {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.git-remote-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.git-remote-actions button {
+  height: 26px;
+  font-size: 11px;
+}
+.git-remote-actions .git-remote-button {
+  min-width: 0;
+  padding: 0 10px;
+  font-weight: 500;
+}
+.git-remote-actions .git-remote-button[data-variant="outline"] {
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
+.git-remote-actions .git-remote-button[data-variant="outline"]:hover:not(:disabled) {
+  color: var(--foreground);
+}
+.git-remote-status {
+  margin: 6px 0 0;
+  color: var(--muted-foreground);
+  font-size: 10.5px;
+  line-height: 1.5;
+}
+.git-remote-count {
+  min-width: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: color-mix(in oklab, currentColor 14%, transparent);
+  font-size: 10px;
+  line-height: 15px;
+  font-variant-numeric: tabular-nums;
+}

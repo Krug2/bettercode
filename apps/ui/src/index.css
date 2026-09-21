@@ -1,0 +1,1441 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/figtree";
+@import "./lib/material-icon-theme.generated.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: "Figtree Variable", sans-serif;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  /* Success/warning are mode-scoped only (deliberately NOT in appearance
+     templates: templates flip the .dark/.light class, so these cascade). */
+  --success: oklch(0.627 0.17 149.2);
+  --warning: oklch(0.666 0.157 58.3);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  /* #0F0F0F — chat/main-card surface; keep in sync with "default-dark"
+     in appearance-store.ts (runtime override). */
+  --background: oklch(0.1684 0 0);
+  --foreground: oklch(0.985 0 0);
+  /* #1F1F1F — lighter than the #181818 surface (Codex-style). */
+  --card: oklch(0.2393 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.2393 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --success: oklch(0.696 0.17 162.5);
+  --warning: oklch(0.769 0.153 70.1);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+  /* #141414 — keep in sync with the "default-dark" theme in
+     appearance-store.ts (whose inline vars override this at runtime). */
+  --sidebar: oklch(0.1912 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.305 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 12%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-weight: 380;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Chat content typography — clean spacing */
+.chat-prose {
+  font-size: var(--message-font-size, 12px);
+  line-height: 1.7;
+  color: var(--foreground);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.chat-prose.chat-prose--compact {
+  font-size: var(--message-font-size, 11.5px);
+  line-height: 1.65;
+}
+.chat-prose.chat-prose--editor {
+  font-size: var(--message-font-size, 11px);
+  line-height: 1.55;
+}
+.chat-prose.chat-prose--editor p {
+  margin: 0.45em 0;
+}
+.chat-prose p {
+  margin: 0.6em 0;
+}
+.chat-prose h1 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 1.8em 0 0.6em;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  color: var(--foreground);
+}
+.chat-prose h2 {
+  font-size: 1.3em;
+  font-weight: 700;
+  margin: 1.5em 0 0.5em;
+  letter-spacing: -0.015em;
+  line-height: 1.35;
+  color: var(--foreground);
+}
+.chat-prose h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin: 1.3em 0 0.4em;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+.chat-prose h4 {
+  font-size: 1.05em;
+  font-weight: 600;
+  margin: 1.1em 0 0.35em;
+  line-height: 1.45;
+  color: var(--foreground);
+}
+.chat-prose h5 {
+  font-size: 0.95em;
+  font-weight: 600;
+  margin: 1em 0 0.3em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted-foreground);
+}
+.chat-prose h6 {
+  font-size: 0.9em;
+  font-weight: 600;
+  margin: 1em 0 0.3em;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted-foreground);
+}
+/* List styling is for markdown lists only. A `not-prose` subtree (tool
+   rows, attachment chips — themselves `<ul>`s) opts out, following the
+   typography-plugin convention; `:where()` keeps specificity unchanged. */
+.chat-prose ul:where(:not(.not-prose, .not-prose *)),
+.chat-prose ol:where(:not(.not-prose, .not-prose *)) {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+.chat-prose ul:where(:not(.not-prose, .not-prose *)) {
+  list-style-type: disc;
+}
+.chat-prose ol:where(:not(.not-prose, .not-prose *)) {
+  list-style-type: decimal;
+}
+.chat-prose ul ul:where(:not(.not-prose, .not-prose *)) {
+  list-style-type: circle;
+}
+.chat-prose ul ul ul:where(:not(.not-prose, .not-prose *)) {
+  list-style-type: square;
+}
+.chat-prose li:where(:not(.not-prose, .not-prose *)) {
+  margin: 0.35em 0;
+}
+.chat-prose li:where(:not(.not-prose, .not-prose *)) p {
+  margin: 0.25em 0;
+}
+.chat-prose li:where(:not(.not-prose, .not-prose *))::marker {
+  color: var(--muted-foreground);
+}
+
+.chat-prose ul:has(> li > input[type="checkbox"]) {
+  list-style: none;
+  padding-left: 0;
+}
+
+.chat-prose ul:has(> li > input[type="checkbox"]) > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0.35em 0;
+}
+
+.chat-prose ul:has(> li > input[type="checkbox"]) > li::marker {
+  content: "";
+}
+
+.chat-prose
+  ul:has(> li > input[type="checkbox"])
+  > li
+  > input[type="checkbox"] {
+  margin-top: 0.15rem;
+  accent-color: var(--primary);
+}
+
+.chat-prose ul:has(> li > input[type="checkbox"]) > li > p {
+  margin: 0;
+}
+.chat-prose pre {
+  font-size: 13px;
+  margin: 1.2em 0;
+  border-radius: 0.5em;
+}
+.chat-prose code:not(pre code) {
+  font-family:
+    "Fira Code", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  font-size: 0.88em;
+  padding: 0.15em 0.45em;
+  border-radius: 0.3em;
+  background: var(--muted);
+  color: var(--foreground);
+  font-weight: 500;
+  word-break: break-word;
+}
+.chat-prose strong,
+.chat-prose b {
+  font-weight: 650;
+  color: var(--foreground);
+}
+.chat-prose em,
+.chat-prose i {
+  font-style: italic;
+}
+.chat-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+  transition: opacity 0.15s;
+}
+.chat-prose a:hover {
+  opacity: 0.8;
+}
+.chat-prose mark {
+  background: oklch(0.85 0.15 85 / 30%);
+  padding: 0.05em 0.2em;
+  border-radius: 0.15em;
+}
+.chat-prose del,
+.chat-prose s {
+  text-decoration: line-through;
+  color: var(--muted-foreground);
+}
+.chat-prose sub {
+  font-size: 0.8em;
+}
+.chat-prose sup {
+  font-size: 0.8em;
+}
+.chat-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5em;
+  margin: 0.8em 0;
+}
+.chat-prose details {
+  margin: 0.75em 0;
+}
+.chat-prose summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.chat-prose summary:hover {
+  color: var(--primary);
+}
+/* Tables — clean, no wrapper bloat */
+.chat-prose [data-streamdown="table-wrapper"],
+.chat-prose [data-streamdown="table-container"],
+.chat-prose div:has(> table),
+.chat-prose div:has(> [data-streamdown="table-wrapper"]) {
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  overflow-x: auto;
+}
+.chat-prose table {
+  font-size: 12px;
+  margin: 0.8em 0;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.chat-prose thead {
+  border-bottom: 1px solid var(--border);
+}
+.chat-prose th {
+  padding: 0.5em 0.75em;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted-foreground);
+}
+.chat-prose td {
+  padding: 0.45em 0.75em;
+  border-bottom: 1px solid oklch(1 0 0 / 5%);
+}
+.chat-prose tr:hover td {
+  background: oklch(1 0 0 / 3%);
+}
+
+/* ── Code blocks in chat — 1:1 Editor/Monaco look ── */
+.chat-prose [data-streamdown="code-block"] {
+  position: relative !important;
+  margin: 1.2em 0 !important;
+  border-radius: 0.5rem !important;
+  border: 1px solid var(--border) !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  background: oklch(0.16 0 0) !important;
+  overflow: hidden !important;
+}
+/* Header: language tag */
+.chat-prose [data-streamdown="code-block-header"] {
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  max-height: 2.25rem !important;
+  padding: 0 0.75rem !important;
+  font-size: 11px !important;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--border) !important;
+  border-top: none !important;
+  background: oklch(0.14 0 0) !important;
+  display: flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  color: var(--muted-foreground) !important;
+}
+/* Actions wrapper (sticky div) — collapse and overlay in header */
+.chat-prose
+  [data-streamdown="code-block"]
+  > div:has([data-streamdown="code-block-actions"]) {
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  height: 2.25rem !important;
+  margin: 0 !important;
+  padding: 0 0.5rem !important;
+  z-index: 5 !important;
+  display: flex !important;
+  align-items: center !important;
+}
+.chat-prose [data-streamdown="code-block-actions"] {
+  gap: 0.25rem !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  position: static !important;
+  height: auto !important;
+  margin: 0 !important;
+}
+.chat-prose [data-streamdown="code-block-body"] {
+  font-family:
+    "Fira Code", "Cascadia Code", "JetBrains Mono", Consolas, monospace !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  padding: 0.75rem 1rem 0.75rem 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  margin: 0 !important;
+  tab-size: 2;
+  -moz-tab-size: 2;
+  font-variant-ligatures: contextual;
+  overflow-x: auto;
+  counter-reset: line;
+}
+.chat-prose [data-streamdown="code-block-body"] pre {
+  font-size: 13px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+.chat-prose [data-streamdown="code-block-body"] code {
+  font-family: inherit !important;
+  font-size: 13px !important;
+  line-height: 1.6 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+/* Line numbers — force visible */
+.chat-prose [data-streamdown="line-numbers"] {
+  display: flex !important;
+  padding: 0.75rem 0 !important;
+  min-width: 2.5rem !important;
+  text-align: right !important;
+  color: var(--muted-foreground) !important;
+  opacity: 0.35 !important;
+  font-size: 12px !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  border-right: 1px solid var(--border) !important;
+  margin-right: 0 !important;
+  padding-right: 0.75rem !important;
+  padding-left: 0.5rem !important;
+}
+/* Inline code in chat */
+.chat-prose [data-streamdown="inline-code"] {
+  font-family:
+    "Fira Code", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+  padding: 0.15em 0.4em;
+}
+
+/* Hide scrollbar on chat scroll container — only target the actual scroll element */
+.chat-scrollbar-hidden [data-stick-to-bottom-scroll] {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.chat-scrollbar-hidden [data-stick-to-bottom-scroll]::-webkit-scrollbar {
+  display: none;
+}
+.chat-scrollbar-visible [data-stick-to-bottom-scroll] {
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+}
+/* But keep scrollbar visible inside code blocks and tool outputs */
+.chat-scrollbar-hidden pre,
+.chat-scrollbar-hidden [data-slot="collapsible-content"] pre {
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+}
+.chat-scrollbar-hidden pre::-webkit-scrollbar {
+  display: block;
+  height: 6px;
+}
+.chat-scrollbar-hidden pre::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* Plan modal scrollbars */
+.plan-modal-scroll,
+.plan-tasks-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: oklch(0.7 0 0 / 35%) transparent;
+}
+
+.plan-modal-scroll::-webkit-scrollbar,
+.plan-tasks-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.plan-modal-scroll::-webkit-scrollbar-track,
+.plan-tasks-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.plan-modal-scroll::-webkit-scrollbar-thumb,
+.plan-tasks-scroll::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  background: oklch(0.7 0 0 / 35%);
+}
+
+.plan-modal-scroll::-webkit-scrollbar-thumb:hover,
+.plan-tasks-scroll::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.7 0 0 / 52%);
+}
+
+.plan-modal-scroll::-webkit-scrollbar-corner,
+.plan-tasks-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Plan preview markdown typography — tight, readable, no browser defaults */
+.plan-preview-prose {
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.plan-preview-prose h1,
+.plan-preview-prose h2,
+.plan-preview-prose h3,
+.plan-preview-prose h4 {
+  font-weight: 700;
+  color: inherit;
+  line-height: 1.25;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+}
+.plan-preview-prose h1 {
+  font-size: 1.35em;
+}
+.plan-preview-prose h2 {
+  font-size: 1.15em;
+}
+.plan-preview-prose h3 {
+  font-size: 1em;
+  font-weight: 600;
+}
+.plan-preview-prose h4 {
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+.plan-preview-prose p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.plan-preview-prose ul,
+.plan-preview-prose ol {
+  margin-top: 0.4em;
+  margin-bottom: 0.75em;
+  padding-left: 1.15em;
+}
+
+.plan-preview-prose ul {
+  list-style-type: disc;
+}
+.plan-preview-prose ol {
+  list-style-type: decimal;
+}
+
+.plan-preview-prose li {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+  padding-left: 0.2em;
+}
+
+.plan-preview-prose li::marker {
+  color: color-mix(in oklab, var(--muted-foreground) 65%, transparent);
+}
+
+.plan-preview-prose li > p {
+  margin-top: 0.15em;
+  margin-bottom: 0.15em;
+}
+
+.plan-preview-prose li > ul,
+.plan-preview-prose li > ol {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.plan-preview-prose strong {
+  font-weight: 600;
+  color: inherit;
+}
+
+.plan-preview-prose em {
+  font-style: italic;
+  color: inherit;
+}
+
+.plan-preview-prose code {
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+  padding: 0.1em 0.35em;
+  border-radius: 0.3em;
+  font-size: 0.88em;
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.plan-preview-prose pre {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  border-radius: 0.5em;
+  padding: 0.75em 1em;
+  background: color-mix(in oklab, var(--muted) 70%, transparent);
+  overflow-x: auto;
+}
+.plan-preview-prose pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.88em;
+}
+
+.plan-preview-prose a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.plan-preview-prose blockquote {
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  padding-left: 0.75em;
+  border-left: 2px solid var(--border);
+  color: var(--muted-foreground);
+}
+
+.plan-preview-prose hr {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.plan-preview-prose table {
+  width: 100%;
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
+  border-collapse: collapse;
+  font-size: 0.92em;
+}
+.plan-preview-prose th,
+.plan-preview-prose td {
+  border: 1px solid var(--border);
+  padding: 0.35em 0.6em;
+  text-align: left;
+}
+.plan-preview-prose th {
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+  font-weight: 600;
+}
+
+/* Monaco native context menu — theme-aligned */
+/* Monaco mounts its context menu to document.body, so all selectors must
+   be global. We override Monaco's built-in vs-dark menu styles to match
+   the shadcn popover/accent tokens. */
+.monaco-menu-container,
+.context-view.monaco-menu-container,
+.context-view .monaco-menu {
+  background: var(--popover) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem !important;
+  box-shadow:
+    0 10px 30px rgb(0 0 0 / 35%),
+    0 4px 12px rgb(0 0 0 / 25%) !important;
+  padding: 0.25rem !important;
+  font-family: inherit !important;
+  min-width: 200px;
+}
+
+.context-view .monaco-menu .monaco-action-bar.vertical {
+  padding: 0 !important;
+}
+
+.context-view .monaco-menu .monaco-action-bar.vertical .actions-container {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.context-view .monaco-menu .monaco-action-bar.vertical .action-item {
+  padding: 0 !important;
+  margin: 0 !important;
+  list-style: none !important;
+}
+
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item
+  .action-menu-item {
+  display: flex !important;
+  align-items: center !important;
+  height: 28px !important;
+  padding: 0 0.75rem !important;
+  border-radius: 0.375rem !important;
+  color: var(--popover-foreground) !important;
+  font-size: 12px !important;
+  line-height: 1.35 !important;
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item
+  .action-menu-item
+  .action-label {
+  color: var(--popover-foreground) !important;
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  font-family: inherit !important;
+}
+
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item
+  .action-menu-item
+  .keybinding {
+  color: var(--muted-foreground) !important;
+  font-size: 11px !important;
+  margin-left: auto;
+  padding-left: 1.5rem;
+  font-family: inherit !important;
+}
+
+/* Hover + focus state: matches shadcn DropdownMenuItem feel */
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item
+  .action-menu-item:hover,
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item.focused
+  .action-menu-item,
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .focused
+  .action-menu-item {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item:hover
+  .action-label,
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item.focused
+  .action-label {
+  color: var(--accent-foreground) !important;
+}
+
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item.disabled
+  .action-menu-item,
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item.disabled
+  .action-menu-item:hover {
+  opacity: 0.45 !important;
+  background: transparent !important;
+  color: var(--muted-foreground) !important;
+  cursor: default;
+}
+
+/* Separators: Monaco emits either a child `.separator` or an item with
+   class `.action-item.separator`. Both render as a thin divider line. */
+.context-view .monaco-menu .monaco-action-bar.vertical .action-item .separator,
+.context-view .monaco-menu .monaco-action-bar.vertical .action-item.separator {
+  display: block !important;
+  height: 1px !important;
+  margin: 0.25rem 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-top: 1px solid var(--border) !important;
+  background: transparent !important;
+}
+
+/* Submenu arrow (for nested menus like "Peek" etc.) */
+.context-view
+  .monaco-menu
+  .monaco-action-bar.vertical
+  .action-item
+  .submenu-indicator {
+  color: var(--muted-foreground) !important;
+}
+
+/* Inline Edit Widget — Cursor-style floating popup inside Monaco.
+   Styled to match shadcn popover/card conventions: rounded-xl, subtle
+   1px border, single-layer soft shadow. No color-mix tricks so the
+   header/footer blend cleanly into the card body. */
+.inline-edit-widget-container {
+  /* Monaco's content widget wrapper. Size constraints go on the child. */
+  z-index: 50;
+}
+
+.inline-edit-widget {
+  width: 440px;
+  max-width: 90vw;
+  background: var(--popover);
+  color: var(--popover-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 16px 40px rgb(0 0 0 / 35%),
+    0 6px 14px rgb(0 0 0 / 18%);
+  overflow: hidden;
+  font-family: inherit;
+  margin-top: 0.375rem;
+  pointer-events: auto;
+}
+
+.inline-edit-widget * {
+  box-sizing: border-box;
+}
+
+.inline-edit-widget .inline-edit-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  border-bottom: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+}
+
+.inline-edit-widget .inline-edit-header-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--foreground);
+  letter-spacing: -0.005em;
+}
+
+.inline-edit-widget .inline-edit-header-range {
+  font-size: 10px;
+  color: var(--muted-foreground);
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    monospace;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+}
+
+.inline-edit-widget .inline-edit-close {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+.inline-edit-widget .inline-edit-close:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+.inline-edit-widget .inline-edit-close:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.inline-edit-widget .inline-edit-input {
+  display: block;
+  width: 100%;
+  min-height: 80px;
+  max-height: 220px;
+  padding: 0.75rem 0.875rem;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--foreground);
+  font-size: 13px;
+  line-height: 1.5;
+  font-family: inherit;
+  resize: vertical;
+}
+.inline-edit-widget .inline-edit-input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 0.65;
+}
+.inline-edit-widget .inline-edit-input:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.inline-edit-widget .inline-edit-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.625rem 0.625rem 0.625rem;
+  border-top: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+}
+
+.inline-edit-widget .inline-edit-model-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 28px;
+  padding: 0 0.55rem;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  font-size: 11.5px;
+  font-weight: 500;
+  max-width: 200px;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+.inline-edit-widget .inline-edit-model-button:hover:not(:disabled) {
+  background: var(--accent);
+  border-color: color-mix(in oklch, var(--border) 50%, var(--accent) 50%);
+}
+.inline-edit-widget .inline-edit-model-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.inline-edit-widget .inline-edit-model-button img {
+  flex-shrink: 0;
+}
+.inline-edit-widget .inline-edit-model-button .inline-edit-model-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.inline-edit-widget .inline-edit-hint {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--muted);
+  border: 1px solid color-mix(in oklch, var(--border) 70%, transparent);
+  font-size: 10px;
+  color: var(--muted-foreground);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.02em;
+}
+
+/* Reduce transparency mode */
+.reduce-transparency * {
+  backdrop-filter: none !important;
+}
+.reduce-transparency .dark {
+  --border: oklch(0.3 0 0);
+  --input: oklch(0.25 0 0);
+}
+
+/* Global clean scrollbar — scoped to scrollable containers only */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: oklch(0.5 0 0 / 20%);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.5 0 0 / 40%);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Deliberate rainbow (mode-independent, purely decorative) — centralized so
+   the two gradient blocks and the icon accent stay in sync. */
+:root {
+  --ultra-think-stops:
+    #ff0080, #ff8c00, #ffe600, #04ff00, #00c8ff, #7b00ff, #ff0080;
+  --ultra-think-glow-stops:
+    #ff008015, #ff8c0015, #ffe60015, #04ff0015, #00c8ff15, #7b00ff15, #ff008015;
+  --ultra-think-accent: #ff0080;
+}
+
+.ultra-think-text {
+  background: linear-gradient(90deg, var(--ultra-think-stops)) !important;
+  background-size: 200% 100% !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent;
+}
+
+.ultra-think-text {
+  position: relative;
+  isolation: isolate;
+}
+
+.ultra-think-text::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  background: linear-gradient(90deg, var(--ultra-think-glow-stops));
+  background-size: 200% 100%;
+  transition: opacity 150ms;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.ultra-think-text:hover::before,
+.ultra-think-text:focus::before,
+.ultra-think-text[data-highlighted]::before {
+  opacity: 1;
+}
+
+.ultra-think-text:hover,
+.ultra-think-text:focus,
+.ultra-think-text[data-highlighted] {
+  -webkit-text-fill-color: transparent;
+  background-color: transparent !important;
+  color: inherit !important;
+}
+
+/* ── Layout customization via CSS variables ── */
+:root {
+  --chat-max-width: 1200px;
+  --chat-scale: 1;
+  --message-font-size: 14px;
+  --sidebar-width: 300px;
+}
+
+/* Compact mode — tighter spacing between messages */
+.compact-mode .chat-prose {
+  line-height: 1.5;
+}
+.compact-mode [data-slot="message"] {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+.compact-mode [data-slot="message-content"] {
+  gap: 0.25rem;
+}
+
+/* Active agent labels only: completed steps keep their normal, static text. */
+@keyframes agent-activity-shimmer {
+  0%, 15% { background-position: 100% 0; }
+  85%, 100% { background-position: -100% 0; }
+}
+
+@media (prefers-reduced-motion: no-preference) and (forced-colors: none) {
+  .agent-activity-text {
+    display: inline-block;
+    background-image: linear-gradient(
+      110deg,
+      var(--muted-foreground) 35%,
+      var(--foreground) 50%,
+      var(--muted-foreground) 65%
+    );
+    background-size: 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: agent-activity-shimmer 2.4s linear infinite;
+  }
+}
+
+.animations-disabled .agent-activity-text {
+  animation: none;
+  background: none;
+  color: var(--muted-foreground);
+}
+
+.animations-disabled *,
+.animations-disabled *::before,
+.animations-disabled *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* ── @ File mention input styling ── */
+.mention-input-active textarea {
+  caret-color: var(--foreground);
+}
+
+/* ── @ File mention labels ── */
+.chat-prose .mention-label,
+.mention-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1em 0.5em;
+  border-radius: 0.3rem;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+  font-weight: 500;
+  border: 1px solid var(--border);
+}
+
+.chat-prose .skill-label,
+.skill-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.1em 0.5em;
+  border-radius: 0.3rem;
+  border: 1px solid color-mix(in srgb, var(--primary) 26%, transparent);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--foreground);
+  font-size: 0.85em;
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.ultra-think-text:hover svg,
+.ultra-think-text:focus svg,
+.ultra-think-text[data-highlighted] svg {
+  color: inherit !important;
+}
+
+.ultra-think-text svg {
+  color: var(--ultra-think-accent) !important;
+}
+
+/* ───────────────────────────────────────────────────────────────
+ * Monaco inline AI-diff decorations
+ * Rendered by MonacoEditorWrapper when a tab has aiBaselineContent.
+ * ─────────────────────────────────────────────────────────────── */
+.ai-diff-added-line {
+  background-color: color-mix(
+    in oklab,
+    var(--success) 12%,
+    transparent
+  ) !important;
+  box-shadow: inset 2px 0 0 0
+    color-mix(in oklab, var(--success) 90%, transparent);
+}
+.ai-diff-added-gutter {
+  background-color: color-mix(in oklab, var(--success) 60%, transparent);
+  width: 3px !important;
+  margin-left: 3px;
+}
+.ai-diff-added-margin::before {
+  content: "+";
+  color: color-mix(in oklab, var(--success) 95%, transparent);
+  font-weight: 700;
+  font-family: "Fira Code", "JetBrains Mono", monospace;
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+}
+
+/* Removed-line view zone — occupies one full line of reserved vertical
+   space between code lines (NOT a content widget, so it doesn't overlap
+   adjacent code). Structured as: gutter-aligned "−" marker + content. */
+.ai-diff-removed-widget {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background-color: color-mix(in oklab, var(--destructive) 14%, transparent);
+  box-shadow: inset 2px 0 0 0
+    color-mix(in oklab, var(--destructive) 85%, transparent);
+  color: color-mix(in oklab, var(--destructive) 95%, transparent);
+  font-family: "Fira Code", "JetBrains Mono", Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  pointer-events: none;
+  overflow: hidden;
+}
+.ai-diff-removed-widget .ai-diff-removed-marker {
+  flex-shrink: 0;
+  width: 22px;
+  padding-left: 8px;
+  font-weight: 700;
+  color: color-mix(in oklab, var(--destructive) 95%, transparent);
+}
+.ai-diff-removed-widget .ai-diff-removed-content {
+  flex: 1;
+  min-width: 0;
+  padding-right: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-decoration: line-through;
+  text-decoration-color: color-mix(
+    in oklab,
+    var(--destructive) 40%,
+    transparent
+  );
+}
+
+/* Dark mode: slightly stronger tint so it's visible on dark bg */
+.dark .ai-diff-added-line {
+  background-color: color-mix(
+    in oklab,
+    var(--success) 18%,
+    transparent
+  ) !important;
+}
+.dark .ai-diff-removed-widget {
+  background-color: color-mix(in oklab, var(--destructive) 20%, transparent);
+  color: color-mix(in oklab, var(--destructive) 70%, white);
+}
+
+/* ── Mermaid diagram text override ────────────────────────────────────────
+ * Mermaid ships each SVG with a <style> block whose selectors use a
+ * render-unique ID prefix (e.g. `#mermaid-12 .nodeLabel { fill: ... }`).
+ * After DOMPurify sanitizes the SVG the selectors can fail to match
+ * their intended elements — result: node labels render with default
+ * SVG fill (black) on our dark chat background and disappear.
+ *
+ * Forcing fill + color on every text-ish descendant of a mermaid wrapper
+ * makes the text always contrast with the muted/10 card background,
+ * regardless of what the embedded <style> block decided. `!important` is
+ * required to win against Mermaid's own inline styling.
+ */
+.mermaid-diagram-host svg .nodeLabel,
+.mermaid-diagram-host svg .nodeLabel p,
+.mermaid-diagram-host svg .nodeLabel span,
+.mermaid-diagram-host svg .edgeLabel,
+.mermaid-diagram-host svg .edgeLabel p,
+.mermaid-diagram-host svg .edgeLabel span,
+.mermaid-diagram-host svg .label,
+.mermaid-diagram-host svg .label p,
+.mermaid-diagram-host svg .label span,
+.mermaid-diagram-host svg .cluster-label,
+.mermaid-diagram-host svg foreignObject div,
+.mermaid-diagram-host svg foreignObject span,
+.mermaid-diagram-host svg text,
+.mermaid-diagram-host svg tspan {
+  fill: #f3f4f6 !important;
+  color: #f3f4f6 !important;
+}
+/* Edge labels have a background plate that mermaid draws via `.edgeLabel rect`
+ * or a `<foreignObject>` container — force it to a translucent dark pill
+ * so the text above stays readable without covering the edge line. */
+.mermaid-diagram-host svg .edgeLabel rect,
+.mermaid-diagram-host svg .edgeLabel foreignObject > div {
+  fill: rgba(17, 24, 39, 0.85) !important;
+  background-color: rgba(17, 24, 39, 0.85) !important;
+}
+
+@keyframes provider-update-pill-dismiss {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+.provider-update-pill-progress {
+  animation: provider-update-pill-dismiss
+    var(--provider-update-pill-dismiss-ms, 3000ms) linear forwards;
+}
+
+/* Wide-screen comfort: above 1080px the agent left sidebar (chat list,
+ * "New chat" / "Open folder" actions, footer, …) scales up 15% so the
+ * controls stay comfortably sized on larger displays. `zoom` scales the whole
+ * subtree — content AND its layout box — so the sidebar simply gets wider to
+ * fit; the inline (vw-based) width stays the pre-zoom base. The resize handler
+ * in left-sidebar.tsx divides its pointer delta by the same factor so dragging
+ * stays 1:1 with the cursor. Keep this in sync with SIDEBAR_WIDE_SCALE in
+ * lib/editor-layout.ts. */
+@media (min-width: 1081px) {
+  .betterc0de-left-sidebar-scale {
+    zoom: 1.15;
+  }
+}
+
+/* Left sidebar collapse/expand: width sweeps with an ease-out-quint-style
+ * curve while the content cross-fades on a shorter clock, so text never
+ * visibly squishes against the shrinking edge — it's gone before the frame
+ * gets narrow. Replaces the old `transition-[width] duration-100` (which
+ * snapped opacity with no transition at all). */
+.betterc0de-left-sidebar-collapse {
+  transition:
+    width 0.26s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.18s ease-out;
+}
+
+/* Sidebar folder groups (Radix Collapsible): animate open/close instead of
+ * snapping. Radix measures the content into
+ * `--radix-collapsible-content-height` and keeps the closing subtree mounted
+ * until `animationend`, so a plain CSS animation is enough. The -4px
+ * translate settles the growing block downward while it fades in, so rows
+ * feel like they slide into place instead of just growing. Close runs
+ * faster than open — collapse should feel like a dismissal, not a rewind. */
+@keyframes betterc0de-collapsible-down {
+  from {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes betterc0de-collapsible-up {
+  from {
+    height: var(--radix-collapsible-content-height);
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+.betterc0de-collapsible-content {
+  overflow: hidden;
+}
+
+.betterc0de-collapsible-content[data-state="open"] {
+  animation: betterc0de-collapsible-down 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.betterc0de-collapsible-content[data-state="closed"] {
+  animation: betterc0de-collapsible-up 0.16s ease-in;
+}
+
+/* Tool-call dropdown rows: each row fades/slides into place with a small
+ * per-row delay (set inline as animation-delay) so opening the group reads
+ * as a cascade instead of a block-paste. `backwards` keeps delayed rows
+ * invisible until their turn. */
+@keyframes betterc0de-tool-row-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.betterc0de-tool-row {
+  animation: betterc0de-tool-row-in 0.28s cubic-bezier(0.22, 1, 0.36, 1)
+    backwards;
+}
+
+/* Side panels share the chat surface; the center keeps the shell surface. */
+.editor-sidebar {
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-foreground: var(--foreground);
+}
+
+.dark .editor-code-panel {
+  --background: var(--sidebar);
+}
+
+/* Editor chats share the composer, but must fit a much narrower surface. */
+.editor-chat-panel [data-slot="input-group-addon"][data-align="block-end"] > .contents {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.375rem;
+}
+.editor-chat-panel [data-slot="input-group-addon"][data-align="block-end"] > .contents > * {
+  flex-shrink: 0;
+}
+.editor-chat-panel [data-slot="input-group-addon"][data-align="block-end"] > .contents > :last-child {
+  margin-left: auto;
+}
+.editor-chat-panel .grid textarea[data-slot="input-group-control"] {
+  min-height: 72px;
+}

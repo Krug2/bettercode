@@ -1,0 +1,80 @@
+{
+  "name": "@betterc0de/schema",
+  "version": "0.1.0-beta.1",
+  "private": true,
+  "type": "commonjs",
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./http-contracts": {
+      "types": "./src/http-contracts.ts",
+      "import": "./src/http-contracts.ts",
+      "default": "./dist/http-contracts.js"
+    },
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./provider-replay": {
+      "types": "./src/provider-replay.ts",
+      "import": "./src/provider-replay.ts",
+      "default": "./dist/provider-replay.js"
+    },
+    "./agent-permission-modes": {
+      "types": "./src/agent-permission-modes.ts",
+      "import": "./src/agent-permission-modes.ts",
+      "default": "./dist/agent-permission-modes.js"
+    },
+    "./tool-activity": {
+      "types": "./src/tool-activity.ts",
+      "import": "./src/tool-activity.ts",
+      "default": "./dist/tool-activity.js"
+    },
+    "./model-selection": {
+      "types": "./src/model-selection.ts",
+      "import": "./src/model-selection.ts",
+      "default": "./dist/model-selection.js"
+    },
+    "./design": {
+      "types": "./src/design.ts",
+      "import": "./src/design.ts",
+      "default": "./dist/design.js"
+    },
+    "./checkpointing": {
+      "types": "./src/checkpointing.ts",
+      "import": "./src/checkpointing.ts",
+      "default": "./dist/checkpointing.js"
+    },
+    "./json-read": {
+      "types": "./src/json-read.ts",
+      "import": "./src/json-read.ts",
+      "default": "./dist/json-read.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  },
+  "typesVersions": {
+    "*": {
+      "http-contracts": [
+        "dist/http-contracts.d.ts"
+      ],
+      "provider-replay": [
+        "dist/provider-replay.d.ts"
+      ],
+      "json-read": [
+        "dist/json-read.d.ts"
+      ]
+    }
+  }
+}

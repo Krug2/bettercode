@@ -19,7 +19,7 @@
   <a href="https://discord.gg/bettercode">Discord</a>
 </p>
 
-[![BetterC0de website ? coding agents, chat, and a shared workspace](assets/betterc0de-website.png)](https://betterc0de.com)
+[![BetterC0de website: coding agents, chat, and a shared workspace](assets/betterc0de-website.png)](https://betterc0de.com)
 
 ---
 
@@ -50,7 +50,7 @@ Open a project, choose an available provider, and describe what you want to buil
 
 BetterC0de is free during the beta. The links always serve the latest build.
 
-> **Open source at the end of September 2026.** The full source code will be published in this repository. Until then this repo holds the documentation and brand assets, and the beta ships as installers only.
+> **Open source as of 21 September 2026.** The full source is in this repository under the MIT License. Beta installers are below.
 
 | Platform | Requirements | Download |
 | --- | --- | --- |
@@ -82,14 +82,14 @@ Follow the [getting-started guide](GETTING_STARTED.md) for a walkthrough without
 
 The application source, mobile companion, tests, and build tools are included in this repository. Start with the [development guide](docs/development/README.md) for local setup and platform builds. Read [Contributing](CONTRIBUTING.md), [Security](SECURITY.md), and [third-party notices](THIRD_PARTY_NOTICES.md) before submitting changes or distributing a build.
 
-The project license is awaiting the owner's selection. See [public-source readiness](docs/open-source-readiness.md) for remaining publication checks.
+BetterC0de source is released under the MIT License. Third-party terms stay with their owners; see [third-party notices](THIRD_PARTY_NOTICES.md).
 
 ## Stay connected
 
 Visit [betterc0de.com](https://betterc0de.com) for product information, join the [Discord community](https://discord.gg/bettercode), or read the [terms and data information](https://betterc0de.com/terms#data).
 
-BetterC0de is in beta and will be open-sourced at the end of September 2026. Available installers and features may vary by release. AI provider access, usage limits, and billing depend on the provider you connect. The app also sends a periodic heartbeat and diagnostic reports; see [Diagnostics and data](PRODUCT_GUIDE.md#diagnostics-and-data).
+BetterC0de is in beta and was open-sourced on 21 September 2026. Available installers and features may vary by release. AI provider access, usage limits, and billing depend on the provider you connect. The app also sends a periodic heartbeat and diagnostic reports; see [Diagnostics and data](PRODUCT_GUIDE.md#diagnostics-and-data).
 
 ---
 
-<p align="center"><strong>BetterC0de</strong><br>Your next idea starts in your workspace.<br><sub>Free during beta · Open source end of September 2026 · Built by <a href="https://kerim0x1.com">kerim0x1</a></sub></p>
+<p align="center"><strong>BetterC0de</strong><br>Your next idea starts in your workspace.<br><sub>Free during beta · Open source 21 September 2026 · Built by <a href="https://kerim0x1.com">kerim0x1</a></sub></p>

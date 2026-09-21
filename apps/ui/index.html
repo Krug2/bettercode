@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      Content-Security-Policy — backstop against renderer XSS. The backend
+      auth token stays in Electron's main process, which injects the bearer
+      at the network layer only for trusted app renderer requests. Runtime
+      JavaScript receives the backend port but never the token. `'unsafe-
+      inline'` + `'unsafe-eval'` are required by Monaco (eval), TipTap,
+      Shiki, and Vite HMR in dev; blocking remote-origin script loading
+      (the #1 XSS vector) is still a real win. `connect-src` includes
+      127.0.0.1:* and localhost:* so the loopback backend + Vite HMR WS
+      both work. HTTPS/WSS are present only as an outer transport ceiling;
+      the bootstrap policy immediately below intersects this with the exact
+      configured backend origin before the application module runs.
+      Webview/Browser-Preview frames use the renderer's
+      `<webview>` tag which the main process already gates via
+      `will-attach-webview` + `isAllowedWebviewUrl`; `frame-src https: http:`
+      allows remote pages and `blob:` is limited to renderer-created local
+      PDF preview URLs.
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:* https: wss:; frame-src 'self' blob: https: http:; media-src 'self' https: blob:; object-src 'none'; base-uri 'none'; form-action 'none';" />
+    <script>
+      (() => {
+        const loopback = "'self' http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:*"
+        // Deepgram is the only renderer-owned external transport. Keep this
+        // exact instead of reopening the broad `wss:` ceiling above.
+        const appServices = "wss://api.deepgram.com"
+        let connectSources = `${loopback} ${appServices}`
+        try {
+          // When the backend serves this bundle directly, HTTP and WebSocket
+          // stay on the page's exact origin. Add only that matching socket
+          // origin; the server still enforces pairing + origin checks.
+          if (location.protocol === 'http:' || location.protocol === 'https:') {
+            const sameOriginSocket = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}`
+            connectSources += ` ${location.origin} ${sameOriginSocket}`
+          }
+          if (localStorage.getItem('betterc0de.backend.mode') === 'remote_http') {
+            const base = new URL(localStorage.getItem('betterc0de.remote.baseUrl') || '')
+            const loopbackHost = ['localhost', '127.0.0.1', '[::1]'].includes(base.hostname)
+            if (base.protocol === 'https:' || loopbackHost) {
+              const explicitWs = localStorage.getItem('betterc0de.remote.wsUrl')
+              const websocket = explicitWs
+                ? new URL(explicitWs)
+                : new URL(base.toString().replace(/^http/, 'ws'))
+              const credentialOrigin = new URL(websocket)
+              credentialOrigin.protocol = credentialOrigin.protocol === 'wss:' ? 'https:' : 'http:'
+              if (credentialOrigin.origin === base.origin) {
+                connectSources += ` ${base.origin} ${websocket.origin}`
+              }
+            }
+          }
+        } catch {
+          // Invalid persisted configuration remains restricted to loopback.
+        }
+        const policy = document.createElement('meta')
+        policy.httpEquiv = 'Content-Security-Policy'
+        policy.content = `connect-src ${connectSources};`
+        document.head.append(policy)
+      })()
+    </script>
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%favicon.svg" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="%BASE_URL%favicon.png"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BetterC0de</title>
+    <!-- No hand-rolled <link rel="preload" href="/src/main.tsx"> here.
+         Vite's HTML transformer bundled that as a base64
+         `data:application/octet-stream` script URI in the production
+         build, which the renderer's `script-src 'self' 'unsafe-inline'
+         'unsafe-eval'` CSP then refused to load — surfaced in DevTools
+         every time a chat message was sent. Vite emits the right
+         `<link rel="modulepreload">` for each output chunk
+         automatically, so a manual preload is both redundant and
+         harmful. -->
+    <style>
+      /* Prevent FOUC — match the app's dark background immediately */
+      html, body, #root { margin: 0; padding: 0; background: #0a0a0a; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

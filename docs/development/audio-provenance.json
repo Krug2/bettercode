@@ -1,0 +1,797 @@
+{
+  "verifiedOn": "2026-09-21",
+  "files": [
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/cherrymx-black-abs/sound.ogg",
+      "gitBlobSha1": "2318e11de85a263be0b2db82382937e4effbe0ba",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/cherrymx-black-abs/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/cherrymx-black-pbt/sound.ogg",
+      "gitBlobSha1": "d1ca80144a0613d89ab3a68290aed514d1509aca",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/cherrymx-black-pbt/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/cherrymx-blue-abs/sound.ogg",
+      "gitBlobSha1": "112c361f274b7ee09fdd815473ce4210e899d008",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/cherrymx-blue-abs/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/cherrymx-blue-pbt/sound.ogg",
+      "gitBlobSha1": "440f14283131c0bc95a2f2d9de639f61b81e53df",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/cherrymx-blue-pbt/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/cherrymx-brown-abs/sound.ogg",
+      "gitBlobSha1": "8caf39c95a7cbebd8b973c4f8ea794f7e8ee1d14",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/cherrymx-brown-abs/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/cherrymx-brown-pbt/sound.ogg",
+      "gitBlobSha1": "bba9c3b04e2c8d3214d52ac088dd3ce4407167ef",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/cherrymx-brown-pbt/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/cherrymx-red-pbt/sound.ogg",
+      "gitBlobSha1": "7c5e8ee440211bf303e33691120015fe22ec7a1f",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/cherrymx-red-pbt/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/eg-crystal-purple/purple.ogg",
+      "gitBlobSha1": "c5313579c07be7d3c5d0f3c993a08891cdacb853",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/eg-crystal-purple/purple.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/eg-oreo/oreo.ogg",
+      "gitBlobSha1": "b9903ddbf821617728ed1213c9947eed2a5ab76f",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/eg-oreo/oreo.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/a-down.wav",
+      "gitBlobSha1": "282d9fd11dab6ed1530bb5dfb06672b091e7a8cc",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/keys/nk-cream/a-down.wav",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/a-up.wav",
+      "gitBlobSha1": "9e7444ced9b7eb62cfb67ae3853d0575395bcaad",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/keys/nk-cream/a-up.wav",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/a.wav",
+      "gitBlobSha1": "23e25b5557a56c1723f65b3d56412ce25525cb5d",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/a.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/b.wav",
+      "gitBlobSha1": "04de3fc432c0a72e641bd2cb05285a3d34e7a2d2",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/b.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/backspace.wav",
+      "gitBlobSha1": "1dc56b97b7969985b89acec027b157b1860ae303",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/backspace.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/c.wav",
+      "gitBlobSha1": "5f0bb3d5140cf99c6c570278b0f699512eb92a7e",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/c.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/caps lock.wav",
+      "gitBlobSha1": "9f46f1ec0d4070edb827b32c28d7351ab1948dab",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/caps lock.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/d.wav",
+      "gitBlobSha1": "372e2c48fcc2133d97ed3d49f8b0d6e7e04a0ae2",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/d.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/e.wav",
+      "gitBlobSha1": "0ad8fb82714043566853f83fc5f3ed4a0e195a00",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/e.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/enter.wav",
+      "gitBlobSha1": "717e2cb80dd5022385ed8be8efb1ec5e0ea2398d",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/enter.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/f.wav",
+      "gitBlobSha1": "7ccf61e3f27110386bb8918233ce9bdb94b629c3",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/f.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/g.wav",
+      "gitBlobSha1": "4e2a78f5191a842b62841430c9b1fc8c3d19020b",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/g.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/h.wav",
+      "gitBlobSha1": "b9fdc301cafd89f6dca83ea427809ac1f2e051d2",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/h.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/i.wav",
+      "gitBlobSha1": "be7f3929dffa860c7fbc2bcbe464e3c3925edb81",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/i.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/j.wav",
+      "gitBlobSha1": "50cf399a76aac55e7d5fb2e48eca068ea20b78e0",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/j.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/k.wav",
+      "gitBlobSha1": "04f2229fa6679a932c61f45cae31eb5db9787c6a",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/k.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/l.wav",
+      "gitBlobSha1": "6d4b8763d0e08ae12c1543f21d9748cd46c2ade0",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/l.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/m.wav",
+      "gitBlobSha1": "1624865d64bff4311632d128a1deabcfd255922f",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/m.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/n.wav",
+      "gitBlobSha1": "a02f0667cb935e21c486361d19b5f3c1a9a3bf78",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/n.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/o.wav",
+      "gitBlobSha1": "30474bb82c93fc89b03bb1ef8ac3b2e3812d6360",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/[.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/p.wav",
+      "gitBlobSha1": "8cee5643c4d4e7ff82db8f6f2216a572c009e501",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/].wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/q.wav",
+      "gitBlobSha1": "7032a469958873366f99979ed51900ef68662dda",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/q.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/r.wav",
+      "gitBlobSha1": "e172224f9fd67beb1f5991794953118e03d4e201",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/r.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/s.wav",
+      "gitBlobSha1": "badb009f3e9826d0cf44cdd69416fbb180de35c0",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/s.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/shift.wav",
+      "gitBlobSha1": "717e2cb80dd5022385ed8be8efb1ec5e0ea2398d",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/enter.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/space.wav",
+      "gitBlobSha1": "b1b671ff7401791ffc1cf91defc14dffe65afd6a",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/space.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/t.wav",
+      "gitBlobSha1": "018b90ca9b199652a64ac188218563ad51053910",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/t.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/tab.wav",
+      "gitBlobSha1": "9f46f1ec0d4070edb827b32c28d7351ab1948dab",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/caps lock.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/u.wav",
+      "gitBlobSha1": "563754aaac902bb34a8fe4932842e7a8df67fb34",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/u.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/v.wav",
+      "gitBlobSha1": "f24e97b3070915f6f900fe0e6e12659927852ad5",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/v.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/w.wav",
+      "gitBlobSha1": "61980f48759f318ad6d227358dd447e43877c399",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/w.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/x.wav",
+      "gitBlobSha1": "f15c6f679862405acac48ccfdbd9246fe413bf75",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/x.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/y.wav",
+      "gitBlobSha1": "4a2497705f801eb3e77e6052605849cf8691fffe",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/y.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/z.wav",
+      "gitBlobSha1": "400a5342c94fe084cf2c147e93210c3b868cb01f",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/z.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/[.wav",
+      "gitBlobSha1": "30474bb82c93fc89b03bb1ef8ac3b2e3812d6360",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/[.wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/nk-cream/].wav",
+      "gitBlobSha1": "8cee5643c4d4e7ff82db8f6f2216a572c009e501",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/nk-cream/].wav",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/keys/topre-purple-hybrid-pbt/sound.ogg",
+      "gitBlobSha1": "543a292ab85acb3fa27dca5bd11d5f6739299618",
+      "upstream": {
+        "repository": "hainguyents13/mechvibes",
+        "path": "src/audio/topre-purple-hybrid-pbt/sound.ogg",
+        "treeSha1": "326252a13e7bef4f1c35d08ef0189b5af6f8ba02"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/amazon-gaming/left-down.mp3",
+      "gitBlobSha1": "7d079a0cc89af18a35572bf76d47c3cf58f3100a",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/left-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/amazon-gaming/left-up.mp3",
+      "gitBlobSha1": "fc34d4e72b38c4a257f8859fdd7b08eff9d0a2ab",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/left-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/amazon-gaming/right-down.mp3",
+      "gitBlobSha1": "6e95e3beb5825ac605c3e83bbe06011c3595ef24",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/right-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/amazon-gaming/right-up.mp3",
+      "gitBlobSha1": "5c53eabfe123faaee647470f2609a8666815d55e",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/right-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/amazon-gaming/scroll-down.mp3",
+      "gitBlobSha1": "2fdcc7970006b70e3dbe668d52a31b8077affe0a",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/scroll-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/amazon-gaming/scroll-up.mp3",
+      "gitBlobSha1": "2fdcc7970006b70e3dbe668d52a31b8077affe0a",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/scroll-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/apple-magic-mouse/left-down.mp3",
+      "gitBlobSha1": "71dac647a406ada813dcf6172aba5499c3dac635",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/apple-magic-mouse/left-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/apple-magic-mouse/left-up.mp3",
+      "gitBlobSha1": "ca7e907c36c5526cb0844ad92022a6d648139d16",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/apple-magic-mouse/left-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/apple-magic-mouse/right-down.mp3",
+      "gitBlobSha1": "71dac647a406ada813dcf6172aba5499c3dac635",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/apple-magic-mouse/left-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/apple-magic-mouse/right-up.mp3",
+      "gitBlobSha1": "ca7e907c36c5526cb0844ad92022a6d648139d16",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/apple-magic-mouse/left-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/apple-magic-mouse/scroll-down.mp3",
+      "gitBlobSha1": "2fdcc7970006b70e3dbe668d52a31b8077affe0a",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/scroll-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/apple-magic-mouse/scroll-up.mp3",
+      "gitBlobSha1": "2fdcc7970006b70e3dbe668d52a31b8077affe0a",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/amazon-gaming/scroll-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/corsair-m65-elite/left-down.mp3",
+      "gitBlobSha1": "e491d0fe8849660c262db64d2a2251d402941396",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/corsair-m65-elite/left-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/corsair-m65-elite/left-up.mp3",
+      "gitBlobSha1": "99fdae6fd71e0747c37ac85ce87a5aadabd8929a",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/corsair-m65-elite/left-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/corsair-m65-elite/right-down.mp3",
+      "gitBlobSha1": "77ff94fef6c0451b95970d3e181bf0cb202eec30",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/corsair-m65-elite/right-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/corsair-m65-elite/right-up.mp3",
+      "gitBlobSha1": "d62211f3d5ef27aa6b13dfa1942d1da55ef442a7",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/corsair-m65-elite/right-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/corsair-m65-elite/scroll-down.mp3",
+      "gitBlobSha1": "41bbe16b975a12f46623f94bf996cf6df105ef83",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/corsair-m65-elite/scroll-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/corsair-m65-elite/scroll-up.mp3",
+      "gitBlobSha1": "95a768e42b9ac1296f9074ea070e53a9ac88dbcf",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/corsair-m65-elite/scroll-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/harpoon-rgb/left-down.m4a",
+      "gitBlobSha1": "6c4c316f3fa0bc0414cbc24fc2095dc38ebb0cdc",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/harpoon-rgb/left-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/harpoon-rgb/left-up.m4a",
+      "gitBlobSha1": "cf4b2b45fc41455e179fa471074144e79ca4c327",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/harpoon-rgb/left-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/harpoon-rgb/right-down.m4a",
+      "gitBlobSha1": "7b0187d0b7505c3cb53f141b7f7def4422195332",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/harpoon-rgb/right-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/harpoon-rgb/right-up.m4a",
+      "gitBlobSha1": "c7fa50a057c6d43d67ca92f6875749adb5062eba",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/harpoon-rgb/right-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/harpoon-rgb/scroll-down.m4a",
+      "gitBlobSha1": "8890c2a1f02ea968aa2674377c324ace6d0b0bd9",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/harpoon-rgb/scroll-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/harpoon-rgb/scroll-up.m4a",
+      "gitBlobSha1": "98506e6128fa22965e4b44bed85376cbbc07388f",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/harpoon-rgb/scroll-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-g502/left-down.m4a",
+      "gitBlobSha1": "ce759104c9f3fd165bb4e07aa2cf992df5353135",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-g502/left-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-g502/left-up.m4a",
+      "gitBlobSha1": "d1ec64243f8dbe13e33b49aa96634206dae4f373",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-g502/left-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-g502/right-down.m4a",
+      "gitBlobSha1": "6acaa86bfe3aacf4b7d462cbb6782f04c941f240",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-g502/right-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-g502/right-up.m4a",
+      "gitBlobSha1": "7a535c7dd800422fdfa89e27141f755c797a4b9f",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-g502/right-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-g502/scroll-down.m4a",
+      "gitBlobSha1": "5510124ff6178092056112405de9837800664b83",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-g502/scroll-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-g502/scroll-up.m4a",
+      "gitBlobSha1": "9f39351d052af30171d36620f80ae446b12e5bee",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-g502/scroll-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-trackball/left-down.mp3",
+      "gitBlobSha1": "2a0fbf5e5b67b7a92ca1598cd81d02fe9b527c01",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-trackball/left-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-trackball/left-up.mp3",
+      "gitBlobSha1": "1a6840f63d3fbb9d8c100a1fd61e0b0ec863db23",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-trackball/left-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-trackball/right-down.mp3",
+      "gitBlobSha1": "cd4215913212dff6b181b84ce74bd6f3fd904706",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-trackball/right-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-trackball/right-up.mp3",
+      "gitBlobSha1": "b44f805f0d7d33d3c049ec853f9bb4351f35b28b",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-trackball/right-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-trackball/scroll-down.mp3",
+      "gitBlobSha1": "50f80ee129bb66a564062f7bd86887564e4f21cf",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-trackball/scroll-down.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/logi-trackball/scroll-up.mp3",
+      "gitBlobSha1": "7c97f063f8e3185b14df9bacabc537cdd4e39234",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/logi-trackball/scroll-up.mp3",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/mamba-elite/left-down.m4a",
+      "gitBlobSha1": "ea627c0398e453b53c899b03937b4c4dc55a9ebc",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/mamba-elite/left-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/mamba-elite/left-up.m4a",
+      "gitBlobSha1": "d7771b1a522a8eb810bdd0945516556b2b5ed607",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/mamba-elite/left-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/mamba-elite/right-down.m4a",
+      "gitBlobSha1": "57a831fc9e7d81dfc1f7ddf5884bbfae5c8d9c94",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/mamba-elite/right-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/mamba-elite/right-up.m4a",
+      "gitBlobSha1": "31036995b583b9525434ea0c3515ce30f0e62899",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/mamba-elite/right-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/mamba-elite/scroll-down.m4a",
+      "gitBlobSha1": "bae10edfa4033a6ce6eb4a68ae85c255c088a91b",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/mamba-elite/scroll-down.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    },
+    {
+      "file": "apps/ui/public/sounds/mechvibes/mouse/mamba-elite/scroll-up.m4a",
+      "gitBlobSha1": "70919de190640d6bb742e8c01142cc5acb2855d7",
+      "upstream": {
+        "repository": "PyroCalzone/MechVibesPlusPlus",
+        "path": "src/sounds/mouse/mamba-elite/scroll-up.m4a",
+        "treeSha1": "5e6df89f03a23481038b8984c11fb45448837d78"
+      }
+    }
+  ]
+}

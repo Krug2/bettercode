@@ -1,0 +1,95 @@
+/* Keep the shared dialog/command primitives; only this picker uses this density. */
+.canvas-project-picker {
+  display: flex;
+  flex-direction: column;
+  width: 520px;
+  max-width: calc(100% - 32px);
+  max-height: min(680px, calc(100% - 48px));
+  gap: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 0;
+}
+
+.canvas-project-picker .canvas-picker-command {
+  height: auto;
+  min-height: 0;
+  flex: 1;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.canvas-project-picker [data-slot="command-input-wrapper"] {
+  padding: 0;
+}
+.canvas-project-picker [data-slot="input-group"] {
+  height: 36px;
+  border-radius: 8px;
+  border-color: var(--border);
+  background: var(--background);
+  box-shadow: none;
+}
+.canvas-project-picker [data-slot="input-group"]:focus-within {
+  border-color: color-mix(in srgb, var(--muted-foreground) 50%, var(--border));
+}
+.canvas-project-picker [data-slot="command-input"] {
+  padding-right: 32px;
+}
+
+.canvas-project-picker .canvas-picker-list {
+  min-height: 0;
+  max-height: 360px;
+  padding: 0 8px 8px;
+  scroll-padding-block: 8px;
+  scrollbar-width: auto;
+  scrollbar-color: auto;
+  scrollbar-gutter: stable;
+}
+.canvas-picker-list::-webkit-scrollbar {
+  display: block;
+  width: 8px;
+}
+.canvas-picker-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+.canvas-picker-list::-webkit-scrollbar-thumb {
+  border: 2px solid var(--sidebar);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--muted-foreground) 35%, var(--sidebar));
+}
+.canvas-picker-list::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+.canvas-picker-list::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+}
+@supports not selector(::-webkit-scrollbar) {
+  .canvas-project-picker .canvas-picker-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+}
+
+.canvas-project-picker [cmdk-group] {
+  padding: 0;
+}
+.canvas-project-picker [cmdk-group-heading] {
+  padding: 10px 10px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.canvas-project-picker [cmdk-item] {
+  min-height: 68px;
+  margin: 2px 0;
+  border-radius: 8px;
+  padding: 10px;
+  gap: 10px;
+}
+.canvas-project-picker [cmdk-item] > span:first-child {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+}

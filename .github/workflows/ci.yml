@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Automated builds must not send heartbeat or diagnostic reports.
+env:
+  BETTERC0DE_DISABLE_PING: "1"
+  BETTERC0DE_DISABLE_CRASH_REPORTS: "1"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Source and build verification (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        env:
+          # Source tests and backend smoke use the runner's Node ABI.
+          # Packaging rebuilds native modules for Electron in a separate job.
+          BETTERC0DE_SKIP_POSTINSTALL: "1"
+        run: npm ci --no-audit --no-fund
+
+      - name: Shared source verification gate
+        uses: ./.github/actions/verify-source
+
+  package-smoke:
+    name: Package smoke (${{ matrix.os }}, ${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    needs: verify
+    # Also on main pushes: this repo's day-to-day flow commits straight to
+    # main, so a PR-only gate would never run on the changes that ship.
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15-intel
+            platform_flag: --mac
+            arch: x64
+          - os: macos-15
+            platform_flag: --mac
+            arch: arm64
+          - os: windows-latest
+            platform_flag: --win
+            arch: x64
+          - os: ubuntu-latest
+            platform_flag: --linux
+            arch: x64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        env:
+          # Keep native modules on the runner's Node ABI for source tests and
+          # the backend smoke. The package action rebuilds them for Electron
+          # only after the Node smoke has passed.
+          BETTERC0DE_SKIP_POSTINSTALL: "1"
+        run: npm ci --no-audit --no-fund
+
+      - name: Shared package and startup gate
+        uses: ./.github/actions/package-platform
+        with:
+          platform-flag: ${{ matrix.platform_flag }}
+          arch: ${{ matrix.arch }}

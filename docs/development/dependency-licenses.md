@@ -1,0 +1,125 @@
+# Direct dependency license inventory
+
+Generated from the installed package manifests for the repository lockfile on 2026-09-21. This covers direct workspace dependencies, not the complete transitive graph. License metadata is an inventory, not a substitute for the packages' license texts. Recheck when updating dependencies. See [third-party notices](../../THIRD_PARTY_NOTICES.md).
+
+| Package | Installed version | Declared license |
+| --- | --- | --- |
+| @anthropic-ai/claude-agent-sdk | 0.2.141 | SEE LICENSE IN README.md |
+| @anthropic-ai/sdk | 0.105.0 | MIT |
+| @electron/notarize | 3.1.1 | MIT |
+| @electron/rebuild | 4.0.4 | MIT |
+| @eslint/js | 9.39.4 | MIT |
+| @expo-google-fonts/figtree | 0.4.1 | MIT AND OFL-1.1 |
+| @expo/metro-runtime | 56.0.17 | MIT |
+| @floating-ui/dom | 1.8.0 | MIT |
+| @fontsource-variable/figtree | 5.2.10 | OFL-1.1 |
+| @hono/node-server | 1.19.17 | MIT |
+| @hugeicons/core-free-icons | 4.1.2 | MIT |
+| @hugeicons/react | 1.1.6 | MIT |
+| @modelcontextprotocol/sdk | 1.29.0 | MIT |
+| @monaco-editor/react | 4.7.0 | MIT |
+| @radix-ui/react-use-controllable-state | 1.2.2 | MIT |
+| @remotion/cli | 4.0.496 | SEE LICENSE IN LICENSE.md |
+| @remotion/media-utils | 4.0.496 | MIT |
+| @remotion/player | 4.0.496 | SEE LICENSE IN LICENSE.md |
+| @shikijs/transformers | 4.0.2 | MIT |
+| @streamdown/cjk | 1.0.3 | Apache-2.0 |
+| @streamdown/code | 1.1.1 | Apache-2.0 |
+| @streamdown/math | 1.0.2 | Apache-2.0 |
+| @streamdown/mermaid | 1.0.2 | Apache-2.0 |
+| @tailwindcss/postcss | 4.2.4 | MIT |
+| @tailwindcss/vite | 4.2.4 | MIT |
+| @tanstack/react-virtual | 3.13.24 | MIT |
+| @types/better-sqlite3 | 7.6.13 | MIT |
+| @types/color | 4.2.1 | MIT |
+| @types/dompurify | 3.0.5 | MIT |
+| @types/node | 24.12.3 | MIT |
+| @types/react | 19.2.14 | MIT |
+| @types/react-dom | 19.2.3 | MIT |
+| @types/ws | 8.18.1 | MIT |
+| @vitejs/plugin-react | 5.2.0 | MIT |
+| @xterm/addon-fit | 0.11.0 | MIT |
+| @xterm/xterm | 6.0.0 | MIT |
+| ai | 6.0.176 | Apache-2.0 |
+| babel-preset-expo | 56.0.17 | MIT |
+| better-sqlite3 | 12.9.0 | MIT |
+| class-variance-authority | 0.7.1 | Apache-2.0 |
+| clsx | 2.1.1 | MIT |
+| cmdk | 1.1.1 | MIT |
+| color | 5.0.3 | MIT |
+| concurrently | 9.2.4 | MIT |
+| css-loader | 7.1.4 | MIT |
+| dompurify | 3.4.15 | (MPL-2.0 OR Apache-2.0) |
+| electron | 41.5.0 | MIT |
+| electron-builder | 26.8.1 | MIT |
+| electron-updater | 6.8.9 | MIT |
+| embla-carousel-react | 8.6.0 | MIT |
+| eslint | 9.39.4 | MIT |
+| eslint-plugin-react-hooks | 7.1.1 | MIT |
+| eslint-plugin-react-refresh | 0.5.2 | MIT |
+| expo | 56.0.16 | MIT |
+| expo-build-properties | 56.0.23 | MIT |
+| expo-camera | 56.0.8 | MIT |
+| expo-constants | 56.0.21 | MIT |
+| expo-dev-client | 56.0.26 | MIT |
+| expo-font | 56.0.7 | MIT |
+| expo-haptics | 56.0.3 | MIT |
+| expo-linking | 56.0.15 | MIT |
+| expo-router | 56.2.15 | MIT |
+| expo-secure-store | 56.0.4 | MIT |
+| expo-status-bar | 56.0.4 | MIT |
+| fast-glob | 3.3.3 | MIT |
+| fuse.js | 7.3.0 | Apache-2.0 |
+| globals | 16.5.0 | MIT |
+| hono | 4.13.8 | MIT |
+| ignore | 7.0.5 | MIT |
+| lowlight | 3.3.0 | MIT |
+| lucide-react | 1.14.0 | ISC |
+| lucide-react-native | 1.25.0 | ISC |
+| material-icon-theme | 5.38.1 | MIT |
+| monaco-editor | 0.53.0 | MIT |
+| motion | 12.38.0 | MIT |
+| nanoid | 5.1.16 | MIT |
+| node-pty | 1.1.0 | MIT |
+| openai | 6.49.0 | Apache-2.0 |
+| openai | 6.37.0 | Apache-2.0 |
+| pino | 9.14.0 | MIT |
+| postcss | 8.5.28 | MIT |
+| postcss-loader | 8.2.1 | MIT |
+| prettier | 3.8.3 | MIT |
+| prettier-plugin-tailwindcss | 0.7.4 | MIT |
+| qrcode.react | 4.2.0 | ISC |
+| radix-ui | 1.4.3 | MIT |
+| react | 19.2.3 | MIT |
+| react-dom | 19.2.3 | MIT |
+| react-dropzone | 15.0.0 | MIT |
+| react-native | 0.85.3 | MIT |
+| react-native-gesture-handler | 2.31.2 | MIT |
+| react-native-reanimated | 4.3.1 | MIT |
+| react-native-safe-area-context | 5.7.0 | MIT |
+| react-native-screens | 4.25.2 | MIT |
+| react-native-svg | 15.15.4 | MIT |
+| react-native-web | 0.21.2 | MIT |
+| react-native-worklets | 0.8.3 | MIT |
+| remotion | 4.0.496 | SEE LICENSE IN LICENSE.md |
+| shadcn | 4.7.0 | MIT |
+| shiki | 4.0.2 | MIT |
+| sonner | 2.0.7 | MIT |
+| streamdown | 2.5.0 | Apache-2.0 |
+| tailwind-merge | 3.5.0 | MIT |
+| tailwindcss | 4.2.4 | MIT |
+| tar | 7.5.22 | BlueOak-1.0.0 |
+| thinking-orbs | 0.3.1 | MIT |
+| tippy.js | 6.3.7 | MIT |
+| tokenlens | 1.3.1 | MIT |
+| tw-animate-css | 1.4.0 | MIT |
+| typescript | 5.9.3 | Apache-2.0 |
+| typescript | 6.0.3 | Apache-2.0 |
+| typescript-eslint | 8.59.2 | MIT |
+| use-stick-to-bottom | 1.1.4 | MIT |
+| vite | 7.3.5 | MIT |
+| vitest | 4.1.5 | MIT |
+| wait-on | 8.0.5 | MIT |
+| ws | 8.21.0 | MIT |
+| zod | 4.3.6 | MIT |
+| zustand | 5.0.13 | MIT |

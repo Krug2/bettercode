@@ -1,0 +1,395 @@
+.canvas-runtime {
+  container-type: inline-size;
+}
+.runtime-surface {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--background);
+  box-shadow: inset 0 0 0 1px
+    color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+.runtime-tabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+  padding: 0 10px;
+  box-shadow: inset 0 -1px color-mix(in srgb, var(--border) 70%, transparent);
+}
+.runtime-tabs > button {
+  position: relative;
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  height: 42px;
+  padding: 0 5px;
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 500;
+  transition:
+    color 120ms,
+    background-color 120ms;
+}
+.runtime-tabs > button:hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+}
+.runtime-tabs > button[aria-selected="true"] {
+  color: var(--foreground);
+}
+.runtime-tabs > button[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--foreground);
+}
+.runtime-tabs svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+.runtime-tab-count {
+  min-width: 16px;
+  padding: 1px 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+}
+.runtime-tabpanel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.canvas-runtime button:focus-visible,
+.canvas-runtime summary:focus-visible,
+.runtime-tabpanel:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.runtime-network {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.runtime-filterbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 52px;
+  flex-shrink: 0;
+  padding: 6px 10px;
+}
+.runtime-filters {
+  display: flex;
+  gap: 2px;
+}
+.runtime-filters button {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  transition:
+    color 120ms,
+    background-color 120ms;
+}
+.runtime-filters button[aria-pressed="true"] {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+.runtime-filters button:hover {
+  color: var(--foreground);
+}
+.runtime-icon-button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  transition:
+    color 120ms,
+    background-color 120ms;
+}
+.runtime-icon-button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  color: var(--foreground);
+}
+.runtime-icon-button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.runtime-icon-button svg {
+  width: 14px;
+  height: 14px;
+}
+.runtime-play-icon {
+  translate: 1px 0;
+}
+.runtime-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.runtime-request-columns,
+.runtime-request-row {
+  display: grid;
+  grid-template-columns: 12px 46px minmax(0, 1fr) 40px 49px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+}
+.runtime-request-columns {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 27px;
+  background: var(--background);
+  box-shadow: 0 1px color-mix(in srgb, var(--border) 55%, transparent);
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.runtime-request-columns > :nth-last-child(-n + 2) {
+  text-align: right;
+}
+.runtime-request-row {
+  min-height: 48px;
+  cursor: pointer;
+  list-style: none;
+  transition: background-color 120ms;
+}
+.runtime-request-row::-webkit-details-marker {
+  display: none;
+}
+.runtime-request-row:hover,
+.runtime-request-detail[open] > summary {
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+}
+.runtime-request-list > li + li {
+  box-shadow: 0 -1px color-mix(in srgb, var(--border) 35%, transparent);
+}
+.runtime-chevron {
+  width: 12px;
+  height: 12px;
+  color: var(--muted-foreground);
+  transition: transform 120ms;
+}
+.runtime-request-detail[open] .runtime-chevron {
+  transform: rotate(90deg);
+}
+.runtime-method {
+  justify-self: start;
+  max-width: 100%;
+  padding: 3px 4px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  color: var(--muted-foreground);
+  font: 10px var(--font-mono);
+}
+.runtime-request-path {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 8px 0;
+}
+.runtime-request-path > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 11px var(--font-mono);
+  color: var(--foreground);
+}
+.runtime-request-path small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.runtime-status {
+  justify-self: end;
+  min-width: 30px;
+  border-radius: 4px;
+  padding: 3px 5px;
+  color: var(--muted-foreground);
+  text-align: center;
+  font: 10px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.runtime-status[data-tone="success"] {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 7%, transparent);
+}
+.runtime-status[data-tone="warning"] {
+  color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 7%, transparent);
+}
+.runtime-status[data-tone="error"],
+.runtime-request-metadata [data-tone="error"] {
+  color: var(--destructive);
+  background: color-mix(in srgb, var(--destructive) 7%, transparent);
+}
+.runtime-duration {
+  text-align: right;
+  color: var(--muted-foreground);
+  font: 10px var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.runtime-request-metadata {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px 10px;
+  margin: 0 12px 10px 32px;
+  padding: 12px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--foreground) 3%, transparent);
+  font-size: 10px;
+}
+.runtime-request-metadata dt {
+  color: var(--muted-foreground);
+}
+.runtime-request-metadata dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-mono);
+}
+.runtime-list-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 30px;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--muted-foreground);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 1px color-mix(in srgb, var(--border) 50%, transparent);
+}
+.runtime-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 28px 24px;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+.runtime-empty > svg {
+  width: 22px;
+  height: 22px;
+  opacity: 0.55;
+}
+.runtime-empty strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.runtime-empty p {
+  max-width: 250px;
+  font-size: 11px;
+  line-height: 1.7;
+  text-wrap: pretty;
+}
+.runtime-text-button {
+  min-height: 40px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: var(--foreground);
+}
+.runtime-text-button:hover {
+  background: var(--muted);
+}
+.runtime-section-title {
+  display: flex;
+  min-height: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  box-shadow: inset 0 -1px color-mix(in srgb, var(--border) 45%, transparent);
+}
+.runtime-section-title > svg {
+  width: 13px;
+  height: 13px;
+}
+.runtime-secondary {
+  margin-left: auto;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.runtime-endpoint-row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) 40px 40px;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 8px 0 12px;
+}
+.runtime-log-row {
+  padding: 7px 10px;
+  font-size: 11px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.runtime-log-row time {
+  margin-right: 10px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+.runtime-tool-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  font-size: 11px;
+}
+@container (max-width: 380px) {
+  .runtime-tab-count {
+    display: none;
+  }
+  .runtime-tabs {
+    padding-inline: 6px;
+  }
+  .runtime-tabs > button {
+    gap: 4px;
+  }
+  .runtime-request-columns,
+  .runtime-request-row {
+    grid-template-columns: 10px 42px minmax(0, 1fr) 32px 43px;
+    gap: 5px;
+    padding-inline: 8px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .canvas-runtime button,
+  .runtime-request-row,
+  .runtime-chevron {
+    transition: none;
+  }
+}

@@ -1,0 +1,81 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-debug
+dist-ssr
+*.tsbuildinfo
+*.local
+apps/mobile/.expo/  
+
+# Alternate package manager — npm is authoritative in this repo; a local
+# bun experiment should not shadow package-lock.json in CI.
+bun.lock
+bun.lockb
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+ehthumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vite-port
+/release
+# Local environment files can contain provider and release credentials.
+.env
+.env.*
+!.env.example
+# Local code-signing env (cert path + password) — never commit
+.env.signing
+/vscode-main
+/BetterC0de-dev
+/out
+# Optional local Remotion demo project. Supporting scripts remain tracked.
+/remotion/
+/.omx
+/example_code_harnesser
+/Example/
+/Another_Example
+/.tmp
+
+# Private local tooling, reports, credentials, and app state
+/.agents/
+/.claude/
+/.kilo/
+/skills-lock.json
+/harness-eval-report/
+/docs/codebase-health/
+coverage/
+.playwright/
+test-results/
+playwright-report/
+.betterc0de/
+.betterc0de-dev/
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.db-wal
+*.db-shm
+*.p12
+*.pfx
+*.key
+*.pem
+*.mobileprovision
+*.keystore
+*.jks
+credentials.json

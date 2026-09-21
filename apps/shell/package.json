@@ -1,0 +1,11 @@
+{
+  "name": "@betterc0de/shell",
+  "version": "0.1.0-beta.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "main.cjs",
+  "description": "Electron main + preload + IPC handlers for BetterC0de.",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

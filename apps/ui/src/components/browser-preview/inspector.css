@@ -1,0 +1,61 @@
+.preview-inspector {
+  display: flex;
+  flex: 0 0 320px;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  background: var(--sidebar);
+  color: var(--foreground);
+}
+.preview-inspector-tabs {
+  display: flex;
+  flex-shrink: 0;
+  gap: 2px;
+  margin: 10px 12px;
+  padding: 3px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--input) 40%, transparent);
+}
+.preview-inspector-tabs > button {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 30px;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 120ms, color 120ms;
+}
+.preview-inspector-tabs > button[aria-selected="true"] {
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: 0 1px 3px #0000000a;
+}
+.preview-inspector-selection { padding: 8px 12px 10px; border-bottom: 1px solid color-mix(in srgb, var(--border) 65%, transparent); }
+.preview-inspector-icon { display: grid; flex-shrink: 0; width: 26px; height: 26px; place-items: center; border-radius: 5px; color: var(--muted-foreground); }
+.preview-inspector-icon:hover { background: var(--muted); color: var(--foreground); }
+.preview-inspector-search { display: flex; height: 32px; align-items: center; gap: 7px; padding: 0 9px; border: 1px solid var(--border); border-radius: 7px; background: color-mix(in srgb, var(--background) 45%, transparent); }
+.preview-inspector-search input { width: 100%; min-width: 0; background: transparent; outline: none; font-size: 11px; }
+.preview-inspector-search input::placeholder { color: var(--muted-foreground); }
+.preview-inspector-search:focus-within { border-color: var(--ring); }
+.preview-inspector-search button { display: grid; width: 22px; height: 26px; flex-shrink: 0; place-items: center; color: var(--muted-foreground); }
+.preview-inspector-scroll { min-height: 0; flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-color: auto; }
+.preview-inspector-scroll::-webkit-scrollbar { width: 8px; }
+.preview-inspector-scroll::-webkit-scrollbar-thumb { background: var(--border); border: 2px solid var(--sidebar); border-radius: 8px; }
+.preview-inspector-scroll::-webkit-scrollbar-track { background: transparent; }
+.preview-inspector-scroll::-webkit-scrollbar-button { display: none; height: 0; }
+.preview-element-row { position: relative; display: flex; align-items: center; gap: 7px; min-width: 0; min-height: 40px; margin: 1px 6px; padding: 4px 6px; border-radius: 6px; cursor: pointer; color: var(--foreground); transition: background-color 120ms; }
+.preview-element-row:hover { background: color-mix(in srgb, var(--muted) 55%, transparent); }
+.preview-element-row.is-selected { background: var(--muted); }
+.preview-element-row.is-selected::before { content: ""; position: absolute; top: 9px; bottom: 9px; left: 0; width: 2px; border-radius: 2px; background: var(--foreground); }
+.preview-element-row:focus-visible, .preview-inspector button:focus-visible { outline: 1px solid var(--ring); outline-offset: -1px; }
+.preview-element-tag { display: inline-block; flex-shrink: 0; min-width: 28px; max-width: 76px; overflow: hidden; text-align: center; text-overflow: ellipsis; white-space: nowrap; padding: 2px 5px; border-radius: 4px; background: color-mix(in srgb, var(--foreground) 5%, transparent); font-family: var(--font-mono); font-size: 10px; line-height: 16px; }
+.preview-element-toggle { display: grid; width: 24px; height: 28px; flex-shrink: 0; place-items: center; border-radius: 4px; color: var(--muted-foreground); }
+.preview-element-toggle:hover:not(:disabled) { background: color-mix(in srgb, var(--foreground) 7%, transparent); color: var(--foreground); }
+.preview-inspector-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 36px 28px; color: var(--muted-foreground); text-align: center; font-size: 12px; line-height: 1.6; }
+@supports not selector(::-webkit-scrollbar) { .preview-inspector-scroll { scrollbar-width: thin; scrollbar-color: var(--border) transparent; } }
