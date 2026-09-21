@@ -20,6 +20,10 @@ runs:
   steps:
     - name: Build application
       shell: bash
+      env:
+        # Vite's production bundle can exceed Node's default ~2 GiB heap on
+        # hosted macOS runners while rendering the Monaco worker chunks.
+        NODE_OPTIONS: --max-old-space-size=4096
       run: |
         npm run build
         npm run smoke:backend
