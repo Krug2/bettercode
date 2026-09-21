@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="https://betterc0de.com">Website</a> ·
-  <a href="https://betterc0de.com/download">Download</a> ·
+  <a href="#download">Download</a> ·
   <a href="GETTING_STARTED.md">Getting started</a> ·
   <a href="https://discord.gg/bettercode">Discord</a>
 </p>
@@ -45,9 +45,24 @@ Open a project, choose an available provider, and describe what you want to buil
 - **Review with confidence.** Inspect staged and unstaged changes through the Git and Diff views.
 - **Make it your own.** Adjust appearance, panel layouts, and separate windows to suit your working style.
 
+## Download
+
+BetterC0de is free during the beta. The links always serve the latest build.
+
+> **Open source at the end of September 2026.** The full source code will be published in this repository. Until then this repo holds the documentation and brand assets, and the beta ships as installers only.
+
+| Platform | Requirements | Download |
+| --- | --- | --- |
+| **Windows** | Windows 10 / 11, 64-bit | [Download `.exe`](https://betterc0de.com/download?os=win) |
+| **macOS · Apple Silicon** | M1 or newer | [Download `.dmg`](https://betterc0de.com/download?os=mac&arch=arm64) |
+| **macOS · Intel** | Intel-based Mac | [Download `.dmg`](https://betterc0de.com/download?os=mac&arch=x64) |
+| **Linux** | — | Coming soon |
+
+Not sure which Mac you have? Open **About This Mac** — an "Apple M…" chip means Apple Silicon. Or just use [betterc0de.com/download](https://betterc0de.com/download), which picks the right build for your system.
+
 ## Start here
 
-1. Visit the [official website](https://betterc0de.com) for available downloads.
+1. [Download](#download) BetterC0de for your platform.
 2. Install BetterC0de and connect a supported AI provider.
 3. Open a project folder and start your first conversation.
 4. Review the resulting files and changes in your workspace.
@@ -66,8 +81,8 @@ Follow the [getting-started guide](GETTING_STARTED.md) for a walkthrough without
 
 Visit [betterc0de.com](https://betterc0de.com) for product information, join the [Discord community](https://discord.gg/bettercode), or read the [terms and data information](https://betterc0de.com/terms#data).
 
-BetterC0de is in beta. Available installers and features may vary by release. AI provider access, usage limits, and billing depend on the provider you connect. The app also sends a periodic heartbeat and diagnostic reports; see [Diagnostics and data](PRODUCT_GUIDE.md#diagnostics-and-data).
+BetterC0de is in beta and will be open-sourced at the end of September 2026. Available installers and features may vary by release. AI provider access, usage limits, and billing depend on the provider you connect. The app also sends a periodic heartbeat and diagnostic reports; see [Diagnostics and data](PRODUCT_GUIDE.md#diagnostics-and-data).
 
 ---
 
-<p align="center"><strong>BetterC0de</strong><br>Your next idea starts in your workspace.</p>
+<p align="center"><strong>BetterC0de</strong><br>Your next idea starts in your workspace.<br><sub>Free during beta · Open source end of September 2026 · Built by <a href="https://kerim0x1.com">kerim0x1</a></sub></p>

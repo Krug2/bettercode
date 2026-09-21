@@ -6,9 +6,19 @@ Get from installation to your first reviewed change. This guide describes the de
 
 ## 1. Get the app
 
-Visit [betterc0de.com](https://betterc0de.com) and choose an available download for your computer. Run the installer, follow its prompts, and open BetterC0de.
+Download the installer for your computer, run it, follow its prompts, and open BetterC0de.
 
-Use the website to check current platform availability. If a macOS release offers separate versions, choose Apple Silicon for an M-series Mac or Intel for an Intel-based Mac. Your Mac's **About This Mac** screen identifies its processor.
+| Platform | Download |
+| --- | --- |
+| Windows 10 / 11 (64-bit) | [betterc0de.com/download?os=win](https://betterc0de.com/download?os=win) |
+| macOS — Apple Silicon (M1 or newer) | [betterc0de.com/download?os=mac&arch=arm64](https://betterc0de.com/download?os=mac&arch=arm64) |
+| macOS — Intel | [betterc0de.com/download?os=mac&arch=x64](https://betterc0de.com/download?os=mac&arch=x64) |
+| Linux | Coming soon |
+
+[betterc0de.com/download](https://betterc0de.com/download) without parameters detects your system and serves the matching build. On a Mac, **About This Mac** identifies the processor: an "Apple M…" chip is Apple Silicon, anything else is Intel.
+
+**Windows:** SmartScreen may warn about an unrecognized publisher while the beta is unsigned — choose *More info → Run anyway*.
+**macOS:** If Gatekeeper blocks the first launch, right-click the app and choose *Open*, or allow it under **System Settings → Privacy & Security**.
 
 ## 2. Connect a provider
 
