@@ -14,7 +14,8 @@
 <p align="center">
   <a href="https://betterc0de.com">Website</a> ·
   <a href="#download">Download</a> ·
-  <a href="GETTING_STARTED.md">Getting started</a> ·
+  <a href="https://betterc0de.com/docs">Docs</a> ·
+  <a href="https://betterc0de.com/blog">Blog</a> ·
   <a href="https://discord.gg/bettercode">Discord</a>
 </p>
 
@@ -76,6 +77,12 @@ Follow the [getting-started guide](GETTING_STARTED.md) for a walkthrough without
 | [Getting started](GETTING_STARTED.md) | Installation, provider setup, your first task, and troubleshooting. |
 | [How BetterC0de works](PRODUCT_GUIDE.md) | Workspace concepts, everyday workflows, and diagnostic data. |
 | [Brand guide](BRAND.md) | The name, logo, visual direction, and reusable product descriptions. |
+
+## Build and contribute
+
+The application source, mobile companion, tests, and build tools are included in this repository. Start with the [development guide](docs/development/README.md) for local setup and platform builds. Read [Contributing](CONTRIBUTING.md), [Security](SECURITY.md), and [third-party notices](THIRD_PARTY_NOTICES.md) before submitting changes or distributing a build.
+
+The project license is awaiting the owner's selection. See [public-source readiness](docs/open-source-readiness.md) for remaining publication checks.
 
 ## Stay connected
 
