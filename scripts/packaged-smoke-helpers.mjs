@@ -1,4 +1,26 @@
-import { rm } from "node:fs/promises"
+import { rm, stat } from "node:fs/promises"
+
+export async function findPackagedExecutableFiles(files, platform, readStat = stat) {
+  const matches = []
+  for (const file of files) {
+    const value = file.replaceAll("\\", "/")
+    const name = value.slice(value.lastIndexOf("/") + 1)
+    if (platform === "win32") {
+      if (/\/win[^/]*-unpacked\/[^/]+\.exe$/i.test(value) &&
+          !/(uninstall|elevate|helper|crashpad)/i.test(name)) matches.push(file)
+    } else if (platform === "darwin") {
+      if (/\/mac[^/]*\/[^/]+\.app\/Contents\/MacOS\/[^/]+$/i.test(value)) matches.push(file)
+    } else if (
+      /\/linux[^/]*-unpacked\/[^/]+$/i.test(value) &&
+      !/(chrome-sandbox|crashpad|\.so(?:\.|$)|\.pak$|\.bin$|\.dat$)/i.test(name)
+    ) {
+      // LICENSE, LICENSES.chromium.html and version sit beside the binary.
+      // Only executable files are application candidates on Linux.
+      if (((await readStat(file)).mode & 0o111) !== 0) matches.push(file)
+    }
+  }
+  return matches
+}
 
 const DEVTOOLS_ENDPOINT_PATTERN = /DevTools listening on (ws:\/\/[^\s]+)/g
 const RETRYABLE_DIRECTORY_REMOVAL_CODES = new Set([

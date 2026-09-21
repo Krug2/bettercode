@@ -5,6 +5,7 @@ import { constants as fsConstants } from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import {
+  findPackagedExecutableFiles,
   parseDevToolsWebSocketUrl,
   removeDirectoryWithRetries,
   selectRendererTarget,
@@ -122,27 +123,7 @@ if (successMessage) process.stdout.write(successMessage)
 
 async function findPackagedApplication(directory) {
   const files = await walk(directory)
-  const normalized = files.map((file) => ({
-    file,
-    value: file.replaceAll("\\", "/"),
-  }))
-  const matches = normalized.filter(({ file, value }) => {
-    if (process.platform === "win32") {
-      return (
-        /\/win[^/]*-unpacked\/[^/]+\.exe$/i.test(value) &&
-        !/(uninstall|elevate|helper|crashpad)/i.test(path.basename(file))
-      )
-    }
-    if (process.platform === "darwin") {
-      return /\/mac[^/]*\/[^/]+\.app\/Contents\/MacOS\/[^/]+$/i.test(value)
-    }
-    return (
-      /\/linux[^/]*-unpacked\/[^/]+$/i.test(value) &&
-      !/(chrome-sandbox|crashpad|\.so(?:\.|$)|\.pak$|\.bin$|\.dat$)/i.test(
-        path.basename(file)
-      )
-    )
-  })
+  const matches = await findPackagedExecutableFiles(files, process.platform)
   if (matches.length === 0) {
     throw new Error(`No packaged executable found below ${directory}`)
   }
@@ -153,12 +134,12 @@ async function findPackagedApplication(directory) {
   }
   const [match] = matches
   if (process.platform !== "win32") {
-    await access(match.file, fsConstants.X_OK)
+    await access(match, fsConstants.X_OK)
   }
 
-  const packageRoot = packagedRootForExecutable(match.file)
+  const packageRoot = packagedRootForExecutable(match)
   return {
-    executable: match.file,
+    executable: match,
     packageRoot,
     resourcesDir:
       process.platform === "darwin"

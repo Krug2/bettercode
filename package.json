@@ -354,7 +354,8 @@
         "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-win32/**",
         "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/arm64-win32/**",
         "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-darwin/**",
-        "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/arm64-darwin/**"
+        "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/arm64-darwin/**",
+        "!**/node_modules/@anthropic-ai/claude-agent-sdk-linux-*-musl{,/**/*}"
       ]
     },
     "nsis": {
