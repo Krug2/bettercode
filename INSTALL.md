@@ -49,6 +49,14 @@ npm ci --no-audit --no-fund
 
 `npm ci` installs exactly what is recorded in `package-lock.json`. The root `postinstall` hook rebuilds `better-sqlite3` for the active Node runtime. A clean install can take several minutes because the repository contains desktop, mobile, and Electron dependencies.
 
+On macOS or Linux, the repository also includes a checked-in setup helper:
+
+```sh
+./setup.sh
+```
+
+It checks Node.js and npm, installs the lockfile dependencies, confirms that the local TypeScript binary exists, and verifies workspace versions. It never requires a global TypeScript installation. Windows users can run the commands in this section from PowerShell.
+
 For CI or another environment that intentionally rebuilds native modules later, skip only the postinstall hook:
 
 ```sh
@@ -183,4 +191,3 @@ The second command must succeed before running the backend or desktop app.
 ## Local data
 
 Development data is stored under `~/.betterc0de-dev` by default. Packaged builds use `~/.betterc0de`. Set `BETTERC0DE_HOME` to use a separate profile for migration or testing work.
-
