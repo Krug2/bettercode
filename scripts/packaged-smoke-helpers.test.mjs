@@ -1,11 +1,52 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 import {
+  findPackagedExecutableFiles,
   parseDevToolsWebSocketUrl,
   removeDirectoryWithRetries,
   selectRendererTarget,
   validateRendererSnapshot,
 } from "./packaged-smoke-helpers.mjs"
+
+test("Linux smoke selects the executable, not adjacent licenses or Chromium helpers", async () => {
+  const root = "/release/linux-unpacked/"
+  const modes = {
+    betterc0de: 0o755,
+    LICENSE: 0o644,
+    "LICENSES.chromium.html": 0o644,
+    version: 0o644,
+    "chrome-sandbox": 0o4755,
+    chrome_crashpad_handler: 0o755,
+    "libEGL.so": 0o755,
+    "libvk_swiftshader.so": 0o755,
+    "resources.pak": 0o644,
+    "resources/app.asar.unpacked/claude": 0o755,
+  }
+  const files = Object.keys(modes).map((name) => root + name)
+  const readStat = async (file) => ({ mode: modes[file.slice(root.length)] })
+  assert.deepEqual(await findPackagedExecutableFiles(files, "linux", readStat), [root + "betterc0de"])
+  modes.betterc0de = 0o644
+  assert.deepEqual(await findPackagedExecutableFiles(files, "linux", readStat), [])
+})
+
+test("package discovery retains multiple architectures for the ambiguity check", async () => {
+  const files = ["/release/linux-unpacked/betterc0de", "/release/linux-arm64-unpacked/betterc0de"]
+  assert.deepEqual(await findPackagedExecutableFiles(files, "linux", async () => ({ mode: 0o755 })), files)
+})
+
+test("Windows and macOS package discovery selects only the main executable", async () => {
+  assert.deepEqual(await findPackagedExecutableFiles([
+    "C:\\release\\win-unpacked\\BetterC0de.exe",
+    "C:\\release\\win-unpacked\\elevate.exe",
+    "C:\\release\\win-unpacked\\resources\\claude.exe",
+  ], "win32"), ["C:\\release\\win-unpacked\\BetterC0de.exe"])
+  const binary = "/release/mac-arm64/BetterC0de.app/Contents/MacOS/BetterC0de"
+  assert.deepEqual(await findPackagedExecutableFiles([
+    binary,
+    "/release/mac-arm64/BetterC0de.app/Contents/Resources/app.asar",
+    "/release/mac-arm64/BetterC0de.app/Contents/Frameworks/Helper.app/Contents/MacOS/Helper",
+  ], "darwin"), [binary])
+})
 
 test("extracts the Chromium DevTools browser endpoint from diagnostics", () => {
   assert.equal(

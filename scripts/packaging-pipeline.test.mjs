@@ -7,7 +7,7 @@ import test from "node:test"
 const require = createRequire(import.meta.url)
 const { createSubprocessRunner, main: packageMain, buildSigningMetadataArgs } = require("./pack-electron.cjs")
 const { configureBuildCommand, normalizeOptions } = require("electron-builder/out/builder")
-const { getMainFileMatchers } = require("app-builder-lib/out/fileMatcher")
+const { getMainFileMatchers, getNodeModuleFileMatcher } = require("app-builder-lib/out/fileMatcher")
 const {
   getConfig: loadElectronBuilderConfig,
 } = require("app-builder-lib/out/util/config/config")
@@ -116,6 +116,34 @@ test("effective Windows files stay allowlisted after electron-builder normalizat
       true,
       `Windows package allowlist unexpectedly excludes ${required}`
     )
+  }
+})
+
+test("Linux dependency packaging keeps the glibc Claude binary and excludes musl copies", async () => {
+  const config = await loadElectronBuilderConfig(root, null, null)
+  const matcher = getNodeModuleFileMatcher(
+    root,
+    path.join(root, ".packaging-test-app"),
+    (pattern) => pattern,
+    config.linux,
+    { config, debugLogger: { isEnabled: false } }
+  )
+  const filter = matcher.createFilter()
+  // The official Electron Linux build uses glibc. npm installs both libc
+  // variants of the SDK, adding an unused ~216 MiB binary without this filter.
+  for (const prefix of ["node_modules", "apps/backend/node_modules"]) {
+    for (const arch of ["x64", "arm64"]) {
+      const base = `${prefix}/@anthropic-ai/claude-agent-sdk-linux-${arch}`
+      for (const file of ["package.json", "claude"]) {
+        assert.equal(isIncludedByMatchers([matcher], `${base}/${file}`), true)
+        assert.equal(isIncludedByMatchers([matcher], `${base}-musl/${file}`), false)
+      }
+      assert.equal(
+        filter(path.resolve(root, `${base}-musl`), { isDirectory: () => true }),
+        false,
+        "the unused package directory must be pruned during traversal"
+      )
+    }
   }
 })
 

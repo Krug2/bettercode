@@ -168,7 +168,9 @@
     "react-native-svg": "15.15.4",
     "metro": "0.84.5",
     "metro-config": "0.84.5",
-    "metro-transform-worker": "0.84.5"
+    "metro-transform-worker": "0.84.5",
+    "react-native-reanimated": "4.3.1",
+    "react-native-worklets": "0.8.3"
   },
   "build": {
     "appId": "com.betterc0de.ide",
@@ -352,7 +354,8 @@
         "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-win32/**",
         "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/arm64-win32/**",
         "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/x64-darwin/**",
-        "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/arm64-darwin/**"
+        "!**/@anthropic-ai/claude-agent-sdk/vendor/ripgrep/arm64-darwin/**",
+        "!**/node_modules/@anthropic-ai/claude-agent-sdk-linux-*-musl{,/**/*}"
       ]
     },
     "nsis": {
