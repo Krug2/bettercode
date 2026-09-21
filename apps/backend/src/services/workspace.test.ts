@@ -96,9 +96,14 @@ let previousBetterC0deTestManagedPreferencesFile: string | undefined
 let previousTestBetterC0deShell: string | undefined
 
 async function makeWorkspace(): Promise<string> {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "betterc0de-workspace-"))
+  const root = await makeCanonicalTemp("betterc0de-workspace-")
   tempRoots.push(root)
   return root
+}
+
+async function makeCanonicalTemp(prefix: string): Promise<string> {
+  const raw = await fs.mkdtemp(path.join(os.tmpdir(), prefix))
+  return await fs.realpath(raw)
 }
 
 beforeEach(async () => {
@@ -166,18 +171,10 @@ beforeEach(async () => {
   previousBetterC0deTestManagedPreferencesFile =
     process.env.BetterC0de_TEST_MANAGED_PREFERENCES_FILE
   previousTestBetterC0deShell = process.env.BETTERC0DE_TEST_BetterC0de_SHELL
-  const configRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-config-")
-  )
-  const homeRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-home-")
-  )
-  const dataRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-data-")
-  )
-  const stateRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-state-")
-  )
+  const configRoot = await makeCanonicalTemp("betterc0de-BetterC0de-config-")
+  const homeRoot = await makeCanonicalTemp("betterc0de-BetterC0de-home-")
+  const dataRoot = await makeCanonicalTemp("betterc0de-BetterC0de-data-")
+  const stateRoot = await makeCanonicalTemp("betterc0de-BetterC0de-state-")
   tempRoots.push(configRoot)
   tempRoots.push(homeRoot)
   tempRoots.push(dataRoot)

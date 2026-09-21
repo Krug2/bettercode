@@ -15,7 +15,9 @@ afterEach(() => {
 })
 
 function fixture() {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "betterc0de-remote-web-"))
+  const root = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "betterc0de-remote-web-"))
+  )
   directories.push(root)
   fs.mkdirSync(path.join(root, "assets"))
   fs.writeFileSync(

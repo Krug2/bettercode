@@ -329,9 +329,9 @@ describe("native provider text generation", () => {
   })
 
   it("waits for a timed-out native provider process tree to exit", async () => {
-    const root = await fs.mkdtemp(
+    const root = await fs.realpath(await fs.mkdtemp(
       path.join(os.tmpdir(), "betterc0de-native-tree-")
-    )
+    ))
     const pidFile = path.join(root, "descendant.pid")
     const scriptPath = path.join(root, "codex-runner.cjs")
     const binaryPath =
@@ -395,9 +395,9 @@ describe("native provider text generation", () => {
   })
 
   it("terminates a running native provider process tree when shutdown aborts it", async () => {
-    const root = await fs.mkdtemp(
+    const root = await fs.realpath(await fs.mkdtemp(
       path.join(os.tmpdir(), "betterc0de-native-shutdown-tree-")
-    )
+    ))
     const pidFile = path.join(root, "descendant.pid")
     const scriptPath = path.join(root, "codex-runner.cjs")
     const binaryPath =
@@ -467,9 +467,9 @@ describe("native provider text generation", () => {
   }, 15_000)
 
   it("drains a local compatibility server that is still starting", async () => {
-    const root = await fs.mkdtemp(
+    const root = await fs.realpath(await fs.mkdtemp(
       path.join(os.tmpdir(), "betterc0de-native-server-startup-")
-    )
+    ))
     const pidFile = path.join(root, "server.pid")
     const scriptPath = path.join(root, "server.cjs")
     const binaryPath =

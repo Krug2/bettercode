@@ -204,8 +204,7 @@ function sameFileIdentity(left: Stats, right: Stats): boolean {
   if (process.platform === "win32") {
     return (
       left.size === right.size &&
-      left.mtimeMs === right.mtimeMs &&
-      left.birthtimeMs === right.birthtimeMs
+      left.mtimeMs === right.mtimeMs
     )
   }
   if (left.ino !== 0 || right.ino !== 0) {
