@@ -209,96 +209,14 @@ function isSurvivorError(error: unknown): boolean {
 }
 
 /**
- * Seed a fresh temporary index by copying the repository's real index.
- *
- * `read-tree HEAD` produced an index with no stat data, so the following
- * `add -A` re-hashed every file in the worktree on every checkpoint — on a
- * large repo that is seconds per turn. The real index carries git's stat
- * cache, so unchanged files are skipped by mtime/size/inode instead of
- * content. `add -A` still brings the copy to the exact worktree state
- * (staged and unstaged changes alike), so the resulting tree is identical.
- *
- * The copy also carries the user's assume-unchanged and skip-worktree bits,
- * and `add -A` honours them: a flagged path is never re-stat'ed, so the
- * snapshot would record the index blob (HEAD's content) instead of the
- * worktree's local edit — and a later restore + undo would then destroy that
- * edit. The bits are cleared on the copy only (every call below runs with
- * `GIT_INDEX_FILE` pointing at it); the user's real index is never written.
- *
- * Returns false when there is nothing to copy (bare repository, no index
- * yet, copy failed) or the bits could not be cleared; the caller then falls
- * back to `read-tree HEAD`, which is slow but records the worktree faithfully.
- */
-async function seedTemporaryIndexFromRepository(
-  cwd: string,
-  tempIndexPath: string,
-  gitOptions: { env: NodeJS.ProcessEnv; timeoutMs: number }
-): Promise<boolean> {
-  try {
-    const { stdout } = await gitRun(cwd, [
-      "rev-parse",
-      "--is-bare-repository",
-      "--git-path",
-      "index",
-    ])
-    const [bare, indexPathRaw] = stdout.split("\n").map((line) => line.trim())
-    if (bare === "true" || !indexPathRaw) return false
-    const indexPath = path.isAbsolute(indexPathRaw)
-      ? indexPathRaw
-      : path.resolve(cwd, indexPathRaw)
-    await fs.promises.copyFile(indexPath, tempIndexPath)
-  } catch {
-    return false
-  }
-  try {
-    await clearIndexRefreshSuppressionBits(cwd, gitOptions)
-    return true
-  } catch (error) {
-    if (isSurvivorError(error)) throw error
-    removeTemporaryIndex(tempIndexPath)
-    return false
-  }
-}
-
-/**
- * Clear assume-unchanged (`h`, lowercase tag) and skip-worktree (`S`) on
- * every entry of the index `gitOptions.env.GIT_INDEX_FILE` points at, so a
- * following `add -A` re-stats those paths like any other.
- *
- * Two separate `update-index` calls on purpose: `--no-assume-unchanged` and
- * `--no-skip-worktree` are mutually exclusive inside update-index (the first
- * one handled returns early and the other is silently ignored — measured on
- * git 2.49), so one combined call left the skip-worktree bit in place.
- */
-async function clearIndexRefreshSuppressionBits(
-  cwd: string,
-  gitOptions: { env: NodeJS.ProcessEnv; timeoutMs: number }
-): Promise<void> {
-  const { stdout } = await gitRun(cwd, ["ls-files", "-v", "-z"], gitOptions)
-  const assumeUnchanged: string[] = []
-  const skipWorktree: string[] = []
-  for (const entry of stdout.split("\0")) {
-    if (entry.length < 3 || entry[1] !== " ") continue
-    const tag = entry[0]
-    const filePath = entry.slice(2)
-    if (tag !== tag.toUpperCase()) assumeUnchanged.push(filePath)
-    if (tag === "S" || tag === "s") skipWorktree.push(filePath)
-  }
-  for (const [flag, paths] of [
-    ["--no-assume-unchanged", assumeUnchanged],
-    ["--no-skip-worktree", skipWorktree],
-  ] as const) {
-    if (paths.length === 0) continue
-    await gitRun(cwd, ["update-index", flag, "-z", "--stdin"], {
-      ...gitOptions,
-      input: paths.map((filePath) => `${filePath}\0`).join(""),
-    })
-  }
-}
-
-/**
  * Bring `tempIndexPath` to the worktree state and return its tree oid.
  * `alreadySeeded` skips seeding for an index a previous snapshot prepared.
+ *
+ * A fresh snapshot starts from `HEAD` instead of copying the user's index.
+ * Git's index stat cache can treat a rapid same-size rewrite as unchanged on
+ * filesystems with coarse timestamp resolution; rebuilding from `HEAD` makes
+ * `add -A` hash the worktree and keeps checkpoint diffs exact. The temporary
+ * index still leaves the user's staged state untouched.
  */
 async function writeWorktreeTree(
   cwd: string,
@@ -314,27 +232,8 @@ async function writeWorktreeTree(
       await gitRun(cwd, ["read-tree", "HEAD"], gitOptions)
     }
   }
-  let seededFromRepository = false
-  if (!options.alreadySeeded) {
-    seededFromRepository = await seedTemporaryIndexFromRepository(
-      cwd,
-      tempIndexPath,
-      gitOptions
-    )
-    if (!seededFromRepository) await seedFromHead()
-  }
-
-  try {
-    await gitRun(cwd, ["add", "-A", "--", "."], gitOptions)
-  } catch (error) {
-    // A copied index git cannot load (split-index base in another gitdir,
-    // an index format this git does not read) must not fail the
-    // checkpoint: rebuild from HEAD and try once more.
-    if (!seededFromRepository || isSurvivorError(error)) throw error
-    removeTemporaryIndex(tempIndexPath)
-    await seedFromHead()
-    await gitRun(cwd, ["add", "-A", "--", "."], gitOptions)
-  }
+  if (!options.alreadySeeded) await seedFromHead()
+  await gitRun(cwd, ["add", "-A", "--", "."], gitOptions)
   const { stdout: treeStdout } = await gitRun(cwd, ["write-tree"], gitOptions)
   const treeOid = treeStdout.trim()
   if (!treeOid) throw new Error("git write-tree returned an empty tree oid")
