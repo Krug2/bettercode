@@ -79,3 +79,4 @@ playwright-report/
 *.keystore
 *.jks
 credentials.json
+*.[mM][dD]
