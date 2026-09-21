@@ -41,3 +41,60 @@ function asOptionIds(
 ): ReadonlyArray<string> {
   return typeof optionId === "string" ? [optionId] : optionId
 }
+
+export function runtimeModeForTurn(
+  input: Pick<ProviderSendTurnInput, "chatMode" | "permissionLevel">
+): string | undefined {
+  switch ((input.chatMode ?? "").trim().toLowerCase()) {
+    case "plan":
+      return "plan"
+    case "ask":
+      return "read-only"
+    case "security":
+      return "security"
+  }
+  switch ((input.permissionLevel ?? "").trim().toLowerCase()) {
+    case "bypass":
+    case "full-access":
+      return "full-access"
+    case "full":
+    case "allow-edits":
+    case "auto-accept-edits":
+      return "auto-accept-edits"
+    case "read-only":
+    case "read":
+      return "read-only"
+    case "ask":
+    case "ask-on-edit":
+    case "approval-required":
+      return "approval-required"
+    default:
+      return undefined
+  }
+}
+
+export function normalizeRuntimeMode(value: string | null | undefined): string | null {
+  if (typeof value !== "string") return null
+  switch (value.trim().toLowerCase()) {
+    case "plan":
+      return "plan"
+    case "security":
+      return "security"
+    case "bypass":
+    case "full-access":
+      return "full-access"
+    case "full":
+    case "allow-edits":
+    case "auto-accept-edits":
+      return "auto-accept-edits"
+    case "read-only":
+    case "read":
+      return "read-only"
+    case "ask":
+    case "ask-on-edit":
+    case "approval-required":
+      return "approval-required"
+    default:
+      return null
+  }
+}

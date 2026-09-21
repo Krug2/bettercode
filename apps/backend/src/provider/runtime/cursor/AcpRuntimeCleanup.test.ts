@@ -15,7 +15,8 @@ describe("ACP runtime cleanup retention", () => {
       .mockRejectedValueOnce(cleanupFailure)
       .mockResolvedValueOnce(undefined)
     const runtime = createCursorAcpRuntime({
-      settings: { binaryPath: "cursor-agent" },
+      // Spawning is mocked, but the spawn-input guard requires an absolute path.
+      settings: { binaryPath: process.execPath },
       cwd: process.cwd(),
       clientInfo: { name: "test", version: "0.0.0" },
     })

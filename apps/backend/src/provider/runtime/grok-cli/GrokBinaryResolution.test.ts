@@ -35,7 +35,8 @@ describe("resolveGrokBinary", () => {
     const dir = makeTempDir("betterc0de-grok-relative-")
     const binary = path.join(dir, "grok.exe")
     fs.writeFileSync(binary, "fake binary")
-    const relative = path.relative(process.cwd(), binary)
+    // Keep this test independent of Windows long-path/8.3 alias formatting.
+    const relative = "grok.exe"
     expect(resolveGrokBinary(relative)).toBeNull()
     await expect(resolveGrokBinaryAsync(relative)).resolves.toBeNull()
   })

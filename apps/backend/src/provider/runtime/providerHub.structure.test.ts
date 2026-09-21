@@ -48,8 +48,9 @@ const PROVIDER_HUB_EXPORTS = [
 ] as const
 
 // Ratchet: lower it when you extract more, never raise it to fit new code.
-// Split plan baseline: 4 674 lines before the split; 4 040 after (f)–(d).
-const PROVIDER_HUB_MAX_LINES = 4_050
+// Split plan baseline: 4 674 lines before the split; 4 040 after (f)–(d);
+// 3 975 after moving binding recovery and runtime-mode resolution out.
+const PROVIDER_HUB_MAX_LINES = 3_990
 
 const EXTRACTED_MODULES = [
   "HubAuditLog.ts",
@@ -57,6 +58,8 @@ const EXTRACTED_MODULES = [
   "ProviderCatalogs.ts",
   "ProviderMaintenanceCoordinator.ts",
   "ProviderMetadataCache.ts",
+  "ProviderSessionRecovery.ts",
+  "providerTurnOptions.ts",
 ] as const
 
 describe("ProviderHub structure", () => {
@@ -97,6 +100,11 @@ describe("ProviderHub structure", () => {
     // Catalogs: the hub never reads a workspace policy file itself.
     expect(hub).not.toMatch(/listProjectProviders/)
     expect(hub).not.toMatch(/isRuntimeProviderAllowedByProjectPolicy/)
+    // Session recovery: binding selection is pure and lives beside the store.
+    expect(hub).not.toMatch(/function selectRecoveryBinding\(/)
+    expect(hub).not.toMatch(/function findConflictingProviderBinding\(/)
+    expect(hub).not.toMatch(/function isResumableBinding\(/)
+    expect(hub).not.toMatch(/function normalizeRuntimeMode\(/)
     // Maintenance: update bookkeeping lives in the coordinator.
     expect(hub).not.toMatch(/updateLockTails|runningUpdateTargets|updateStates\b/)
     expect(hub).not.toMatch(/withProviderUpdateLock/)

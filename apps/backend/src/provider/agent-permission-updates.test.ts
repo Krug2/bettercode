@@ -1,3 +1,4 @@
+import path from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { AgentPermissionPolicy } from "./agent-permission-policy"
 import { recordApprovedPermissionUpdates } from "./agent-permission-updates"
@@ -6,7 +7,10 @@ import {
   evaluateSessionRules,
 } from "./session-permission-rules"
 
-const WORKSPACE = "C:\\work\\project"
+// Absolute on every platform: `C:\work\project` on Windows, `/work/project`
+// elsewhere. A Windows literal is a relative path to POSIX `path.isAbsolute`
+// and the policy would reject the workspace outright.
+const WORKSPACE = path.resolve("/work/project")
 
 afterEach(() => {
   clearSessionRules("thread-1")

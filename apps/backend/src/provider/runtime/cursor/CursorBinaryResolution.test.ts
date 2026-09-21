@@ -53,7 +53,11 @@ describe("resolveCursorBinary", () => {
   it("rejects a relative configured path even when the file exists", () => {
     const directory = tempDir("relative")
     writeFile(directory, "cursor-agent.cmd", "#!/bin/sh\n")
-    const relative = path.relative(process.cwd(), path.join(directory, "cursor-agent.cmd"))
+    // Use a deliberately relative value. On hosted Windows runners the temp
+    // directory may be exposed through a different 8.3 alias than cwd, which
+    // makes path.relative return an absolute string despite both paths being
+    // on the same drive.
+    const relative = "cursor-agent.cmd"
     expect(path.isAbsolute(relative)).toBe(false)
     expect(resolveCursorBinary(relative)).toBeNull()
   })

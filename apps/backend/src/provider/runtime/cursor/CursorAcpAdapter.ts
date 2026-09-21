@@ -16,7 +16,10 @@ import {
 } from "./CursorAcpRuntime"
 import { registerCursorExtensions } from "./CursorAcpExtensions"
 import path from "node:path"
-import { resolveCursorBinary } from "./CursorBinaryResolution"
+import {
+  CURSOR_BINARY_NAME,
+  resolveCursorBinary,
+} from "./CursorBinaryResolution"
 
 /**
  * Cursor's `cursor-agent acp` provider. Session lifecycle, turn dispatch,
@@ -44,6 +47,11 @@ export type CursorAcpRuntimeFactory = (
  * workspace cwd before PATH, so that name would run a repository shim.
  */
 function cursorBinaryPath(options: CursorAcpAdapterOptions): string | null {
+  // Test factories bypass binary resolution (they never spawn); the real
+  // runtime must only ever receive a verified absolute path.
+  if (options.runtimeFactory) {
+    return options.binaryPath?.trim() || CURSOR_BINARY_NAME
+  }
   const resolved = resolveCursorBinary(options.binaryPath)
   if (!resolved) return null
   const absolute = path.resolve(resolved.binaryPath)

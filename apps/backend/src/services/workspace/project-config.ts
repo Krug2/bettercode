@@ -1293,20 +1293,23 @@ export function expandHomePath(input: string): string {
 }
 
 export function formatBetterC0deConfigSourcePath(absolutePath: string): string {
-  const home = betterC0deHomeDir()
-  const relativeHome = path.relative(home, absolutePath)
+  const home = platformCanonicalAbsolutePath(betterC0deHomeDir())
+  const canonicalAbsolutePath = platformCanonicalAbsolutePath(absolutePath)
+  const relativeHome = path.relative(home, canonicalAbsolutePath)
   if (!relativeHome.startsWith("..") && !path.isAbsolute(relativeHome)) {
     return `~/${relativeHome.replace(/\\/g, "/")}`
   }
-  return absolutePath
+  return canonicalAbsolutePath
 }
 
 function formatBetterC0deDirectorySourcePath(
   workspaceRoot: string,
   absolutePath: string
 ): string {
+  const canonicalWorkspaceRoot = platformCanonicalAbsolutePath(workspaceRoot)
+  const canonicalAbsolutePath = platformCanonicalAbsolutePath(absolutePath)
   const relativeToWorkspace = path
-    .relative(path.resolve(workspaceRoot), absolutePath)
+    .relative(canonicalWorkspaceRoot, canonicalAbsolutePath)
     .replace(/\\/g, "/")
   if (
     relativeToWorkspace &&
@@ -1322,8 +1325,10 @@ export function formatBetterC0deDirectoryFileSourcePath(
   workspaceRoot: string,
   absolutePath: string
 ): string {
+  const canonicalWorkspaceRoot = platformCanonicalAbsolutePath(workspaceRoot)
+  const canonicalAbsolutePath = platformCanonicalAbsolutePath(absolutePath)
   const relativeToWorkspace = path
-    .relative(path.resolve(workspaceRoot), absolutePath)
+    .relative(canonicalWorkspaceRoot, canonicalAbsolutePath)
     .replace(/\\/g, "/")
   if (
     relativeToWorkspace &&

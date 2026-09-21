@@ -14,7 +14,9 @@ import {
 const cleanup: string[] = []
 
 function tempDataDir(): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "betterc0de-scratch-"))
+  const dir = fs.realpathSync.native(
+    fs.mkdtempSync(path.join(os.tmpdir(), "betterc0de-scratch-"))
+  )
   cleanup.push(dir)
   return dir
 }

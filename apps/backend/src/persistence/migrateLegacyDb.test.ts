@@ -42,7 +42,14 @@ describe("migrateLegacyDbIfNeeded", () => {
       return handle
     })
     vi.spyOn(fs, "fsyncSync").mockImplementation((handle) => {
-      if (handle === markerHandle) throw new Error("simulated marker flush failure")
+      // Fail only the marker's own flush. Once that handle is closed the OS
+      // reuses its descriptor number (the POSIX directory fsync in
+      // syncDirectory is the first candidate), so a plain equality check
+      // would also fail the lock release and mask the error under test.
+      if (handle === markerHandle) {
+        markerHandle = undefined
+        throw new Error("simulated marker flush failure")
+      }
       originalFlush(handle)
     })
     expect(() => migrateLegacyDbIfNeeded(targetPath)).toThrow("simulated marker flush failure")

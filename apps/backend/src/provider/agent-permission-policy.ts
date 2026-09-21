@@ -1,4 +1,5 @@
 import os from "node:os"
+import fsSync from "node:fs"
 import path from "node:path"
 import { randomUUID } from "node:crypto"
 import type {
@@ -609,9 +610,24 @@ export function normalizeWorkspaceRoot(workspacePath: string): string {
     throw new AgentPermissionInputError("Workspace path must be absolute.")
   }
   const resolved = path.resolve(trimmed)
-  const root = path.parse(resolved).root
+  // Windows can expose the same directory through a long path and its 8.3
+  // short alias. Canonicalize existing roots before using them as persistence
+  // keys so an opened folder and a later request address the same workspace.
+  const canonical =
+    process.platform === "win32"
+      ? (() => {
+          try {
+            return fsSync.realpathSync.native(resolved)
+          } catch {
+            return resolved
+          }
+        })()
+      : resolved
+  const root = path.parse(canonical).root
   const withoutTrailingSeparators =
-    resolved.length > root.length ? resolved.replace(/[\\/]+$/, "") : resolved
+    canonical.length > root.length
+      ? canonical.replace(/[\\/]+$/, "")
+      : canonical
   return process.platform === "win32"
     ? withoutTrailingSeparators.toLowerCase()
     : withoutTrailingSeparators

@@ -124,7 +124,9 @@ describe("buildProjectFormatterSpawn", () => {
 describe("formatter trust and staging cleanup", () => {
   let root: string
   beforeEach(() => {
-    root = fs.mkdtempSync(path.join(os.tmpdir(), "betterc0de-fmt-lifecycle-"))
+    root = fs.realpathSync.native(
+      fs.mkdtempSync(path.join(os.tmpdir(), "betterc0de-fmt-lifecycle-"))
+    )
     fs.mkdirSync(path.join(root, ".git"))
     vi.stubEnv("BetterC0de_TEST_HOME", path.join(root, "home"))
     vi.stubEnv("BETTERC0DE_TEST_MANAGED_CONFIG_DIR", path.join(root, "managed"))

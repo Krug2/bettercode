@@ -96,9 +96,14 @@ let previousBetterC0deTestManagedPreferencesFile: string | undefined
 let previousTestBetterC0deShell: string | undefined
 
 async function makeWorkspace(): Promise<string> {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), "betterc0de-workspace-"))
+  const root = await makeCanonicalTemp("betterc0de-workspace-")
   tempRoots.push(root)
   return root
+}
+
+async function makeCanonicalTemp(prefix: string): Promise<string> {
+  const raw = await fs.mkdtemp(path.join(os.tmpdir(), prefix))
+  return await fs.realpath(raw)
 }
 
 beforeEach(async () => {
@@ -166,18 +171,10 @@ beforeEach(async () => {
   previousBetterC0deTestManagedPreferencesFile =
     process.env.BetterC0de_TEST_MANAGED_PREFERENCES_FILE
   previousTestBetterC0deShell = process.env.BETTERC0DE_TEST_BetterC0de_SHELL
-  const configRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-config-")
-  )
-  const homeRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-home-")
-  )
-  const dataRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-data-")
-  )
-  const stateRoot = await fs.mkdtemp(
-    path.join(os.tmpdir(), "betterc0de-BetterC0de-state-")
-  )
+  const configRoot = await makeCanonicalTemp("betterc0de-BetterC0de-config-")
+  const homeRoot = await makeCanonicalTemp("betterc0de-BetterC0de-home-")
+  const dataRoot = await makeCanonicalTemp("betterc0de-BetterC0de-data-")
+  const stateRoot = await makeCanonicalTemp("betterc0de-BetterC0de-state-")
   tempRoots.push(configRoot)
   tempRoots.push(homeRoot)
   tempRoots.push(dataRoot)
@@ -2998,14 +2995,17 @@ describe("workspace BetterC0de execution config", () => {
     expect(result.results[0]).toMatchObject({ success: true, exitCode: 0 })
     await expect(fs.readFile(original, "utf8")).resolves.toBe("STAGED ONLY\n")
     const observed = await fs.readFile(observedPath, "utf8")
-    const relativeToWorkspace = path.relative(root, observed)
+    const relativeToWorkspace = path.relative(
+      await fs.realpath(root),
+      path.join(await fs.realpath(path.dirname(observed)), path.basename(observed))
+    )
     expect(
       relativeToWorkspace === "" ||
         (!relativeToWorkspace.startsWith("..") &&
           !path.isAbsolute(relativeToWorkspace))
     ).toBe(true)
     expect(path.resolve(observed)).not.toBe(path.resolve(original))
-    expect(path.resolve(path.dirname(observed))).toBe(path.resolve(root))
+    expect(await fs.realpath(path.dirname(observed))).toBe(await fs.realpath(root))
     expect(path.basename(observed)).toMatch(
       /^\.betterc0de-format-[0-9a-f-]+\.txt$/i
     )
@@ -3081,14 +3081,24 @@ describe("workspace BetterC0de execution config", () => {
     expect(path.basename(observed.staged)).toMatch(
       /^\.betterc0de-format-[0-9a-f-]+\.ts$/i
     )
-    expect(path.resolve(path.dirname(observed.staged))).toBe(
-      path.resolve(nested)
+    expect(await fs.realpath(path.dirname(observed.staged))).toBe(
+      await fs.realpath(nested)
     )
     expect(path.resolve(observed.staged)).not.toBe(path.resolve(original))
-    expect(path.resolve(observed.cwd)).toBe(path.resolve(root))
+    expect(await fs.realpath(observed.cwd)).toBe(await fs.realpath(root))
     expect(observed.configFound).toBe(true)
     expect(observed.stagedConfig).toBe("nested-config")
-    expect(path.relative(root, observed.staged).startsWith("..")).toBe(false)
+    expect(
+      path
+        .relative(
+          await fs.realpath(root),
+          path.join(
+            await fs.realpath(path.dirname(observed.staged)),
+            path.basename(observed.staged)
+          )
+        )
+        .startsWith("..")
+    ).toBe(false)
     await expect(fs.access(observed.staged)).rejects.toMatchObject({
       code: "ENOENT",
     })

@@ -23,9 +23,9 @@ function tempWorkspace(label: string): {
   workspace: string
   dbPath: string
 } {
-  const directory = fs.mkdtempSync(
+  const directory = fs.realpathSync.native(fs.mkdtempSync(
     path.join(os.tmpdir(), `betterc0de-agent-permissions-${label}-`)
-  )
+  ))
   cleanupDirectories.push(directory)
   const workspace = path.join(directory, "workspace")
   fs.mkdirSync(workspace)
