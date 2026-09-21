@@ -197,10 +197,21 @@ async function openRegularFileNoFollow(
 }
 
 function sameFileIdentity(left: Stats, right: Stats): boolean {
+  // Windows file-index values are not stable across a lstat/open pair on all
+  // hosted filesystems (notably the Actions workspace). The size and times
+  // still protect against a replacement while avoiding false 404s for valid
+  // static assets.
+  if (process.platform === "win32") {
+    return (
+      left.size === right.size &&
+      left.mtimeMs === right.mtimeMs &&
+      left.birthtimeMs === right.birthtimeMs
+    )
+  }
   if (left.ino !== 0 || right.ino !== 0) {
     return (
       left.ino === right.ino
-      && (process.platform === "win32" || left.dev === right.dev)
+      && left.dev === right.dev
     )
   }
   return (

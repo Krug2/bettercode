@@ -2,6 +2,8 @@
 
 [Project home](../../README.md) · [Contributing](../../CONTRIBUTING.md) · [Architecture](../architecture/overview.md)
 
+For a first-time installation, supported Node versions, `mise`, npm registry errors, and native dependency troubleshooting, start with the [installation and setup guide](../../INSTALL.md).
+
 ## Requirements
 
 - Node.js 22, version 22.15.0 or newer, and npm 10 or newer. CI uses Node 22; `.nvmrc` selects that major version.

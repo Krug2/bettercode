@@ -80,7 +80,7 @@ Follow the [getting-started guide](GETTING_STARTED.md) for a walkthrough without
 
 ## Build and contribute
 
-The application source, mobile companion, tests, and build tools are included in this repository. Start with the [development guide](docs/development/README.md) for local setup and platform builds. Read [Contributing](CONTRIBUTING.md), [Security](SECURITY.md), and [third-party notices](THIRD_PARTY_NOTICES.md) before submitting changes or distributing a build.
+The application source, mobile companion, tests, and build tools are included in this repository. Start with the [installation and setup guide](INSTALL.md), then use the [development guide](docs/development/README.md) for local workflows and platform builds. Read [Contributing](CONTRIBUTING.md), [Security](SECURITY.md), and [third-party notices](THIRD_PARTY_NOTICES.md) before submitting changes or distributing a build.
 
 BetterC0de source is released under the MIT License. Third-party terms stay with their owners; see [third-party notices](THIRD_PARTY_NOTICES.md).
 

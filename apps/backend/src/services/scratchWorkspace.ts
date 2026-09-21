@@ -1,3 +1,4 @@
+import fsSync from "node:fs"
 import fs from "node:fs/promises"
 import path from "node:path"
 
@@ -79,8 +80,8 @@ export function isScratchWorkspacePath(
 ): boolean {
   const base = dataDir?.trim()
   if (!base) return false
-  const root = path.resolve(scratchWorkspaceRoot(base))
-  const resolved = path.resolve(candidate)
+  const root = canonicalPath(scratchWorkspaceRoot(base))
+  const resolved = canonicalPath(candidate)
   if (resolved === root) return true
   const relative = path.relative(root, resolved)
   return (
@@ -88,6 +89,16 @@ export function isScratchWorkspacePath(
     !relative.startsWith("..") &&
     !path.isAbsolute(relative)
   )
+}
+
+function canonicalPath(value: string): string {
+  const resolved = path.resolve(value)
+  if (process.platform !== "win32") return resolved
+  try {
+    return fsSync.realpathSync.native(resolved)
+  } catch {
+    return resolved
+  }
 }
 
 export interface ScratchCopyResult {

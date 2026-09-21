@@ -13,6 +13,12 @@ import {
 
 const SPACE_PATH = "C:\\Users\\developer\\My Projects\\app";
 
+// `DetectDeps.platform` steers target selection, but path handling stays on
+// the host: `IS_WIN` is fixed at module load and POSIX `path.isAbsolute`
+// rejects `C:\...`. Assertions that resolve Windows install paths therefore
+// only hold on a Windows host.
+const itOnWindows = it.runIf(process.platform === "win32");
+
 function winDeps(overrides: Partial<DetectDeps> = {}): DetectDeps {
   return {
     pathExists: async () => false,
@@ -52,7 +58,7 @@ describe("detectOpenTargets", () => {
     expect(byId.get("git-bash")?.available).toBe(false);
   });
 
-  it("resolves via known install paths without a PATH lookup", async () => {
+  itOnWindows("resolves via known install paths without a PATH lookup", async () => {
     const codePath = path.join(
       "C:\\Users\\developer\\AppData\\Local",
       "Programs",
@@ -253,7 +259,7 @@ describe("buildLaunchInvocation", () => {
     }
   });
 
-  it("keeps a space-containing path as one argv element for editors", async () => {
+  itOnWindows("keeps a space-containing path as one argv element for editors", async () => {
     const inv = await buildLaunchInvocation(
       "vscode",
       SPACE_PATH,
@@ -279,7 +285,7 @@ describe("buildLaunchInvocation", () => {
     expect(inv.options.cwd).toBe(SPACE_PATH);
   });
 
-  it("terminal prefers wt with -d <path>", async () => {
+  itOnWindows("terminal prefers wt with -d <path>", async () => {
     const inv = await buildLaunchInvocation(
       "terminal",
       SPACE_PATH,
@@ -289,7 +295,7 @@ describe("buildLaunchInvocation", () => {
     expect(inv.args).toEqual(["-d", SPACE_PATH]);
   });
 
-  it("wsl prefers Windows Terminal when it is resolved", async () => {
+  itOnWindows("wsl prefers Windows Terminal when it is resolved", async () => {
     const inv = await buildLaunchInvocation(
       "wsl",
       SPACE_PATH,
@@ -313,7 +319,7 @@ describe("buildLaunchInvocation", () => {
     expect(inv.options.windowsVerbatimArguments).toBe(true);
   });
 
-  it("resolves legacy ids through the alias map", async () => {
+  itOnWindows("resolves legacy ids through the alias map", async () => {
     const inv = await buildLaunchInvocation(
       "explorer",
       SPACE_PATH,
