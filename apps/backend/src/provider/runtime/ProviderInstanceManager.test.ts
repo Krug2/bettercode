@@ -582,7 +582,9 @@ describe("ProviderInstanceManager", () => {
     const settings = settingsSchema.parse({
       providers: {
         cursor: {
-          binaryPath: "node",
+          // Binary resolution only accepts real absolute files — the running
+          // node executable is a convenient guaranteed-real path.
+          binaryPath: process.execPath,
           apiEndpoint: "http://127.0.0.1:3939",
           custom_models: ["cursor/custom"],
         },

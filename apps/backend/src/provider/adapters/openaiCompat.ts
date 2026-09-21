@@ -459,7 +459,7 @@ export class OpenAiCompatAdapter extends BaseProviderAdapter {
               },
             })
           } else {
-            const res = mcpSession.has(call.name)
+            const res = mcpSession?.has(call.name)
               ? await mcpSession.execute(call.name, parsedInput, {
                   signal: controller.signal,
                   limits,

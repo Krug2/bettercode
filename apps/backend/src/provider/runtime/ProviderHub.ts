@@ -35,7 +35,14 @@ import type {
   ProviderSessionBinding,
   ProviderSessionBindingStore,
 } from "./ProviderSessionBindingStore"
-import { isProviderSessionContinuationCompatible } from "./ProviderSessionBindingStore"
+import {
+  findConflictingProviderBinding,
+  selectRecoveryBinding,
+} from "./ProviderSessionRecovery"
+import {
+  normalizeRuntimeMode,
+  runtimeModeForTurn,
+} from "./providerTurnOptions"
 import type { EventNdjsonLogger } from "./EventNdjsonLogger"
 import { HubAuditLog } from "./HubAuditLog"
 import {
@@ -3742,116 +3749,6 @@ function providerKindFromDriverAlias(
   return kind === "codex_cli" ? "codex" : kind
 }
 
-function selectRecoveryBinding(input: {
-  readonly bindings: ProviderSessionBindingStore
-  readonly thread: ThreadId
-  readonly providerKind: ProviderKind
-  readonly providerInstanceId: string
-  readonly continuationKey: string | null
-  readonly directBinding: ProviderSessionBinding | null
-}): ProviderSessionBinding | null {
-  const listBindings = (
-    input.bindings as ProviderSessionBindingStore & {
-      list?: () => ProviderSessionBinding[]
-    }
-  ).list
-  const allBindings = listBindings
-    ? listBindings.call(input.bindings)
-    : input.directBinding
-      ? [input.directBinding]
-      : []
-  const getThreadGeneration = (
-    input.bindings as ProviderSessionBindingStore & {
-      getThreadGeneration?: (threadId: string) => number
-    }
-  ).getThreadGeneration
-  const currentGeneration = getThreadGeneration
-    ? getThreadGeneration.call(input.bindings, input.thread)
-    : Math.max(
-        0,
-        ...allBindings
-          .filter((binding) => binding.threadId === input.thread)
-          .map((binding) => binding.generation ?? 0)
-      )
-  if (
-    isResumableBinding(input.directBinding) &&
-    isProviderSessionContinuationCompatible(input.directBinding, input) &&
-    (input.directBinding.generation ?? 0) === currentGeneration
-  ) {
-    return input.directBinding
-  }
-  const candidates = allBindings
-    .filter(
-      (binding) =>
-        binding.threadId === input.thread &&
-        binding.providerKind === input.providerKind &&
-        binding.providerInstanceId !== input.providerInstanceId &&
-        isProviderSessionContinuationCompatible(binding, input) &&
-        (binding.generation ?? 0) === currentGeneration &&
-        isResumableBinding(binding)
-    )
-  return candidates[candidates.length - 1] ?? null
-}
-
-function findConflictingProviderBinding(input: {
-  readonly bindings?: ProviderSessionBindingStore
-  readonly threadId: string
-  readonly providerKind: ProviderKind
-}): ProviderSessionBinding | null {
-  const bindings =
-    input.bindings && typeof input.bindings.list === "function"
-      ? input.bindings.list()
-      : []
-  const getThreadGeneration = (
-    input.bindings as
-      | (ProviderSessionBindingStore & {
-          getThreadGeneration?: (threadId: string) => number
-        })
-      | undefined
-  )?.getThreadGeneration
-  const currentGeneration = getThreadGeneration
-    ? getThreadGeneration.call(input.bindings, input.threadId)
-    : Math.max(
-        0,
-        ...bindings
-          .filter((binding) => binding.threadId === input.threadId)
-          .map((binding) => binding.generation ?? 0)
-      )
-  return (
-    bindings.find(
-      (binding) =>
-        binding.threadId === input.threadId &&
-        binding.providerKind !== input.providerKind &&
-        (binding.generation ?? 0) === currentGeneration &&
-        isCurrentProviderBinding(binding)
-    ) ?? null
-  )
-}
-
-function isCurrentProviderBinding(binding: ProviderSessionBinding): boolean {
-  if (
-    binding.providerThreadId !== null ||
-    binding.resumeCursor !== null ||
-    binding.activeTurnId !== null
-  ) {
-    return true
-  }
-  return (
-    binding.status === "starting" ||
-    binding.status === "ready" ||
-    binding.status === "running" ||
-    binding.status === "closing"
-  )
-}
-
-function isResumableBinding(
-  binding: ProviderSessionBinding | null
-): binding is ProviderSessionBinding {
-  return (
-    !!binding && (binding.resumeCursor != null || !!binding.providerThreadId)
-  )
-}
-
 function isProviderMetadataChangedEvent(event: ProviderRuntimeEvent): boolean {
   if (event.type === "provider.metadata.changed") return true
   if (event.type !== "config.warning" || !("payload" in event)) return false
@@ -4011,63 +3908,6 @@ function combineProviderTurnFailures(
     defined,
     "Provider turn finalization encountered multiple failures"
   )
-}
-
-function runtimeModeForTurn(
-  input: Pick<ProviderSendTurnInput, "chatMode" | "permissionLevel">
-): string | undefined {
-  switch ((input.chatMode ?? "").trim().toLowerCase()) {
-    case "plan":
-      return "plan"
-    case "ask":
-      return "read-only"
-    case "security":
-      return "security"
-  }
-  switch ((input.permissionLevel ?? "").trim().toLowerCase()) {
-    case "bypass":
-    case "full-access":
-      return "full-access"
-    case "full":
-    case "allow-edits":
-    case "auto-accept-edits":
-      return "auto-accept-edits"
-    case "read-only":
-    case "read":
-      return "read-only"
-    case "ask":
-    case "ask-on-edit":
-    case "approval-required":
-      return "approval-required"
-    default:
-      return undefined
-  }
-}
-
-function normalizeRuntimeMode(value: string | null | undefined): string | null {
-  if (typeof value !== "string") return null
-  switch (value.trim().toLowerCase()) {
-    case "plan":
-      return "plan"
-    case "security":
-      return "security"
-    case "bypass":
-    case "full-access":
-      return "full-access"
-    case "full":
-    case "allow-edits":
-    case "auto-accept-edits":
-      return "auto-accept-edits"
-    case "read-only":
-    case "read":
-      return "read-only"
-    case "ask":
-    case "ask-on-edit":
-    case "approval-required":
-      return "approval-required"
-    default:
-      return null
-  }
 }
 
 function publicProviderStatusMessage(input: {

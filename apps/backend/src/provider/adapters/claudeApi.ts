@@ -502,7 +502,7 @@ export class ClaudeApiAdapter extends BaseProviderAdapter {
               },
             })
           } else {
-            const res = mcpSession.has(tu.name)
+            const res = mcpSession?.has(tu.name)
               ? await mcpSession.execute(tu.name, tu.input, {
                   signal: controller.signal,
                   limits,

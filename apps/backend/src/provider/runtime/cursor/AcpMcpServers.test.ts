@@ -483,7 +483,8 @@ describe("ACP MCP session payload forwarding", () => {
     const runtime =
       provider === "Cursor"
         ? createCursorAcpRuntime({
-            settings: { binaryPath: "cursor-agent" },
+            // Spawning is mocked, but the spawn-input guard requires an absolute path.
+            settings: { binaryPath: process.execPath },
             cwd,
             ...(resumeSessionId ? { resumeSessionId } : {}),
             mcpServers: servers,
