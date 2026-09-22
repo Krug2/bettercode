@@ -33,7 +33,7 @@ export function restoreWorkspace(value: unknown): { panels: WorkspacePanel[]; ca
   const finite = (value: unknown): value is number => typeof value === "number" && Number.isFinite(value) && Math.abs(value) < 1e6
   const seen = new Set<string>()
   const singles = new Set<string>()
-  const panels = (Array.isArray(data.panels) ? data.panels : []).slice(0, 100).flatMap((item: unknown): WorkspacePanel[] => {
+  const panels = (Array.isArray(data.panels) ? data.panels : []).flatMap((item: unknown): WorkspacePanel[] => {
     if (!item || typeof item !== "object") return []
     const p = item as WorkspacePanel
     if (typeof p.id !== "string" || !p.id || seen.has(p.id) || !Object.hasOwn(workspaceDefaults, p.kind) || ![p.x, p.y, p.width, p.height].every(finite)) return []
@@ -42,7 +42,7 @@ export function restoreWorkspace(value: unknown): { panels: WorkspacePanel[]; ca
       singles.add(p.kind)
     }
     seen.add(p.id)
-    return [{ id: p.id, kind: p.kind, x: p.x, y: p.y, width: Math.max(320, Math.min(2400, p.width)), height: Math.max(240, Math.min(1800, p.height)), title: typeof p.title === "string" ? p.title.slice(0, 180) : workspaceDefaults[p.kind].title, url: typeof p.url === "string" ? workspaceUrl(p.url) ?? "" : "", text: typeof p.text === "string" ? p.text.slice(0, 100_000) : "" }]
+    return [{ id: p.id, kind: p.kind, x: p.x, y: p.y, width: Math.max(320, Math.min(2400, p.width)), height: Math.max(240, Math.min(1800, p.height)), title: typeof p.title === "string" ? p.title.slice(0, 180) : workspaceDefaults[p.kind].title, url: typeof p.url === "string" ? workspaceUrl(p.url) ?? "" : "", text: typeof p.text === "string" ? p.text : "" }]
   })
   const c = data.camera as WorkspaceCamera | undefined
   const camera = c && finite(c.zoom) && finite(c.pan?.x) && finite(c.pan?.y) ? { zoom: Math.max(0.1, Math.min(4, c.zoom)), pan: { x: c.pan.x, y: c.pan.y } } : null
