@@ -7,6 +7,7 @@ import { blobTargets, fitBlobs, separateTargets } from "./graph-layout"
 import { useUsageGraphStore } from "./graph-store"
 import { useBlobScene } from "./use-blob-scene"
 import { useBlobInput } from "./use-blob-input"
+import { blobPalette } from "./blob-palette"
 import "./usage-graph.css"
 
 export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
@@ -53,7 +54,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
       <div className="usage-section-heading">
         <div>
           <h2 id="usage-explorer-title">Token explorer</h2>
-          <p>Open a blob to explore its usage. Drag it to move the whole branch.</p>
+          <p>Open a blob to explore. Larger, darker blobs mean more usage. Drag to move a branch.</p>
         </div>
         <div className="usage-actions">
           <Button variant="outline" size="sm" onClick={() => { autoFit.current = true; store.expand(nodes.filter(node => node.children.length).map(node => node.id)) }} disabled={!models.length}>Open all</Button>
@@ -71,10 +72,10 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
             <button
               key={node.id}
               type="button"
-              className={`usage-blob${node.parent ? "" : " usage-blob-root"}${node.radius < 48 ? " usage-blob-compact" : ""}`}
+              className={`usage-blob${node.parent ? "" : " usage-blob-root"}${node.radius < 48 ? " usage-blob-compact" : ""}${node.amount === null ? " usage-blob-unreported" : ""}`}
               data-blob={node.id}
               hidden
-              style={{ ...hue(node.model), "--blob-radius": `${node.radius}px`, width: node.radius * 2, height: node.radius * 2 } as CSSProperties}
+              style={{ ...hue(node.model), ...blobPalette(node.model === null ? 210 : store.colors[node.model] ?? 210, node.intensity), "--blob-radius": `${node.radius}px`, width: node.radius * 2, height: node.radius * 2 } as CSSProperties}
               ref={element => { if (element) scene.buttons.current.set(node.id, element); else scene.buttons.current.delete(node.id) }}
               aria-label={`${node.label}: ${node.value}, ${node.hint}`}
               aria-expanded={node.children.length ? store.expanded.includes(node.id) : undefined}
@@ -100,7 +101,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
         </div>
       </div>
       <div className="usage-graph-footer">
-        <p>{models.length} {models.length === 1 ? "model" : "models"} · Drag empty space to pan. Arrow keys move a focused blob.</p>
+        <p>{models.length} {models.length === 1 ? "model" : "models"} · Tokens and spend scale separately. Drag empty space to pan. Arrow keys move a focused blob.</p>
         <div className="usage-actions">
           <Button variant="ghost" size="icon" aria-label="Zoom out" onClick={() => zoom(1 / 1.25)}><MinusIcon className="size-4" /></Button>
           <span className="usage-zoom">{Math.round(store.camera.zoom * 100)}%</span>
