@@ -16,6 +16,11 @@ const repoRoot = path.resolve(__dirname, "..");
 
 const VENDORED_PACKAGES = [
   {
+    pkgDir: path.join(repoRoot, "node_modules", "@claudart", "orchestrator"),
+    sourceDir: path.join(repoRoot, "packages", "claudart-orchestrator"),
+    name: "@claudart/orchestrator",
+  },
+  {
     pkgDir: path.join(repoRoot, "node_modules", "@betterc0de", "schema"),
     sourceDir: path.join(repoRoot, "packages", "schema"),
     name: "@betterc0de/schema",
