@@ -13,3 +13,8 @@
 .workspace-usage { padding: 20px; }
 .workspace-usage > .usage-page-inner { gap: 24px; }
 .workspace-usage .usage-summary dd { font-size: 18px; }
+[data-workspace-kind="usage"] .workspace-usage { display: flex; overflow: clip; }
+[data-workspace-kind="usage"] .usage-page-inner { flex: 1; min-height: 0; width: 100%; gap: 16px; }
+[data-workspace-kind="usage"] .usage-explorer { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+[data-workspace-kind="usage"] .usage-section-heading, [data-workspace-kind="usage"] .usage-graph-footer { flex-shrink: 0; }
+[data-workspace-kind="usage"] .usage-graph-stage { flex: 1; height: auto; min-height: 0; }
