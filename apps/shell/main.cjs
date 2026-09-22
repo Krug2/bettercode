@@ -1869,7 +1869,7 @@ function attachWebviewPolicy(contents) {
     const workspace = params?.partition === WORKSPACE_BROWSER_PARTITION
     const canvas = workspace || params?.partition === CANVAS_PREVIEW_PARTITION
     forcePreviewPartition(webPreferences, params, workspace ? WORKSPACE_BROWSER_PARTITION : canvas ? CANVAS_PREVIEW_PARTITION : PREVIEW_SESSION_PARTITION)
-    webPreferences.additionalArguments = canvas ? ["--betterc0de-canvas-preview"] : []
+    webPreferences.additionalArguments = workspace ? ["--betterc0de-canvas-preview", "--betterc0de-workspace-browser"] : canvas ? ["--betterc0de-canvas-preview"] : []
     delete webPreferences.preload
     delete webPreferences.preloadURL
     if (canvas || isOwnPreviewPreload(requestedPreload)) {
@@ -2603,7 +2603,7 @@ app.whenReady().then(async () => {
       previewSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false))
       previewSession.setPermissionCheckHandler(() => false)
       previewSession.protocol.handle("betterc0de-html", (request) => getHtmlPreviews().handle(request))
-      installPreviewRequestCapture(previewSession, (entry) => broadcast(IpcEvent.PreviewRequest, entry))
+      if (partition !== WORKSPACE_BROWSER_PARTITION) installPreviewRequestCapture(previewSession, (entry) => broadcast(IpcEvent.PreviewRequest, entry))
     }
 
     // Must run before startBackend() so the backend fork inherits the
