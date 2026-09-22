@@ -25,6 +25,7 @@ describe("blob motion", () => {
     engine.sync(nodes, visibleNodes(nodes, open), {}, true)
     const parent = engine.bodies.get("model:a")!, child = engine.bodies.get("model:a:input")!
     const original = { x: child.x, y: child.y }, target = { ...child.target }
+    const neighbor = { ...engine.bodies.get("model:b")!.target }
     engine.moveBranch(parent.node.id, { x: parent.x + 200, y: parent.y + 100 })
     expect(child.x).toBe(original.x)
     expect(child.target).toEqual({ x: target.x + 200, y: target.y + 100 })
@@ -34,7 +35,7 @@ describe("blob motion", () => {
     restored.sync(nodes, visibleNodes(nodes, open), saved, true)
     expect(restored.bodies.get("model:a")!.target).toEqual(saved["model:a"])
     expect(restored.bodies.get("model:a:input")!.target).toEqual(saved["model:a:input"])
-    expect(saved["model:b"]).toBeUndefined()
+    expect(saved["model:b"]).toEqual(neighbor)
   })
 
   it("retracts collapsed branches and supports reduced motion", () => {
@@ -47,13 +48,16 @@ describe("blob motion", () => {
     expect([...engine.bodies.values()].every(body => body.visible && body.scale === 1 && !body.launching)).toBe(true)
   })
 
-  it("keeps deliberately overlapping saved positions anchored", () => {
+  it("allows saved blobs to yield instead of remaining overlapped", () => {
     const engine = new BlobPhysics()
     const saved = { "model:a": { x: 100, y: 100 }, "model:b": { x: 130, y: 100 } }
     engine.sync(nodes, visibleNodes(nodes, ["total"]), saved, true)
     tick(engine)
-    expect(engine.bodies.get("model:a")!.x).toBeCloseTo(100, 2)
-    expect(engine.bodies.get("model:b")!.x).toBeCloseTo(130, 2)
+    const a = engine.bodies.get("model:a")!, b = engine.bodies.get("model:b")!
+    expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan((a.node.radius + b.node.radius) * 0.9)
+    const settled = { x: a.x, y: a.y }
+    tick(engine, 100)
+    expect(Math.hypot(a.x - settled.x, a.y - settled.y)).toBeLessThan(0.01)
   })
 
   it("gently lags behind a drag and settles without moving the anchor", () => {
