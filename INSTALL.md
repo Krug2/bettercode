@@ -6,12 +6,14 @@ This guide covers both the downloadable desktop app and a local checkout for dev
 
 Download the build for your operating system from [betterc0de.com/download](https://betterc0de.com/download).
 
+The installer files are published on the repository's [GitHub Releases page](https://github.com/kerim0x1/bettercode/releases). GitHub **Packages** is for npm/container packages and does not contain the desktop `.exe`, `.dmg`, or Linux installers. A release is created when a matching `v<version>` tag is pushed; the release then contains the installer and update metadata such as `latest.yml`.
+
 | System | File |
 | --- | --- |
 | Windows 10/11, 64-bit | `.exe` installer |
 | macOS Apple Silicon | `.dmg` for `arm64` |
 | macOS Intel | `.dmg` for `x64` |
-| Linux | Linux packages are not published yet; build them from source as described below. |
+| Linux | `.AppImage`, `.deb`, `.rpm`, or `.tar.gz` package |
 
 After installation, open **Settings → Providers**, connect a supported provider, open a project folder, and start a conversation. Provider accounts, API keys, and usage limits belong to the provider you connect.
 
