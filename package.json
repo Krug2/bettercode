@@ -271,6 +271,11 @@
           "!dist/**/*.map"
         ]
       },
+      {
+        "from": "packages/claudart-orchestrator",
+        "to": "node_modules/@claudart/orchestrator",
+        "filter": ["package.json", "*.cjs", "LICENSE"]
+      },
       "THIRD_PARTY_NOTICES.md",
       "licenses/**/*",
       "LICENSE"
