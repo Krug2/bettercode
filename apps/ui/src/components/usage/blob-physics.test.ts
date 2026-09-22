@@ -55,4 +55,42 @@ describe("blob motion", () => {
     expect(engine.bodies.get("model:a")!.x).toBeCloseTo(100, 2)
     expect(engine.bodies.get("model:b")!.x).toBeCloseTo(130, 2)
   })
+
+  it("sloshes contents opposite a drag, rebounds and settles without moving the anchor", () => {
+    const engine = new BlobPhysics()
+    engine.sync(nodes, visibleNodes(nodes, []), {}, true)
+    const body = engine.bodies.get("total")!
+    engine.moveBranch("total", { x: 80, y: 40 })
+    engine.step(16.667)
+    expect(body.slosh.x).toBeLessThan(0)
+    expect(body.slosh.y).toBeLessThan(0)
+    expect(body.wobble).toBeGreaterThan(0)
+    expect(body.x).toBe(80)
+    expect(body.y).toBe(40)
+    let rebounded = false
+    for (let frame = 0; frame < 90; frame++) {
+      engine.step(16.667)
+      if (body.slosh.x > 0.1) rebounded = true
+    }
+    expect(rebounded).toBe(true)
+    engine.releaseBranch()
+    tick(engine)
+    expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThan(0.001)
+    expect(body.x).toBe(80)
+  })
+
+  it("bounds liquid motion on rapid direction changes and removes it for reduced motion", () => {
+    const engine = new BlobPhysics()
+    engine.sync(nodes, nodes, {}, true)
+    const body = engine.bodies.get("total")!
+    for (let frame = 0; frame < 120; frame++) {
+      engine.moveBranch("total", { x: frame % 2 ? 800 : -800, y: frame * 2 })
+      engine.step(frame % 2 ? 8.33 : 32)
+      expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThanOrEqual(body.node.radius * 0.16 + 1e-8)
+    }
+    engine.moveBranch("total", { x: 0, y: 0 }, true)
+    engine.step(16.667)
+    expect(body.slosh).toEqual({ x: 0, y: 0 })
+    expect(body.wobble).toBe(0)
+  })
 })
