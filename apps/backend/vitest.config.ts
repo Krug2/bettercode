@@ -8,6 +8,7 @@ export default defineConfig({
     // keep the fork pool so each worker has its own better-sqlite3 binding
     // (avoids "database is locked" flakes from shared WAL handles).
     pool: "forks",
+    maxWorkers: process.platform === "win32" ? 2 : 4,
     // Well above the default 5s. A large part of this suite spawns real
     // processes (git, the ACP stdio client, shell helpers), and on Windows a
     // spawn under parallel load routinely takes several seconds — long enough
