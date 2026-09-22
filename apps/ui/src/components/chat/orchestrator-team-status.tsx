@@ -8,6 +8,7 @@ import {
   CircleAlertIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { ProviderIcon } from "@/components/provider-icon"
 import { OrchestratorContext } from "./orchestrator-context"
 import { useProviders } from "@/hooks/use-providers"
@@ -51,12 +52,28 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
   )
   const session = snapshot?.threadId === rootId ? snapshot : null
   const [error, setError] = useState<string | null>(null)
-  const [stopping, setStopping] = useState(false)
+  const [failure, setFailure] = useState<{
+    threadId: string
+    message: string
+  } | null>(null)
+  const actionError = failure?.threadId === rootId ? failure.message : null
+  const [action, setAction] = useState<"stop" | "resume" | null>(null)
+  const [clarification, setClarification] = useState({
+    workflowId: "",
+    text: "",
+  })
+  const draft =
+    clarification.workflowId === session?.workflow?.id ? clarification.text : ""
+  const pending = useRef(false)
+  const currentRoot = useRef(rootId)
   const [reload, setReload] = useState(0)
   const revision = useRef(0)
   const mounted = useRef(false)
   const providers = useProviders(session?.projectPath)
   const choices = teamModelChoices(providers)
+  useEffect(() => {
+    currentRoot.current = rootId
+  }, [rootId])
   useEffect(() => {
     if (session) restoreOrchestrationSelection(session)
     if (
@@ -73,6 +90,10 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
     const controller = new AbortController()
     let timer: ReturnType<typeof setTimeout> | undefined
     async function refresh() {
+      if (pending.current) {
+        timer = setTimeout(() => void refresh(), 2500)
+        return
+      }
       const current = ++revision.current
       try {
         let next = await getOrchestratorStatus(rootId, controller.signal)
@@ -119,12 +140,18 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
   ])
 
   async function stop() {
-    if (stopping || !session) return
-    setStopping(true)
-    ++revision.current
+    if (pending.current || !session) return
+    pending.current = true
+    setAction("stop")
+    setFailure(null)
+    const current = ++revision.current
     try {
       const next = await stopOrchestrator(session.threadId)
-      if (mounted.current) {
+      if (
+        mounted.current &&
+        currentRoot.current === rootId &&
+        current === revision.current
+      ) {
         setSnapshot(next)
         useChatStore
           .getState()
@@ -134,32 +161,73 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
         setError(null)
       }
     } catch {
-      if (mounted.current)
-        setError(
-          "Could not stop every task. Retry or open the worker chat to stop it."
-        )
+      if (
+        mounted.current &&
+        currentRoot.current === rootId &&
+        current === revision.current
+      )
+        setFailure({
+          threadId: rootId,
+          message:
+            "Could not stop every task. Retry or open the worker chat to stop it.",
+        })
     } finally {
+      pending.current = false
       if (mounted.current) {
-        setStopping(false)
+        setAction(null)
         setReload((value) => value + 1)
       }
     }
   }
 
   async function resume() {
-    if (stopping || !session) return
-    setStopping(true)
+    if (pending.current || !session) return
+    pending.current = true
+    setAction("resume")
+    setFailure(null)
+    const current = ++revision.current
     try {
-      const next = await resumeOrchestrator(session.threadId)
-      if (mounted.current) {
+      const next = await resumeOrchestrator(
+        session.threadId,
+        draft.trim() || undefined
+      )
+      if (
+        mounted.current &&
+        currentRoot.current === rootId &&
+        current === revision.current
+      ) {
         setSnapshot(next)
-        if (next.coordinator === "jev") useChatStore.getState().setThreadSetting(next.threadId, "orchestration", { enabled: true, coordinator: "jev", providers: next.allowedProviders, ...(next.selectedModels ? { models: next.selectedModels } : {}) })
+        setClarification({ workflowId: next.workflow?.id ?? "", text: "" })
+        if (next.coordinator === "jev")
+          useChatStore
+            .getState()
+            .setThreadSetting(next.threadId, "orchestration", {
+              enabled: true,
+              coordinator: "jev",
+              providers: next.allowedProviders,
+              ...(next.selectedModels ? { models: next.selectedModels } : {}),
+            })
         setError(null)
       }
-    } catch {
-      if (mounted.current) setError("Could not resume this workflow. Check its handoff and worker selection.")
+    } catch (failure) {
+      if (
+        mounted.current &&
+        currentRoot.current === rootId &&
+        current === revision.current
+      )
+        setFailure({
+          threadId: rootId,
+          message:
+            failure instanceof HttpError
+              ? failure.message
+              : "Could not resume this workflow. Check its handoff and worker selection.",
+        })
     } finally {
-      if (mounted.current) { setStopping(false); setReload(value => value + 1) }
+      pending.current = false
+      if (mounted.current) {
+        setAction(null)
+        setReload((value) => value + 1)
+      }
     }
   }
 
@@ -196,10 +264,10 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
           <Button
             size="sm"
             variant="ghost"
-            disabled={stopping}
+            disabled={action !== null}
             onClick={() => void stop()}
           >
-            {stopping ? "Stopping…" : "Stop agents"}
+            {action === "stop" ? "Stopping…" : "Stop agents"}
           </Button>
         )}
       </div>
@@ -211,7 +279,11 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
             {main?.label ?? session.team.main.modelId}
           </span>
         </span>
-        <span>{session.coordinator === "jev" ? "· Jev coordinates" : "· Chooses models and tasks"}</span>
+        <span>
+          {session.coordinator === "jev"
+            ? "· Jev coordinates"
+            : "· Chooses models and tasks"}
+        </span>
         {threadId !== rootId && (
           <Button
             size="sm"
@@ -226,16 +298,63 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
       </div>
       {session.workflow && (
         <div className="border-t border-border/40 px-4 py-3 text-xs">
-          <p className="font-medium">Jev · {session.workflow.status} · {session.workflow.active?.phase ?? session.workflow.records.at(-1)?.phase ?? "Ready"}</p>
-          <p className="mt-1 text-muted-foreground">{session.workflow.error ?? session.workflow.records.at(-1)?.result.summary ?? "Investigation, planning, implementation and review share a saved handoff."}</p>
-          {["failed", "cancelled", "interrupted"].includes(session.workflow.status) && (
-            <Button size="sm" variant="ghost" className="mt-2" disabled={stopping} onClick={() => void resume()}>Resume from handoff</Button>
+          <p className="font-medium">
+            Jev · {session.workflow.status} ·{" "}
+            {session.workflow.active?.phase ??
+              session.workflow.records.at(-1)?.phase ??
+              "Ready"}
+          </p>
+          <p className="mt-1 whitespace-pre-wrap text-muted-foreground">
+            {session.workflow.records.at(-1)?.result.summary ??
+              "Investigation, planning, implementation and review share a saved handoff."}
+          </p>
+          {session.workflow.error && (
+            <p className="mt-1 text-muted-foreground">
+              {session.workflow.error}
+            </p>
+          )}
+          {["blocked", "failed", "cancelled", "interrupted"].includes(
+            session.workflow.status
+          ) && (
+            <div className="mt-3 space-y-2">
+              <label className="block space-y-1">
+                <span>Clarification</span>
+                <Textarea
+                  value={draft}
+                  maxLength={4000}
+                  disabled={action !== null}
+                  placeholder="Add missing information or explain what changed."
+                  onChange={(event) =>
+                    setClarification({
+                      workflowId: session.workflow!.id,
+                      text: event.target.value,
+                    })
+                  }
+                />
+              </label>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={
+                  action !== null ||
+                  (session.workflow.records.at(-1)?.result.verdict ===
+                    "blocked" &&
+                    !draft.trim())
+                }
+                onClick={() => void resume()}
+              >
+                {action === "resume" ? "Resuming…" : "Resume from handoff"}
+              </Button>
+            </div>
           )}
         </div>
       )}
       {!session.jobs.length ? (
         <p className="px-4 pb-4 text-xs text-muted-foreground">
-          {session.coordinator === "jev" ? "Jev will select a worker for the next phase." : "Your main model will delegate when useful."} Change the allowed providers in + → Orchestration.
+          {session.coordinator === "jev"
+            ? "Jev will select a worker for the next phase."
+            : "Your main model will delegate when useful."}{" "}
+          Change the allowed providers in + → Orchestration.
         </p>
       ) : (
         <div className="max-h-72 overflow-y-auto border-t border-border/40">
@@ -306,9 +425,9 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
         session={session}
         onChange={() => setReload((value) => value + 1)}
       />
-      {error && (
+      {(actionError || error) && (
         <p role="alert" className="px-4 py-3 text-xs text-destructive">
-          {error}
+          {actionError || error}
         </p>
       )}
     </section>

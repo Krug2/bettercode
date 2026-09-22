@@ -11,8 +11,8 @@ export const getOrchestratorStatus = (threadId: string, signal?: AbortSignal) =>
   })
 export const stopOrchestrator = (threadId: string) =>
   invokeContract("orchestratorStop", { body: { threadId } })
-export const resumeOrchestrator = (threadId: string) =>
-  invokeContract("orchestratorResume", { body: { threadId } })
+export const resumeOrchestrator = (threadId: string, clarification?: string) =>
+  invokeContract("orchestratorResume", { body: { threadId, clarification } })
 export const grantOrchestratorContext = (body: OrchestratorContextGrant) =>
   invokeContract("orchestratorContextGrant", { body })
 export const readOrchestratorContext = (
