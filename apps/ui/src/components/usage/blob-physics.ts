@@ -87,6 +87,7 @@ export class BlobPhysics {
     for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
       const a = bodies[i], b = bodies[j]
       if (!a.visible || !b.visible || a.closing || b.closing) continue
+      if ((a.node.parent === b.node.id && a.scale < 0.8) || (b.node.parent === a.node.id && b.scale < 0.8)) continue
       const dx = b.x - a.x || 0.01, dy = b.y - a.y || 0.01, distance = Math.hypot(dx, dy)
       const gap = (a.node.radius * a.scale + b.node.radius * b.scale) * 1.04 + 5
       if (distance >= gap) continue
