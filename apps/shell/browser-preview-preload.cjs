@@ -7,6 +7,7 @@
 const { ipcRenderer, contextBridge, webFrame } = require("electron");
 
 const IS_MAC = process.platform === "darwin";
+const WORKSPACE_BROWSER = process.argv.includes("--betterc0de-workspace-browser");
 
 ipcRenderer.on("workspace-open-url", (_event, url) => {
   if (typeof url === "string" && /^https?:\/\//i.test(url)) ipcRenderer.sendToHost("workspace-open-url", url);
@@ -151,13 +152,15 @@ function injectDialogOverrides() {
 }
 
 // ── Run early injections ─────────────────────────────────────────────────────
-injectLocalNetworkPolyfill();
-injectDialogOverrides();
+if (!WORKSPACE_BROWSER) {
+  injectLocalNetworkPolyfill();
+  injectDialogOverrides();
+}
 
 // ── Keyboard Shortcuts ───────────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", () => {
   // Re-inject dialog overrides after DOM ready (some SPAs reset window objects)
-  injectDialogOverrides();
+  if (!WORKSPACE_BROWSER) injectDialogOverrides();
 
   // Alt+Click on links opens in side group
   document.addEventListener("click", (e) => {
@@ -168,7 +171,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!href || href.startsWith("javascript:")) return;
     e.preventDefault();
     e.stopPropagation();
-    ipcRenderer.sendToHost("open-url-side-group", { url: href });
+    if (WORKSPACE_BROWSER) ipcRenderer.sendToHost("workspace-open-url", href);
+    else ipcRenderer.sendToHost("open-url-side-group", { url: href });
   }, true);
 });
 
@@ -234,6 +238,7 @@ document.addEventListener("keydown", (e) => {
   }
 
   if (shortcut) {
+    if (WORKSPACE_BROWSER && ["undo", "redo", "select-all", "copy", "paste", "cut"].includes(shortcut)) return;
     e.preventDefault();
     ipcRenderer.sendToHost("keyboard-shortcut", { shortcut });
   }

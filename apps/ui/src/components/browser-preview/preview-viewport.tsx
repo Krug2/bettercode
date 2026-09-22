@@ -216,7 +216,7 @@ export const PreviewViewport = forwardRef<
       if (canvas) wv.setZoomFactor(1)
       callbacksRef.current.onLoadingChange?.(false)
       // Inject the inspector script (uses window.cursorBrowser.send exposed by preload)
-      wv.executeJavaScript(INJECT_SCRIPT_WEBVIEW).catch(() => { /* Expected: webview may not be ready for JS injection */ })
+      if (!workspace) wv.executeJavaScript(INJECT_SCRIPT_WEBVIEW).catch(() => { /* Expected: webview may not be ready for JS injection */ })
     }
     const onStart = () => { callbacksRef.current.onLoadingChange?.(true); callbacksRef.current.onLoadError?.(null) }
     const onStop = () => callbacksRef.current.onLoadingChange?.(false)
@@ -369,6 +369,7 @@ export const PreviewViewport = forwardRef<
           tabIndex={selectionMode ? -1 : 0}
           ref={webviewRef as React.RefObject<HTMLWebViewElement>}
           src={url}
+          allowpopups={workspace ? "true" : undefined}
           className="size-full border-0 bg-background"
           style={{ display: "inline-flex" }}
           preload={webviewPreload || undefined}

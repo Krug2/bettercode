@@ -48,6 +48,9 @@ export function WorkspaceBrowser({ panel, interactive, onShortcut, onOpenUrl }: 
         else if (key === "reload-page") reload()
         else if (key === "navigate-back") viewport.current?.goBackInPage()
         else if (key === "navigate-forward") viewport.current?.goForwardInPage()
+        else if (key === "new-browser-tab") onOpenUrl("")
+        else if (key === "close-browser-tab") useCanvasWorkspaceStore.getState().remove(panel.id)
+        else if (key === "open-devtools") viewport.current?.openDevTools()
         else onShortcut(key)
       }} /></div> : <div className="flex flex-1 flex-col items-center justify-center gap-4 text-muted-foreground">
         <GlobeIcon size={30} strokeWidth={1.2} />
