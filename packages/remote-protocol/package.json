@@ -1,0 +1,13 @@
+{
+  "name": "@betterc0de/remote-protocol",
+  "version": "0.1.0-beta.2",
+  "private": true,
+  "type": "commonjs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  }
+}
