@@ -30,6 +30,12 @@ module.exports = Object.freeze({
    */
   BACKEND_STARTUP_TIMEOUT_MS: 30_000,
   /**
+   * Time to the first heartbeat in a spawned backend. Cold module loading is
+   * synchronous and can exceed the idle budget on a busy Windows machine.
+   * Once the first heartbeat arrives, BACKEND_STARTUP_TIMEOUT_MS takes over.
+   */
+  BACKEND_STARTUP_INITIAL_TIMEOUT_MS: 120_000,
+  /**
    * Absolute backend startup bound, including crash-recovery work. This must
    * exceed the backend's bounded 120-second checkpoint Git operation while
    * remaining finite even if a child keeps emitting heartbeats.

@@ -6,9 +6,12 @@
  * silent or dead child, while heartbeat pulses report event-loop liveness.
  * The hard deadline remains absolute so a live-but-stuck async startup can
  * never continue indefinitely.
+ * Before the first pulse, a separate budget covers process creation and
+ * synchronous module loading, when the child cannot emit heartbeats yet.
  */
 function createBackendStartupWatchdog({
   idleTimeoutMs,
+  initialTimeoutMs = idleTimeoutMs,
   hardTimeoutMs,
   onTimeout,
   timerApi = { setTimeout, clearTimeout },
@@ -26,6 +29,15 @@ function createBackendStartupWatchdog({
   }
   if (typeof onTimeout !== "function") {
     throw new TypeError("onTimeout must be a function")
+  }
+  if (
+    !Number.isFinite(initialTimeoutMs) ||
+    initialTimeoutMs < idleTimeoutMs ||
+    initialTimeoutMs > hardTimeoutMs
+  ) {
+    throw new TypeError(
+      "initialTimeoutMs must be between idleTimeoutMs and hardTimeoutMs",
+    )
   }
 
   let stopped = false
@@ -63,7 +75,11 @@ function createBackendStartupWatchdog({
     hardTimeoutMs,
   )
   hardTimer.unref?.()
-  pulse()
+  idleTimer = timerApi.setTimeout(
+    () => expire("initial", initialTimeoutMs),
+    initialTimeoutMs,
+  )
+  idleTimer.unref?.()
 
   return Object.freeze({ pulse, stop })
 }
