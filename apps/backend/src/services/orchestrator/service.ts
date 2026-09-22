@@ -2,7 +2,15 @@ import fs from "node:fs/promises"
 import path from "node:path"
 import { randomUUID } from "node:crypto"
 import { setTimeout as delay } from "node:timers/promises"
-import { createWorkflow, resumeWorkflow, runWorkflow, createJevDecider, workerPrompt, type Workflow } from "@claudart/orchestrator"
+import {
+  createWorkflow,
+  restoreWorkflow,
+  resumeWorkflow,
+  runWorkflow,
+  createJevDecider,
+  workerPrompt,
+  type Workflow,
+} from "@claudart/orchestrator"
 import {
   chatSendSchema,
   orchestratorSessionSchema,
@@ -87,7 +95,10 @@ export class OrchestratorService {
   private readonly preparing = new Set<string>()
   private readonly cancelledPreparations = new Set<string>()
   private closed = false
-  private readonly workflows = new Map<string, { controller: AbortController; completion: Promise<Workflow> }>()
+  private readonly workflows = new Map<
+    string,
+    { controller: AbortController; completion: Promise<Workflow> }
+  >()
 
   constructor(private readonly deps: OrchestratorDependencies) {}
 
@@ -196,7 +207,8 @@ export class OrchestratorService {
     }
     this.assertEnabled()
     if (
-      this.workflows.has(body.thread_id) || previous?.jobs.some(
+      this.workflows.has(body.thread_id) ||
+      previous?.jobs.some(
         (job) => !terminal(job) || this.admissions.has(job.threadId)
       )
     )
@@ -358,8 +370,14 @@ export class OrchestratorService {
     session.permissionLevel = nextPermission
     if (session.coordinator === "jev") {
       if (!this.deps.settings().jev_api_key)
-        throw new HttpError(400, "Save a TypeSafe API key in Settings → Jev code search before using Jev orchestration.")
-      const context = this.deps.readContextSource({ kind: "thread", threadId: body.thread_id })
+        throw new HttpError(
+          400,
+          "Save a TypeSafe API key in Settings → Jev code search before using Jev orchestration."
+        )
+      const context = this.deps.readContextSource({
+        kind: "thread",
+        threadId: body.thread_id,
+      })
       session.workflow = createWorkflow({
         goal: body.message,
         context: `Prior conversation: ${context.title}. Truncated: ${context.truncated}.\n${context.body}`,
@@ -587,8 +605,14 @@ export class OrchestratorService {
   ): OrchestratorJob {
     const session = this.requireReady(threadId)
     if (session.coordinator === "jev" && !workflowPermission)
-      throw new HttpError(403, "Jev assigns this workflow's tasks. Use start_workflow and wait_workflow.")
-    if (workflowPermission === "ask-on-edit" && session.permissionLevel === "read-only")
+      throw new HttpError(
+        403,
+        "Jev assigns this workflow's tasks. Use start_workflow and wait_workflow."
+      )
+    if (
+      workflowPermission === "ask-on-edit" &&
+      session.permissionLevel === "read-only"
+    )
       throw new HttpError(403, "This workflow is read-only.")
     if (session.permissionLevel === null)
       throw new HttpError(409, "Send a message in the main chat first.")
@@ -821,7 +845,12 @@ export class OrchestratorService {
   settingsChanged(): void {
     const settings = this.deps.settings()
     for (const session of this.sessions.values())
-      if (session.status === "ready" && (!settings.orchestrator_enabled || (session.coordinator === "jev" && !settings.jev_api_key))) this.track(this.stop(session.threadId))
+      if (
+        session.status === "ready" &&
+        (!settings.orchestrator_enabled ||
+          (session.coordinator === "jev" && !settings.jev_api_key))
+      )
+        this.track(this.stop(session.threadId))
   }
 
   async close(): Promise<void> {
@@ -910,7 +939,8 @@ export class OrchestratorService {
                   },
                   projectPath: session.projectPath,
                   chatMode: "agent",
-                  permissionLevel: job.permissionLevel ?? session.permissionLevel,
+                  permissionLevel:
+                    job.permissionLevel ?? session.permissionLevel,
                   userMessageId: randomUUID(),
                   userMessageContent: job.task,
                   userMessageCreatedAt: job.createdAt,
@@ -966,9 +996,13 @@ export class OrchestratorService {
       )
     this.makeRoom()
     const session = parsed.data
-    if (session.workflow && ["ready", "running"].includes(session.workflow.status)) {
+    if (
+      session.workflow &&
+      ["ready", "running"].includes(session.workflow.status)
+    ) {
       session.workflow.status = "interrupted"
-      session.workflow.error = "Backend restarted. Resume explicitly after inspecting unfinished work."
+      session.workflow.error =
+        "Backend restarted. Resume explicitly after inspecting unfinished work."
     }
     for (const job of session.jobs)
       if (!terminal(job)) {
@@ -1027,68 +1061,155 @@ export class OrchestratorService {
 
   workflowStatus(threadId: string) {
     const session = this.requireReady(threadId)
-    if (!session.workflow) throw new HttpError(404, "No Jev workflow in this chat.")
+    if (!session.workflow)
+      throw new HttpError(404, "No Jev workflow in this chat.")
     return {
       workflow: structuredClone(session.workflow),
-      waiting: session.jobs.filter(job => job.status === "waiting").map(job => ({ threadId: job.threadId, name: job.name })),
+      waiting: session.jobs
+        .filter((job) => job.status === "waiting")
+        .map((job) => ({ threadId: job.threadId, name: job.name })),
     }
   }
 
-  startWorkflow(threadId: string, resume = false) {
+  startWorkflow(threadId: string, resume = false, clarification?: string) {
     const session = this.get(threadId)
     if (!session) throw new HttpError(404, "Unknown orchestrator chat.")
     if (session.coordinator !== "jev" || !session.workflow)
-      throw new HttpError(409, "Select Jev orchestration and send a request first.")
-    if (this.preparing.has(threadId)) throw new HttpError(409, "A new turn is being prepared.")
-    if (!this.workflows.has(threadId) && session.jobs.some(job => !terminal(job) || this.admissions.has(job.threadId)))
-      throw new HttpError(409, "Stop unfinished workers before resuming this workflow.")
-    if (resume && session.status === "stopped") {
-      this.assertEnabled()
-      if (!this.deps.allowed(session.projectPath)) throw new HttpError(403, "This workspace is no longer trusted.")
-      session.status = "ready"
-      this.deps.persist(session)
+      throw new HttpError(
+        409,
+        "Select Jev orchestration and send a request first."
+      )
+    if (this.preparing.has(threadId))
+      throw new HttpError(409, "A new turn is being prepared.")
+    if (
+      !this.workflows.has(threadId) &&
+      session.jobs.some(
+        (job) => !terminal(job) || this.admissions.has(job.threadId)
+      )
+    )
+      throw new HttpError(
+        409,
+        "Stop unfinished workers before resuming this workflow."
+      )
+    this.assertReady({ ...session, status: resume ? "ready" : session.status })
+    if (clarification !== undefined && !resume)
+      throw new HttpError(400, "Clarifications require an explicit resume.")
+    if (this.workflows.has(threadId)) {
+      if (clarification !== undefined)
+        throw new HttpError(
+          409,
+          "Stop the workflow before adding a clarification."
+        )
+      return this.workflowStatus(threadId)
     }
-    this.assertReady(session)
-    if (this.workflows.has(threadId) || session.workflow.status === "completed") return this.workflowStatus(threadId)
-    const apiKey = this.deps.settings().jev_api_key
+    if (session.workflow.status === "completed") {
+      if (clarification !== undefined || session.status === "stopped")
+        throw new HttpError(
+          409,
+          "This workflow is complete. Send a new request to start more work."
+        )
+      return this.workflowStatus(threadId)
+    }
+    const apiKey = this.deps.settings().jev_api_key?.trim()
     if (!apiKey) throw new HttpError(400, "Configure a TypeSafe API key first.")
-    const initial = resume ? resumeWorkflow(session.workflow) : session.workflow
-    if (initial.status !== "ready") throw new HttpError(409, "This workflow stopped. Resume it explicitly after reviewing its handoff.")
-    const controller = new AbortController()
-    const completion = Promise.resolve().then(() => runWorkflow(initial, {
-      workers: session.team.members.filter(member => session.availableMemberIds.includes(member.id)).map(member => ({
-        id: member.id, description: `${member.name}; ${member.providerKind}; ${member.modelId}; thinking ${member.reasoningEffort ?? "default"}; ${member.role}`,
+    let initial: Workflow
+    try {
+      initial = resume
+        ? resumeWorkflow(session.workflow, { clarification })
+        : restoreWorkflow(session.workflow)
+    } catch (error) {
+      throw new HttpError(
+        409,
+        error instanceof Error ? error.message : "Invalid workflow checkpoint."
+      )
+    }
+    if (initial.status !== "ready" || initial.active)
+      throw new HttpError(
+        409,
+        "This workflow stopped. Resume it explicitly after reviewing its handoff."
+      )
+    const workers = session.team.members
+      .filter((member) => session.availableMemberIds.includes(member.id))
+      .map((member) => ({
+        id: member.id,
+        description: `${member.name}; ${member.providerKind}; ${member.modelId}; thinking ${member.reasoningEffort ?? "default"}; ${member.role}`,
         canWrite: session.permissionLevel === "ask-on-edit",
-      })),
-      decide: createJevDecider({ apiKey }),
-      signal: controller.signal,
-      checkpoint: workflow => {
-        session.workflow = workflow
-        this.deps.persist(session)
-      },
-      execute: async (request, signal) => {
-        this.assertReady(session)
-        signal.throwIfAborted()
-        const job = this.spawn(threadId, request.workerId, workerPrompt(request), request.requestId,
-          { name: request.phase, role: `Perform the ${request.phase} phase and return its JSON handoff.` },
-          request.permission === "write" ? "ask-on-edit" : "read-only")
-        try {
-          for (;;) {
-            signal.throwIfAborted()
+      }))
+    if (!workers.length || session.permissionLevel === null)
+      throw new HttpError(
+        409,
+        "Select workers and send a request before starting this workflow."
+      )
+    if (
+      (session.mode === "chat"
+        ? session.currentTaskCount
+        : session.jobs.length) >= session.team.maxTasks
+    )
+      throw new HttpError(
+        409,
+        "Task limit reached. Start a new request from the saved handoff."
+      )
+    const previous = { status: session.status, workflow: session.workflow }
+    session.status = "ready"
+    session.workflow = initial
+    try {
+      this.deps.persist(session)
+    } catch (error) {
+      Object.assign(session, previous)
+      throw error
+    }
+    const controller = new AbortController()
+    const completion = Promise.resolve()
+      .then(() =>
+        runWorkflow(initial, {
+          workers,
+          allowWrite: session.permissionLevel === "ask-on-edit",
+          decide: createJevDecider({ apiKey }),
+          signal: controller.signal,
+          checkpoint: (workflow) => {
+            session.workflow = workflow
+            this.deps.persist(session)
+          },
+          execute: async (request, signal) => {
             this.assertReady(session)
-            const current = session.jobs.find(candidate => candidate.id === job.id)!
-            if (terminal(current)) {
-              if (current.status !== "completed" || current.truncated) throw new Error(current.error ?? "Worker handoff was incomplete.")
-              return current.output
+            signal.throwIfAborted()
+            const job = this.spawn(
+              threadId,
+              request.workerId,
+              workerPrompt(request),
+              request.requestId,
+              {
+                name: request.phase,
+                role: `Perform the ${request.phase} phase and return its JSON handoff.`,
+              },
+              request.permission === "write" ? "ask-on-edit" : "read-only"
+            )
+            try {
+              for (;;) {
+                signal.throwIfAborted()
+                this.assertReady(session)
+                const current = session.jobs.find(
+                  (candidate) => candidate.id === job.id
+                )!
+                if (terminal(current)) {
+                  if (current.status !== "completed" || current.truncated)
+                    throw new Error(
+                      current.error ?? "Worker handoff was incomplete."
+                    )
+                  return current.output
+                }
+                await delay(250, undefined, { signal })
+              }
+            } finally {
+              const current = session.jobs.find(
+                (candidate) => candidate.id === job.id
+              )!
+              if (!terminal(current)) await this.cancelTask(threadId, job.id)
             }
-            await delay(250, undefined, { signal })
-          }
-        } finally {
-          const current = session.jobs.find(candidate => candidate.id === job.id)!
-          if (!terminal(current)) await this.cancelTask(threadId, job.id)
-        }
-      },
-    })).finally(() => this.workflows.delete(threadId))
+          },
+        })
+      )
+      .finally(() => this.workflows.delete(threadId))
     this.workflows.set(threadId, { controller, completion })
     this.track(completion)
     return this.workflowStatus(threadId)
