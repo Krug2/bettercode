@@ -2022,6 +2022,7 @@ export class ProviderRuntimeIngestion {
       transcript.content.length > 0 ||
       transcript.reasoning.length > 0 ||
       transcript.toolCalls.length > 0 ||
+      transcript.usage !== undefined ||
       // A replace-to-empty event still has to clear a previously saved row.
       transcript.persistedProjectionSequence >= 0
     ) {
