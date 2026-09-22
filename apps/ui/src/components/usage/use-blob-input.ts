@@ -43,6 +43,10 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || gesture.current) return
     const button = (event.target as Element).closest<HTMLButtonElement>("button[data-blob]")
+    if (button) {
+      event.preventDefault()
+      button.focus({ preventScroll: true })
+    }
     const id = button?.dataset.blob ?? null
     const body = id ? scene.physics.bodies.get(id) : null
     const camera = { ...scene.currentCamera.current }

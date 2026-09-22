@@ -1,5 +1,5 @@
 .usage-explorer {
-  overflow: hidden;
+  overflow: clip;
   border: 1px solid var(--border);
   border-radius: 18px;
 }
@@ -9,7 +9,7 @@
   position: relative;
   height: clamp(360px, 42vh, 520px);
   min-height: 360px;
-  overflow: hidden;
+  overflow: clip;
   touch-action: none;
   cursor: grab;
 }
