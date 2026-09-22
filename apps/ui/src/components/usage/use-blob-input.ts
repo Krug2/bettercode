@@ -1,7 +1,8 @@
-import { useRef, type KeyboardEvent, type PointerEvent } from "react"
+import { useEffect, useRef, type KeyboardEvent, type PointerEvent, type RefObject } from "react"
 import type { Point } from "./graph-data"
 import { useUsageGraphStore, type UsageLayout } from "./graph-store"
 import type { useBlobScene } from "./use-blob-scene"
+import { zoomCamera } from "./graph-camera"
 
 interface Gesture {
   pointer: number
@@ -12,9 +13,31 @@ interface Gesture {
   moved: boolean
 }
 
-export function useBlobInput(scene: ReturnType<typeof useBlobScene>, onManualMove: () => void) {
+export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefObject<HTMLDivElement | null>, onManualMove: () => void) {
   const gesture = useRef<Gesture | null>(null)
   const suppressClick = useRef(false)
+  const { currentCamera } = scene
+
+  useEffect(() => {
+    const element = stage.current
+    if (!element) return
+    const wheel = (event: WheelEvent) => {
+      if (!event.deltaY || !Number.isFinite(event.deltaY)) return
+      event.preventDefault()
+      if (gesture.current) return
+      onManualMove()
+      const bounds = element.getBoundingClientRect()
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? bounds.height : 1
+      const delta = Math.max(-240, Math.min(240, event.deltaY * unit))
+      const store = useUsageGraphStore.getState()
+      store.setCamera(zoomCamera(currentCamera.current, store.camera.zoom * Math.exp(-delta * 0.002), {
+        x: event.clientX - bounds.left - bounds.width / 2,
+        y: event.clientY - bounds.top - bounds.height / 2,
+      }))
+    }
+    element.addEventListener("wheel", wheel, { passive: false })
+    return () => element.removeEventListener("wheel", wheel)
+  }, [stage, currentCamera, onManualMove])
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || gesture.current) return
