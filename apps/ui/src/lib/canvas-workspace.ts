@@ -15,8 +15,9 @@ export const workspaceDefaults = {
 export function workspaceUrl(value: string): string | null {
   const text = value.trim()
   if (!text || text.length > 8192) return null
-  const local = /^(localhost|127\.0\.0\.1|\[::1\])(?::\d+)?(?:\/|$)/i.test(text)
-  if (/^[a-z][a-z\d+.-]*:/i.test(text) && !/^https?:/i.test(text) && !local) return null
+  const local = /^(localhost|127(?:\.\d{1,3}){3}|\[::1\])(?::\d+)?(?:[/?#]|$)/i.test(text)
+  const hostWithPort = /^[a-z\d.-]+\.[a-z\d-]+:\d+(?:[/?#]|$)/i.test(text)
+  if (/^[a-z][a-z\d+.-]*:/i.test(text) && !/^https?:/i.test(text) && !local && !hostWithPort) return null
   try {
     const url = new URL(/^https?:\/\//i.test(text) ? text : `${local ? "http" : "https"}://${text}`)
     return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password ? url.href : null
