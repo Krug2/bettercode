@@ -2,7 +2,7 @@ import { createRequire } from "node:module"
 import * as fs from "node:fs"
 import * as os from "node:os"
 import * as path from "node:path"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it } from "vitest"
 
 const require = createRequire(import.meta.url)
 const skillsSh = require("../../../shell/skills-sh.cjs") as {
@@ -36,11 +36,14 @@ function makeTempDir(): string {
 }
 
 const savedEnv = {
+  path: process.env.PATH,
   claude: process.env.CLAUDE_CONFIG_DIR,
   codex: process.env.CODEX_HOME,
 }
 
 afterEach(() => {
+  if (savedEnv.path === undefined) delete process.env.PATH
+  else process.env.PATH = savedEnv.path
   if (savedEnv.claude === undefined) delete process.env.CLAUDE_CONFIG_DIR
   else process.env.CLAUDE_CONFIG_DIR = savedEnv.claude
   if (savedEnv.codex === undefined) delete process.env.CODEX_HOME
@@ -194,6 +197,13 @@ describe("mapRegistryEntry", () => {
 })
 
 describe("skillsShAdd (injected runCli, temp CLI homes)", () => {
+  beforeEach(() => {
+    const directory = makeTempDir()
+    const binary = path.join(directory, process.platform === "win32" ? "npx.cmd" : "npx")
+    fs.writeFileSync(binary, process.platform === "win32" ? "@exit /b 0\r\n" : "#!/bin/sh\nexit 0\n", { mode: 0o755 })
+    process.env.PATH = `${directory}${path.delimiter}${savedEnv.path ?? ""}`
+  })
+
   it("reports newly created skill dirs across both CLI homes", async () => {
     const claudeHome = path.join(makeTempDir(), ".claude")
     const codexHome = makeTempDir()
