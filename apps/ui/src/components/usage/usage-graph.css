@@ -11,7 +11,13 @@
   overflow: hidden;
   touch-action: none;
   cursor: grab;
-  background-image: radial-gradient(color-mix(in srgb, var(--muted-foreground) 15%, transparent) 1px, transparent 1px);
+}
+.usage-graph-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(color-mix(in srgb, var(--muted-foreground) 15%, transparent) var(--grid-dot-radius, 1px), transparent var(--grid-dot-radius, 1px));
+  background-position: center;
   background-size: 22px 22px;
 }
 .usage-graph-stage:active { cursor: grabbing; }
