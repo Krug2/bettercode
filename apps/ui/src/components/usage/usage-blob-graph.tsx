@@ -18,7 +18,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
   const nodes = useMemo(() => usageNodes(models), [models])
   const visible = useMemo(() => visibleNodes(nodes, store.expanded), [nodes, store.expanded])
   const stage = useRef<HTMLDivElement>(null)
-  const { size, height } = useGraphViewport(stage, nodes, visible, positions)
+  const size = useGraphViewport(stage, nodes, visible, positions)
   const scene = useBlobScene(nodes, visible, store.positions, store.camera)
   const { onKeyDown, ...pointerEvents } = useBlobInput(scene, stage)
 
@@ -46,7 +46,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
           <Button variant="ghost" size="sm" onClick={() => store.expand([])}>Collapse all</Button>
         </div>
       </div>
-      <div className="usage-graph-stage" ref={stage} style={height ? { height } : undefined} {...pointerEvents} aria-label="Interactive token usage graph">
+      <div className="usage-graph-stage" ref={stage} {...pointerEvents} aria-label="Interactive token usage graph">
         <div className="usage-graph-grid" ref={scene.grid} aria-hidden="true" />
         <div className="usage-graph-world" ref={scene.world} style={{ "--usage-zoom": store.camera.zoom } as CSSProperties}>
           <svg className="usage-graph-links" width="1" height="1" aria-hidden="true">

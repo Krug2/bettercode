@@ -1,12 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react"
 import type { BlobNode, Point } from "./graph-data"
-import { blobTargets, fitBlobs, graphHeight, separateTargets } from "./graph-layout"
+import { blobTargets, fitBlobs, separateTargets } from "./graph-layout"
 import { useUsageGraphStore } from "./graph-store"
 
 export function useGraphViewport(stage: RefObject<HTMLDivElement | null>, nodes: BlobNode[], visible: BlobNode[], positions: Record<string, Point>) {
   const [size, setSize] = useState({ width: 0, height: 0 })
-  const [height, setHeight] = useState(0)
-  const previous = useRef({ ids: new Set<string>(), width: 0 })
+  const previous = useRef({ ids: new Set<string>(), width: 0, height: 0 })
   const initialCamera = useRef(useUsageGraphStore.getState().camera)
 
   useEffect(() => {
@@ -17,21 +16,19 @@ export function useGraphViewport(stage: RefObject<HTMLDivElement | null>, nodes:
   }, [stage])
 
   useLayoutEffect(() => {
-    if (!size.width) return
+    if (!size.width || !size.height) return
     const first = previous.current.width === 0
     const opening = visible.some(node => !previous.current.ids.has(node.id))
-    const resized = Math.abs(previous.current.width - size.width) > 0.5
-    previous.current = { ids: new Set(visible.map(node => node.id)), width: size.width }
+    const resized = Math.abs(previous.current.width - size.width) > 0.5 || Math.abs(previous.current.height - size.height) > 0.5
+    previous.current = { ids: new Set(visible.map(node => node.id)), ...size }
     if (!opening && !resized) return
     const targets = blobTargets(nodes, positions)
     separateTargets(visible, targets, positions)
     const store = useUsageGraphStore.getState()
-    const nextHeight = graphHeight(visible, targets, size.width, Math.max(height, size.height), store.camera.zoom)
-    setHeight(nextHeight)
     const saved = initialCamera.current
     if (first && (Object.keys(positions).length || saved.zoom !== 1 || saved.x || saved.y)) return
-    store.setCamera(fitBlobs(visible, targets, size.width, nextHeight, store.camera.zoom))
-  }, [nodes, visible, positions, size, height])
+    store.setCamera(fitBlobs(visible, targets, size.width, size.height, store.camera.zoom))
+  }, [nodes, visible, positions, size])
 
-  return { size, height }
+  return size
 }
