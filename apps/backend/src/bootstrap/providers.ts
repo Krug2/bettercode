@@ -147,10 +147,16 @@ export function wireProviders(
     settings: () => settings.get(),
     allowed: cwd => agentPermissions.getWorkspaceTrust(cwd).state === "trusted",
     load: threadId => threadActivities.payloadById(threadId, `orchestrator:${threadId}`),
-    persist: session => threadActivities.upsert({
-      activity_id: `orchestrator:${session.threadId}`, thread_id: session.threadId, turn_id: null,
-      kind: "orchestrator.session", tone: "info", summary: "Orchestrator team", payload: session, created_at: session.createdAt,
-    }),
+    persist: session => db.transaction(() => {
+      threadActivities.upsert({
+        activity_id: `orchestrator:${session.threadId}`, thread_id: session.threadId, turn_id: null,
+        kind: "orchestrator.session", tone: "info", summary: "Orchestrator team", payload: session, created_at: session.createdAt,
+      })
+      if (session.workflow) threadActivities.upsert({
+        activity_id: `workflow:${session.workflow.id}`, thread_id: session.threadId, turn_id: null,
+        kind: "orchestrator.workflow", tone: "info", summary: `Jev: ${session.workflow.status}`, payload: session.workflow, created_at: session.workflow.updatedAt,
+      })
+    })(),
     createThread: input => {
       const now = new Date().toISOString()
       threads.upsertThreadMeta({ thread_id: input.id, title: input.title, project_name: path.basename(input.projectPath), project_path: input.projectPath,

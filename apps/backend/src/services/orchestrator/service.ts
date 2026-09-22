@@ -1,6 +1,8 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import { randomUUID } from "node:crypto"
+import { setTimeout as delay } from "node:timers/promises"
+import { createWorkflow, resumeWorkflow, runWorkflow, createJevDecider, workerPrompt, type Workflow } from "@claudart/orchestrator"
 import {
   chatSendSchema,
   orchestratorSessionSchema,
@@ -45,6 +47,7 @@ export interface OrchestratorDependencies {
   settings(): {
     orchestrator_enabled: boolean
     orchestrator_team: OrchestratorTeam | null
+    jev_api_key?: string | null
   }
   allowed(cwd: string): boolean
   load(threadId: string): unknown
@@ -84,6 +87,7 @@ export class OrchestratorService {
   private readonly preparing = new Set<string>()
   private readonly cancelledPreparations = new Set<string>()
   private closed = false
+  private readonly workflows = new Map<string, { controller: AbortController; completion: Promise<Workflow> }>()
 
   constructor(private readonly deps: OrchestratorDependencies) {}
 
@@ -168,6 +172,7 @@ export class OrchestratorService {
         ? {
             enabled: true as const,
             providers: previous.allowedProviders,
+            coordinator: previous.coordinator,
             ...(previous.selectedModels
               ? { models: previous.selectedModels }
               : {}),
@@ -191,7 +196,7 @@ export class OrchestratorService {
     }
     this.assertEnabled()
     if (
-      previous?.jobs.some(
+      this.workflows.has(body.thread_id) || previous?.jobs.some(
         (job) => !terminal(job) || this.admissions.has(job.threadId)
       )
     )
@@ -305,6 +310,7 @@ export class OrchestratorService {
         ? { selectedModels: structuredClone(selection.models) }
         : {}),
       currentTaskCount: 0,
+      coordinator: selection.coordinator ?? "main",
       permissionLevel: null,
       jobs,
       context: previous?.context ?? [],
@@ -350,6 +356,24 @@ export class OrchestratorService {
       )
     }
     session.permissionLevel = nextPermission
+    if (session.coordinator === "jev") {
+      if (!this.deps.settings().jev_api_key)
+        throw new HttpError(400, "Save a TypeSafe API key in Settings → Jev code search before using Jev orchestration.")
+      const context = this.deps.readContextSource({ kind: "thread", threadId: body.thread_id })
+      session.workflow = createWorkflow({
+        goal: body.message,
+        context: `Prior conversation: ${context.title}. Truncated: ${context.truncated}.\n${context.body}`,
+        allowWrite: nextPermission !== "read-only",
+        maxSteps: Math.min(8, session.team.maxTasks),
+      })
+      this.deps.persist(session)
+      return {
+        ...body,
+        permission_level: "read-only",
+        user_message_content: body.user_message_content ?? body.message,
+        message: `Jev coordinates this workflow. Call betterc0de_orchestrator start_workflow, then wait_workflow until it completes or needs the user's input. The host saved the original request; do not rewrite it. Jev selects phases and workers. You communicate progress and the final result; do not implement, delegate, or run workspace commands yourself. Workers retain the user's existing permissions. Never approve their requests. If a worker is waiting, tell the user which worker chat needs attention. On failure, report the saved handoff and blocker without claiming completion. Read context_inbox for user-granted context.\n\nUser request:\n${body.message}`,
+      }
+    }
     this.deps.persist(session)
     const roster = session.team.members
       .filter(
@@ -558,9 +582,14 @@ export class OrchestratorService {
     memberId: string,
     task: string,
     requestId: string,
-    assignment: { name: string; role: string } = { name: "", role: "" }
+    assignment: { name: string; role: string } = { name: "", role: "" },
+    workflowPermission?: "read-only" | "ask-on-edit"
   ): OrchestratorJob {
     const session = this.requireReady(threadId)
+    if (session.coordinator === "jev" && !workflowPermission)
+      throw new HttpError(403, "Jev assigns this workflow's tasks. Use start_workflow and wait_workflow.")
+    if (workflowPermission === "ask-on-edit" && session.permissionLevel === "read-only")
+      throw new HttpError(403, "This workflow is read-only.")
     if (session.permissionLevel === null)
       throw new HttpError(409, "Send a message in the main chat first.")
     const duplicate = session.jobs.find((job) => job.id === requestId)
@@ -609,6 +638,7 @@ export class OrchestratorService {
       error: null,
       createdAt: new Date().toISOString(),
       finishedAt: null,
+      ...(workflowPermission ? { permissionLevel: workflowPermission } : {}),
     }
     this.deps.createThread({
       id: job.threadId,
@@ -690,6 +720,7 @@ export class OrchestratorService {
     if (this.preparing.has(threadId)) this.cancelledPreparations.add(threadId)
     const session = this.get(threadId)
     if (!session) return interruptMain()
+    this.workflows.get(threadId)?.controller.abort()
     if (this.interrupting.has(threadId))
       throw new HttpError(409, "Team tasks are already being stopped.")
     this.interrupting.add(threadId)
@@ -711,6 +742,8 @@ export class OrchestratorService {
     if (this.preparing.has(threadId)) this.cancelledPreparations.add(threadId)
     const session = this.get(threadId)
     if (!session) throw new HttpError(404, "Unknown orchestrator chat.")
+    const workflow = this.workflows.get(threadId)
+    workflow?.controller.abort()
     session.status = "stopped"
     this.deps.persist(session)
     const results = await Promise.allSettled(
@@ -720,6 +753,7 @@ export class OrchestratorService {
     )
     const failed = results.find((result) => result.status === "rejected")
     if (failed?.status === "rejected") throw failed.reason
+    await workflow?.completion
     return structuredClone(session)
   }
 
@@ -785,10 +819,9 @@ export class OrchestratorService {
   }
 
   settingsChanged(): void {
-    if (!this.deps.settings().orchestrator_enabled)
-      for (const session of this.sessions.values()) {
-        if (session.status === "ready") this.track(this.stop(session.threadId))
-      }
+    const settings = this.deps.settings()
+    for (const session of this.sessions.values())
+      if (session.status === "ready" && (!settings.orchestrator_enabled || (session.coordinator === "jev" && !settings.jev_api_key))) this.track(this.stop(session.threadId))
   }
 
   async close(): Promise<void> {
@@ -877,7 +910,7 @@ export class OrchestratorService {
                   },
                   projectPath: session.projectPath,
                   chatMode: "agent",
-                  permissionLevel: session.permissionLevel,
+                  permissionLevel: job.permissionLevel ?? session.permissionLevel,
                   userMessageId: randomUUID(),
                   userMessageContent: job.task,
                   userMessageCreatedAt: job.createdAt,
@@ -933,6 +966,10 @@ export class OrchestratorService {
       )
     this.makeRoom()
     const session = parsed.data
+    if (session.workflow && ["ready", "running"].includes(session.workflow.status)) {
+      session.workflow.status = "interrupted"
+      session.workflow.error = "Backend restarted. Resume explicitly after inspecting unfinished work."
+    }
     for (const job of session.jobs)
       if (!terminal(job)) {
         job.status = "interrupted"
@@ -949,6 +986,7 @@ export class OrchestratorService {
       if (
         !this.interrupting.has(id) &&
         !this.preparing.has(id) &&
+        !this.workflows.has(id) &&
         session.jobs.every(
           (job) => terminal(job) && !this.admissions.has(job.threadId)
         )
@@ -985,5 +1023,74 @@ export class OrchestratorService {
     void promise
       .catch((error) => this.deps.reportError(error))
       .finally(() => this.pending.delete(promise))
+  }
+
+  workflowStatus(threadId: string) {
+    const session = this.requireReady(threadId)
+    if (!session.workflow) throw new HttpError(404, "No Jev workflow in this chat.")
+    return {
+      workflow: structuredClone(session.workflow),
+      waiting: session.jobs.filter(job => job.status === "waiting").map(job => ({ threadId: job.threadId, name: job.name })),
+    }
+  }
+
+  startWorkflow(threadId: string, resume = false) {
+    const session = this.get(threadId)
+    if (!session) throw new HttpError(404, "Unknown orchestrator chat.")
+    if (session.coordinator !== "jev" || !session.workflow)
+      throw new HttpError(409, "Select Jev orchestration and send a request first.")
+    if (this.preparing.has(threadId)) throw new HttpError(409, "A new turn is being prepared.")
+    if (!this.workflows.has(threadId) && session.jobs.some(job => !terminal(job) || this.admissions.has(job.threadId)))
+      throw new HttpError(409, "Stop unfinished workers before resuming this workflow.")
+    if (resume && session.status === "stopped") {
+      this.assertEnabled()
+      if (!this.deps.allowed(session.projectPath)) throw new HttpError(403, "This workspace is no longer trusted.")
+      session.status = "ready"
+      this.deps.persist(session)
+    }
+    this.assertReady(session)
+    if (this.workflows.has(threadId) || session.workflow.status === "completed") return this.workflowStatus(threadId)
+    const apiKey = this.deps.settings().jev_api_key
+    if (!apiKey) throw new HttpError(400, "Configure a TypeSafe API key first.")
+    const initial = resume ? resumeWorkflow(session.workflow) : session.workflow
+    if (initial.status !== "ready") throw new HttpError(409, "This workflow stopped. Resume it explicitly after reviewing its handoff.")
+    const controller = new AbortController()
+    const completion = Promise.resolve().then(() => runWorkflow(initial, {
+      workers: session.team.members.filter(member => session.availableMemberIds.includes(member.id)).map(member => ({
+        id: member.id, description: `${member.name}; ${member.providerKind}; ${member.modelId}; thinking ${member.reasoningEffort ?? "default"}; ${member.role}`,
+        canWrite: session.permissionLevel === "ask-on-edit",
+      })),
+      decide: createJevDecider({ apiKey }),
+      signal: controller.signal,
+      checkpoint: workflow => {
+        session.workflow = workflow
+        this.deps.persist(session)
+      },
+      execute: async (request, signal) => {
+        this.assertReady(session)
+        signal.throwIfAborted()
+        const job = this.spawn(threadId, request.workerId, workerPrompt(request), request.requestId,
+          { name: request.phase, role: `Perform the ${request.phase} phase and return its JSON handoff.` },
+          request.permission === "write" ? "ask-on-edit" : "read-only")
+        try {
+          for (;;) {
+            signal.throwIfAborted()
+            this.assertReady(session)
+            const current = session.jobs.find(candidate => candidate.id === job.id)!
+            if (terminal(current)) {
+              if (current.status !== "completed" || current.truncated) throw new Error(current.error ?? "Worker handoff was incomplete.")
+              return current.output
+            }
+            await delay(250, undefined, { signal })
+          }
+        } finally {
+          const current = session.jobs.find(candidate => candidate.id === job.id)!
+          if (!terminal(current)) await this.cancelTask(threadId, job.id)
+        }
+      },
+    })).finally(() => this.workflows.delete(threadId))
+    this.workflows.set(threadId, { controller, completion })
+    this.track(completion)
+    return this.workflowStatus(threadId)
   }
 }
