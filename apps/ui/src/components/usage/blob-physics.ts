@@ -1,5 +1,6 @@
-import { descendants, ROOT_BLOB, type BlobNode, type Point } from "./graph-data"
+import { descendants, type BlobNode, type Point } from "./graph-data"
 import { blobTargets, separateTargets } from "./graph-layout"
+import { solveContacts } from "./blob-contacts"
 
 export interface BlobBody extends Point {
   node: BlobNode
@@ -11,6 +12,7 @@ export interface BlobBody extends Point {
   slosh: Point
   sloshVelocity: Point
   strain: Point
+  pressure: Point
   scale: number
   scaleVelocity: number
   wobble: number
@@ -19,20 +21,26 @@ export interface BlobBody extends Point {
   visible: boolean
   closing: boolean
   launching: boolean
+  emerging: boolean
   delay: number
 }
 
 export class BlobPhysics {
   readonly bodies = new Map<string, BlobBody>()
-  private nodes: BlobNode[] = []
-  private pinned = new Set<string>()
+  private branches = new Map<string, Set<string>>()
+  private changed = new Set<string>()
+  private positions: Record<string, Point> = {}
+  private released: string | null = null
   dragging: string | null = null
 
   sync(nodes: BlobNode[], visible: BlobNode[], positions: Record<string, Point>, instant: boolean): void {
-    this.nodes = nodes
-    this.pinned = new Set([ROOT_BLOB, ...Object.keys(positions)])
-    const targets = blobTargets(nodes, positions)
-    separateTargets(visible, targets, positions)
+    this.branches = new Map(nodes.map(node => [node.id, descendants(nodes, node.id)]))
+    if (positions !== this.positions) this.changed.clear()
+    this.positions = positions
+    const placement = { ...positions }
+    for (const id of this.changed) if (this.bodies.has(id)) placement[id] = this.bodies.get(id)!.target
+    const targets = blobTargets(nodes, placement)
+    separateTargets(visible, targets, placement)
     const active = new Set(visible.map(node => node.id)), ids = new Set(nodes.map(node => node.id))
     const depth = new Map<string, number>()
     nodes.forEach(node => depth.set(node.id, node.parent ? (depth.get(node.parent) ?? 0) + 1 : 0))
@@ -43,16 +51,16 @@ export class BlobPhysics {
       const target = targets.get(node.id)!
       let body = this.bodies.get(node.id)
       if (!body) {
-        body = { node, ...target, target, vx: 0, vy: 0, previous: { ...target }, motion: { x: 0, y: 0 }, slosh: { x: 0, y: 0 }, sloshVelocity: { x: 0, y: 0 }, strain: { x: 0, y: 0 }, scale: 0, scaleVelocity: 0, wobble: 0, wobbleVelocity: 0, phase: [...node.id].reduce((value, char) => (value * 31 + char.charCodeAt(0)) % 628, 0) / 100, visible: false, closing: false, launching: false, delay: 0 }
+        body = { node, ...target, target, vx: 0, vy: 0, previous: { ...target }, motion: { x: 0, y: 0 }, slosh: { x: 0, y: 0 }, sloshVelocity: { x: 0, y: 0 }, strain: { x: 0, y: 0 }, pressure: { x: 0, y: 0 }, scale: 0, scaleVelocity: 0, wobble: 0, wobbleVelocity: 0, phase: [...node.id].reduce((value, char) => (value * 31 + char.charCodeAt(0)) % 628, 0) / 100, visible: false, closing: false, launching: false, emerging: false, delay: 0 }
         this.bodies.set(node.id, body)
       }
       body.node = node; body.target = target
       if (instant) {
-        Object.assign(body, target, { visible: active.has(node.id), closing: false, launching: false, scale: 1, scaleVelocity: 0, vx: 0, vy: 0, wobble: 0, wobbleVelocity: 0 })
+        Object.assign(body, target, { visible: active.has(node.id), closing: false, launching: false, emerging: false, scale: 1, scaleVelocity: 0, vx: 0, vy: 0, wobble: 0, wobbleVelocity: 0 })
         this.stillContents(body)
       } else if (active.has(node.id)) {
         if ((!body.visible || body.closing) && !body.launching) {
-          body.launching = true; body.visible = false; body.scale = 0.08
+          body.launching = true; body.emerging = true; body.visible = false; body.scale = 0.08
           const siblings = nodes.find(parent => parent.id === node.parent)?.children ?? [node.id]
           body.delay = (depth.get(node.id)! - firstDepth) * 110 + siblings.indexOf(node.id) * 32
         }
@@ -63,9 +71,17 @@ export class BlobPhysics {
     }
   }
 
-  step(milliseconds: number): number {
+  step(milliseconds: number, instant = false): number {
     if (milliseconds <= 0) return 1
-    const elapsed = Math.min(48, milliseconds), dragged = this.bodies.get(this.dragging ?? "")
+    if (instant) {
+      let energy = 0
+      for (let pass = 0; pass < 64; pass++) {
+        energy = this.advance(16.667, true)
+        if (energy < 0.025) break
+      }
+      return energy
+    }
+    const elapsed = Math.min(48, milliseconds), dragged = this.bodies.get(this.dragging ?? this.released ?? "")
     const travel = dragged ? Math.hypot(dragged.target.x - dragged.x, dragged.target.y - dragged.y) * (1 - Math.exp(-elapsed / 16.667 * 0.85)) : 0
     const slices = Math.min(64, Math.max(1, Math.ceil(elapsed / 8.333), Math.ceil(travel / 12)))
     let energy = 0
@@ -73,11 +89,12 @@ export class BlobPhysics {
     return energy
   }
 
-  private advance(milliseconds: number): number {
+  private advance(milliseconds: number, instant = false): number {
     const dt = milliseconds / 16.667
     let energy = 0
     const bodies = [...this.bodies.values()]
     for (const body of bodies) {
+      body.pressure = { x: 0, y: 0 }
       if (body.launching) {
         body.delay -= milliseconds; energy++
         if (body.delay > 0) continue
@@ -90,17 +107,34 @@ export class BlobPhysics {
         if (parent && parent.node.id !== this.dragging) { parent.vx -= dx / distance * 0.8; parent.vy -= dy / distance * 0.8 }
       }
       if (!body.visible) continue
-      if (body.node.id === this.dragging) {
+      if (instant) {
+        body.x = body.target.x; body.y = body.target.y
+        body.vx = body.vy = 0; body.emerging = false
+      } else if (body.node.id === this.dragging || body.node.id === this.released) {
         const rate = 1 - Math.exp(-dt * 0.85)
         body.vx = (body.target.x - body.x) * rate / dt
         body.vy = (body.target.y - body.y) * rate / dt
         body.x += body.vx * dt; body.y += body.vy * dt
+        if (body.node.id === this.released && Math.hypot(body.target.x - body.x, body.target.y - body.y) < 0.02) {
+          body.x = body.target.x; body.y = body.target.y; body.vx = body.vy = 0
+          this.released = null
+        }
       } else {
         const target = body.closing ? this.bodies.get(body.node.parent ?? "") ?? body.target : body.target
         body.vx = (body.vx + (target.x - body.x) * 0.055 * dt) * Math.pow(0.64, dt)
         body.vy = (body.vy + (target.y - body.y) * 0.055 * dt) * Math.pow(0.64, dt)
         body.x += body.vx * dt; body.y += body.vy * dt
       }
+      body.scaleVelocity = (body.scaleVelocity + ((body.closing ? 0 : 1) - body.scale) * 0.15 * dt) * Math.pow(0.68, dt)
+      body.scale = Math.max(0, Math.min(1.03, body.scale + body.scaleVelocity * dt))
+      if (body.emerging && body.scale > 0.99 && Math.hypot(body.target.x - body.x, body.target.y - body.y) < 12) body.emerging = false
+      if (body.closing && body.scale < 0.025) { body.visible = false; body.closing = false }
+    }
+    if (instant) this.released = null
+    energy += solveContacts(bodies.filter(body => body.visible && !body.closing && !body.emerging && body.scale > 0.9), this.dragging ?? this.released, dt, (body, delta, other) => this.displace(body, delta, other))
+    for (const body of bodies) {
+      if (!body.visible) continue
+      if (instant) this.stillContents(body)
       const motion = { x: (body.x - body.previous.x) / dt, y: (body.y - body.previous.y) / dt }
       const limit = body.node.radius * 0.075
       body.motion.x += (motion.x - body.motion.x) * (1 - Math.exp(-dt * 0.32))
@@ -118,8 +152,6 @@ export class BlobPhysics {
         body.sloshVelocity.x *= 0.5; body.sloshVelocity.y *= 0.5
       }
       body.previous = { x: body.x, y: body.y }
-      body.scaleVelocity = (body.scaleVelocity + ((body.closing ? 0 : 1) - body.scale) * 0.15 * dt) * Math.pow(0.68, dt)
-      body.scale = Math.max(0, Math.min(1.03, body.scale + body.scaleVelocity * dt))
       body.wobbleVelocity = (body.wobbleVelocity - body.wobble * 0.1 * dt) * Math.pow(0.58, dt)
       body.wobble = Math.max(-0.035, Math.min(0.035, body.wobble + body.wobbleVelocity * dt))
       const stretch = Math.min(0.07, speed * 0.0018) + body.wobble
@@ -127,32 +159,35 @@ export class BlobPhysics {
         x: stretch * (body.motion.x ** 2 - body.motion.y ** 2) / speed ** 2,
         y: stretch * 2 * body.motion.x * body.motion.y / speed ** 2,
       } : { x: 0, y: 0 }
+      strain.x += body.pressure.x; strain.y += body.pressure.y
+      const deformation = Math.hypot(strain.x, strain.y)
+      if (deformation > 0.18) { strain.x *= 0.18 / deformation; strain.y *= 0.18 / deformation }
       for (const axis of ["x", "y"] as const) {
-        const change = (strain[axis] - body.strain[axis]) * (1 - Math.exp(-dt * 0.18))
+        const change = (strain[axis] - body.strain[axis]) * (instant ? 1 : 1 - Math.exp(-dt * 0.18))
         body.strain[axis] += change
-        energy += Math.abs(change) * 80
+        if (!instant) energy += Math.abs(change) * 80
       }
-      if (body.closing && body.scale < 0.025) { body.visible = false; body.closing = false }
       energy += Math.abs(body.vx) + Math.abs(body.vy) + Math.abs(body.scaleVelocity) * 30 + Math.abs(body.wobbleVelocity) * 30
       energy += Math.hypot(body.sloshVelocity.x, body.sloshVelocity.y) + slosh * 0.2 + Math.abs(body.wobble) * 5
     }
-    for (let i = 0; i < bodies.length; i++) for (let j = i + 1; j < bodies.length; j++) {
-      const a = bodies[i], b = bodies[j]
-      if (!a.visible || !b.visible || a.closing || b.closing) continue
-      if ((a.node.parent === b.node.id && a.scale < 0.8) || (b.node.parent === a.node.id && b.scale < 0.8)) continue
-      const dx = b.x - a.x || 0.01, dy = b.y - a.y || 0.01, distance = Math.hypot(dx, dy)
-      const gap = (a.node.radius * a.scale + b.node.radius * b.scale) * 1.04 + 5
-      if (distance >= gap) continue
-      const fixedA = a.node.id === this.dragging || this.pinned.has(a.node.id)
-      const fixedB = b.node.id === this.dragging || this.pinned.has(b.node.id)
-      if (fixedA && fixedB) continue
-      const share = fixedA ? 0 : fixedB ? 1 : 0.5
-      const push = (gap - distance) * 0.6
-      a.x -= dx / distance * push * share; a.y -= dy / distance * push * share
-      b.x += dx / distance * push * (1 - share); b.y += dy / distance * push * (1 - share)
-      a.wobbleVelocity -= 0.002; b.wobbleVelocity += 0.002
-    }
     return energy
+  }
+
+  private displace(body: BlobBody, delta: Point, other: BlobBody): void {
+    const length = Math.hypot(delta.x, delta.y), nx = delta.x / length, ny = delta.y / length
+    const blocked = Math.min(0, (body.target.x - body.x) * nx + (body.target.y - body.y) * ny)
+    const shift = { x: delta.x - nx * blocked, y: delta.y - ny * blocked }
+    const branch = this.branches.get(body.node.id)!
+    const moved = branch.has(other.node.id) ? [body.node.id] : branch
+    const held = this.branches.get(this.dragging ?? this.released ?? "")
+    for (const id of moved) {
+      if (held?.has(id)) continue
+      const child = this.bodies.get(id)!
+      child.target = { x: child.target.x + shift.x, y: child.target.y + shift.y }
+      this.changed.add(id)
+    }
+    body.x += delta.x; body.y += delta.y
+    this.changed.add(other.node.id)
   }
 
   moveBranch(id: string, point: Point, instant = false): void {
@@ -160,9 +195,12 @@ export class BlobPhysics {
     if (!parent) return
     const dx = point.x - parent.target.x, dy = point.y - parent.target.y
     this.dragging = id
-    for (const child of descendants(this.nodes, id)) {
+    this.released = null
+    parent.emerging = false
+    for (const child of this.branches.get(id)!) {
       const body = this.bodies.get(child)!
       body.target = { x: body.target.x + dx, y: body.target.y + dy }
+      this.changed.add(child)
       if (instant || !body.visible) { body.x = body.target.x; body.y = body.target.y; body.vx = body.vy = 0 }
       if (instant) { this.stillContents(body); body.wobble = body.wobbleVelocity = 0 }
     }
@@ -171,27 +209,35 @@ export class BlobPhysics {
 
   releaseBranch(): Record<string, Point> {
     if (!this.dragging) return {}
-    const positions = Object.fromEntries([...descendants(this.nodes, this.dragging)].map(id => [id, { ...this.bodies.get(id)!.target }]))
     const body = this.bodies.get(this.dragging)!
     body.vx = body.vy = 0
+    this.released = this.dragging
     this.dragging = null
+    return this.takePositions()
+  }
+
+  takePositions(): Record<string, Point> {
+    if (!this.changed.size) return {}
+    const positions = Object.fromEntries([...this.bodies.values()].filter(body => body.visible || this.changed.has(body.node.id)).map(body => [body.node.id, { ...body.target }]))
+    this.changed.clear()
     return positions
   }
 
   settle(): void {
+    this.released = null
     for (const body of this.bodies.values()) {
       body.vx = body.vy = body.scaleVelocity = body.wobble = body.wobbleVelocity = 0
       if (body.closing) { body.visible = false; body.closing = false }
       body.scale = 1
-      this.stillContents(body)
+      this.stillContents(body, true)
     }
   }
 
-  private stillContents(body: BlobBody): void {
+  private stillContents(body: BlobBody, preserveStrain = false): void {
     body.previous = { x: body.x, y: body.y }
     body.motion = { x: 0, y: 0 }
     body.slosh = { x: 0, y: 0 }
     body.sloshVelocity = { x: 0, y: 0 }
-    body.strain = { x: 0, y: 0 }
+    if (!preserveStrain) body.strain = { x: 0, y: 0 }
   }
 }
