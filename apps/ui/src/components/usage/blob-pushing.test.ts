@@ -6,6 +6,17 @@ const blob = (id: string, parent: string | null = null): BlobNode => ({ id, pare
 const tick = (engine: BlobPhysics, frames = 240) => { for (let i = 0; i < frames; i++) engine.step(16.667) }
 
 describe("blob pushing", () => {
+  it("keeps small neighbors ahead of a fast drag instead of flipping contact sides", () => {
+    const nodes = [blob("a"), blob("b")].map(node => ({ ...node, radius: 34 })), engine = new BlobPhysics()
+    engine.sync(nodes, nodes, { a: { x: -67, y: 0 }, b: { x: 0, y: 0 } }, true)
+    const a = engine.bodies.get("a")!, b = engine.bodies.get("b")!
+    engine.moveBranch("a", { x: 1200, y: 0 })
+    for (let frame = 0; frame < 30; frame++) {
+      engine.step(32)
+      expect(b.x).toBeGreaterThan(a.x + 58)
+    }
+  })
+
   it("pushes through a fast drag without tunneling or pulling the neighbor backward", () => {
     const nodes = [blob("a"), blob("b")], engine = new BlobPhysics()
     engine.sync(nodes, nodes, { a: { x: -250, y: 0 }, b: { x: 0, y: 0 } }, true)

@@ -82,8 +82,8 @@ export class BlobPhysics {
       return energy
     }
     const elapsed = Math.min(48, milliseconds), dragged = this.bodies.get(this.dragging ?? this.released ?? "")
-    const travel = dragged ? Math.hypot(dragged.target.x - dragged.x, dragged.target.y - dragged.y) * (1 - Math.exp(-elapsed / 16.667 * 0.85)) : 0
-    const slices = Math.min(64, Math.max(1, Math.ceil(elapsed / 8.333), Math.ceil(travel / 12)))
+    const travel = dragged ? Math.hypot(dragged.target.x - dragged.x, dragged.target.y - dragged.y) * elapsed / 16.667 * 0.85 : 0
+    const slices = Math.min(128, Math.max(1, Math.ceil(elapsed / 8.333), Math.ceil(travel / 12)))
     let energy = 0
     for (let slice = 0; slice < slices; slice++) energy = this.advance(elapsed / slices)
     return energy
