@@ -195,6 +195,9 @@ const settingsObjectSchema = z
     backend_trace_http: z.boolean().default(false),
     backend_trace_provider_events: z.boolean().default(false),
     remote_access_enabled: z.boolean().default(false),
+    remote_relay_enabled: z.boolean().default(false),
+    remote_relay_url: z.string().max(2048).default(""),
+    remote_device_label: z.string().max(80).default(""),
     remote_access_custom_url: z.string().max(2048).default(""),
     // Paired devices never get a terminal unless the desktop owner opts in:
     // a session bearer proves possession of a device, not a human at this
