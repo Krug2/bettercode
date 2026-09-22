@@ -6,7 +6,9 @@ import * as path from "node:path"
 // Loaded via createRequire because the module is .cjs and references
 // `appConfig.cjs` for DNS timeout — same pattern as the IPC parity test.
 const requireCjs = createRequire(import.meta.url)
-const dns = requireCjs("node:dns").promises as typeof import("node:dns/promises")
+const dns = requireCjs("node:dns").promises as {
+  lookup(hostname: string, options: { all: true }): Promise<import("node:dns").LookupAddress[]>
+}
 afterEach(() => vi.restoreAllMocks())
 const {
   isPrivateOrReservedIp,
