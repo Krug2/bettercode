@@ -2,6 +2,7 @@
 .dark .usage-page { color-scheme: dark; }
 .usage-page-inner { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 30px; }
 .usage-page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.usage-page-header > .usage-actions { flex-wrap: nowrap; flex-shrink: 0; }
 .usage-page h1 { font-size: 28px; font-weight: 600; letter-spacing: -1px; line-height: 1.25; }
 .usage-page h2 { font-size: 14px; font-weight: 600; }
 .usage-page-header p { color: var(--muted-foreground); font-size: 13px; margin-top: 8px; line-height: 1.6; max-width: 600px; }
