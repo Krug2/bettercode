@@ -46,4 +46,13 @@ describe("blob motion", () => {
     engine.sync(nodes, nodes, {}, true)
     expect([...engine.bodies.values()].every(body => body.visible && body.scale === 1 && !body.launching)).toBe(true)
   })
+
+  it("keeps deliberately overlapping saved positions anchored", () => {
+    const engine = new BlobPhysics()
+    const saved = { "model:a": { x: 100, y: 100 }, "model:b": { x: 130, y: 100 } }
+    engine.sync(nodes, visibleNodes(nodes, ["total"]), saved, true)
+    tick(engine)
+    expect(engine.bodies.get("model:a")!.x).toBeCloseTo(100, 2)
+    expect(engine.bodies.get("model:b")!.x).toBeCloseTo(130, 2)
+  })
 })
