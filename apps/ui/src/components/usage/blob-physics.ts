@@ -1,4 +1,4 @@
-import { descendants, type BlobNode, type Point } from "./graph-data"
+import { descendants, ROOT_BLOB, type BlobNode, type Point } from "./graph-data"
 import { blobTargets, separateTargets } from "./graph-layout"
 
 export interface BlobBody extends Point {
@@ -20,10 +20,12 @@ export interface BlobBody extends Point {
 export class BlobPhysics {
   readonly bodies = new Map<string, BlobBody>()
   private nodes: BlobNode[] = []
+  private pinned = new Set<string>()
   dragging: string | null = null
 
   sync(nodes: BlobNode[], visible: BlobNode[], positions: Record<string, Point>, instant: boolean): void {
     this.nodes = nodes
+    this.pinned = new Set([ROOT_BLOB, ...Object.keys(positions)])
     const targets = blobTargets(nodes, positions)
     separateTargets(visible, targets, positions)
     const active = new Set(visible.map(node => node.id)), ids = new Set(nodes.map(node => node.id))
@@ -88,7 +90,10 @@ export class BlobPhysics {
       const dx = b.x - a.x || 0.01, dy = b.y - a.y || 0.01, distance = Math.hypot(dx, dy)
       const gap = (a.node.radius * a.scale + b.node.radius * b.scale) * 1.04 + 5
       if (distance >= gap) continue
-      const share = a.node.id === this.dragging ? 0 : b.node.id === this.dragging ? 1 : 0.5
+      const fixedA = a.node.id === this.dragging || this.pinned.has(a.node.id)
+      const fixedB = b.node.id === this.dragging || this.pinned.has(b.node.id)
+      if (fixedA && fixedB) continue
+      const share = fixedA ? 0 : fixedB ? 1 : 0.5
       const push = (gap - distance) * 0.6
       a.x -= dx / distance * push * share; a.y -= dy / distance * push * share
       b.x += dx / distance * push * (1 - share); b.y += dy / distance * push * (1 - share)
