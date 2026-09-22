@@ -29,6 +29,7 @@ import type { ThreadTurnCoordinator } from "./provider/threadTurnCoordinator";
 import type { AssistantTranscriptRecoveryStore } from "./provider/runtime/AssistantTranscriptRecoveryStore";
 import type { ChatDispatchStore } from "./services/chat-dispatch-store";
 import type { RemoteAccessService } from "./remote/service";
+import type { DeviceManager } from "./remote/relay/manager";
 import type { RemoteProviderTurnOwnership } from "./remote/providerTurnOwnership";
 import type { TailscaleRemoteAccess } from "./remote/tailscale";
 import type { AdmissionGate } from "./lifecycle/AdmissionGate";
@@ -79,6 +80,7 @@ export interface AppState {
   readonly chatDispatches: ChatDispatchStore;
   /** Persistent one-time pairing grants and revocable browser sessions. */
   readonly remoteAccess?: RemoteAccessService;
+  readonly devices?: DeviceManager;
   /** Exact remote-session ownership for provider admissions and settlement. */
   readonly remoteProviderTurns?: RemoteProviderTurnOwnership;
   /** Tailscale detection + Serve mapping for Remote Access. Optional so

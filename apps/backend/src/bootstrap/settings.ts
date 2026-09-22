@@ -4,6 +4,7 @@ import { SettingsService } from "../settings/service"
 import { AssistantTranscriptRecoveryStore } from "../provider/runtime/AssistantTranscriptRecoveryStore"
 import { AuthStore } from "../auth/store"
 import { RemoteAccessService } from "../remote/service"
+import { DeviceManager } from "../remote/relay/manager"
 import { RemoteProviderTurnOwnership } from "../remote/providerTurnOwnership"
 import {
   createTailscaleRemoteAccess,
@@ -39,7 +40,7 @@ export function loadSettingsAndRemote(
     settings.get().remote_access_tailscale_serve === true
   configureBackendLogging(settings.get())
   const remoteAccess = new RemoteAccessService(db, {
-    isEnabled: () => settings.get().remote_access_enabled === true,
+    isEnabled: () => settings.get().remote_access_enabled === true || settings.get().remote_relay_enabled === true,
   })
   const tailscale = createTailscaleRemoteAccess()
   // Read per request; the snapshot refreshes itself while Tailscale runs.
@@ -107,6 +108,10 @@ export function loadSettingsAndRemote(
     name: "remote access expiration scheduler",
     run: () => remoteAccess.close(),
   })
+  const devices = new DeviceManager({
+    dataDir: config.dataDir, access: remoteAccess, settings: () => settings.get(), localPort: () => config.port,
+  })
+  startupCleanup.push({ name: "device connections", run: () => devices.close() })
   const transcriptRecoveryStore = new AssistantTranscriptRecoveryStore(
     path.join(config.dataDir, "recovery", "provider-transcripts"),
     { logger }
@@ -143,6 +148,7 @@ export function loadSettingsAndRemote(
   const authStore = new AuthStore(config.authPath)
   return {
     settings,
+    devices,
     remoteAccess,
     tailscale,
     remoteProviderTurns,

@@ -170,6 +170,7 @@ async function bindAndPublish(
       hub.attach(server)
       const actual = (server.address() as { port: number }).port
       config.port = actual
+      settingsCtx.devices?.start(request => app.fetch(request))
       logger.info({ host: config.host, port: actual }, "Node backend ready")
       reconcileTailscaleServeForPort(settingsCtx, actual)
       setImmediate(() => {

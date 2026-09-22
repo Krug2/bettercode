@@ -65,6 +65,7 @@ const EXPECTED_STARTUP_CLEANUP_ORDER = [
   "agent permission runtime",
   "remote session process cleanup listener",
   "remote access expiration scheduler",
+  "device connections",
   "code search harness",
   // The harness depends on the service; reverse unwind closes it first.
   "orchestrator service",

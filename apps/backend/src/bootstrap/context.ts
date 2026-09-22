@@ -56,6 +56,7 @@ import type { AuthStore } from "../auth/store"
 import type { CheckpointRevertOperationStore } from "../services/checkpoint-revert-operations"
 import type { ChatDispatchStore } from "../services/chat-dispatch-store"
 import type { RemoteAccessService } from "../remote/service"
+import type { DeviceManager } from "../remote/relay/manager"
 import type { RemoteProviderTurnOwnership } from "../remote/providerTurnOwnership"
 import type { TailscaleRemoteAccess } from "../remote/tailscale"
 import type { ThreadRetentionScheduler } from "../services/thread-retention"
@@ -141,6 +142,7 @@ export interface PersistenceContext {
 
 export interface SettingsContext {
   readonly settings: SettingsService
+  readonly devices?: DeviceManager
   readonly remoteAccess: RemoteAccessService
   readonly tailscale: TailscaleRemoteAccess
   readonly remoteProviderTurns: RemoteProviderTurnOwnership

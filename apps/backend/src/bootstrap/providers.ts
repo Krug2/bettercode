@@ -169,7 +169,7 @@ export function wireProviders(
   }
   const acpMcpServerResolver = async (cwd: string) =>
     portableMcpServersToAcp(await directAgentTools.mcpServerResolver(cwd))
-  let remoteAccessWasEnabled = currentSettings.remote_access_enabled === true
+  let remoteAccessWasEnabled = currentSettings.remote_access_enabled === true || currentSettings.remote_relay_enabled === true
 
   const anthropicKey = resolveAnthropicKey(currentSettings)
   providerRegistry.register(
@@ -394,7 +394,7 @@ export function wireProviders(
     // restart: the route that flips the setting has already run the CLI.
     config.trustLoopbackProxyHeaders =
       next.remote_access_tailscale_serve === true
-    if (remoteAccessWasEnabled && next.remote_access_enabled !== true) {
+    if (remoteAccessWasEnabled && next.remote_access_enabled !== true && next.remote_relay_enabled !== true) {
       remoteAccess.revokeOtherSessions()
       // Hosting off means the tailnet endpoint must disappear too; the
       // setting survives so re-enabling hosting brings it back.
@@ -407,7 +407,8 @@ export function wireProviders(
         })
       }
     }
-    remoteAccessWasEnabled = next.remote_access_enabled === true
+    remoteAccessWasEnabled = next.remote_access_enabled === true || next.remote_relay_enabled === true
+    settingsCtx.devices?.reconcile()
     if (remoteTerminalGrantRevoked(remoteTerminalSettings, next)) {
       for (const ownerId of remoteTerminalRevocationOwners(
         remoteAccess.listSessions()
@@ -561,6 +562,7 @@ export function wireProviders(
     chatDispatches,
     remoteAccess,
     remoteProviderTurns,
+    devices: settingsCtx.devices,
     tailscale,
     taintBackend,
     // HTTP and WS admission checks refuse new work after an instance-local
