@@ -10,6 +10,7 @@ interface Gesture {
   start: Point
   origin: Point
   camera: UsageLayout["camera"]
+  scale: number
   moved: boolean
 }
 
@@ -26,12 +27,13 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
       event.preventDefault()
       if (gesture.current) return
       const bounds = element.getBoundingClientRect()
-      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? bounds.height : 1
+      const scale = bounds.width / element.offsetWidth || 1
+      const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element.offsetHeight : 1
       const delta = Math.max(-240, Math.min(240, event.deltaY * unit))
       const store = useUsageGraphStore.getState()
       store.setCamera(zoomCamera(currentCamera.current, store.camera.zoom * Math.exp(-delta * 0.002), {
-        x: event.clientX - bounds.left - bounds.width / 2,
-        y: event.clientY - bounds.top - bounds.height / 2,
+        x: (event.clientX - bounds.left - bounds.width / 2) / scale,
+        y: (event.clientY - bounds.top - bounds.height / 2) / scale,
       }))
     }
     element.addEventListener("wheel", wheel, { passive: false })
@@ -44,7 +46,8 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
     const id = button?.dataset.blob ?? null
     const body = id ? scene.physics.bodies.get(id) : null
     const camera = { ...scene.currentCamera.current }
-    gesture.current = { pointer: event.pointerId, id, start: { x: event.clientX, y: event.clientY }, origin: body ? { x: body.x, y: body.y } : camera, camera, moved: false }
+    const scale = event.currentTarget.getBoundingClientRect().width / event.currentTarget.offsetWidth || 1
+    gesture.current = { pointer: event.pointerId, id, start: { x: event.clientX, y: event.clientY }, origin: body ? { x: body.x, y: body.y } : camera, camera, scale, moved: false }
     suppressClick.current = false
     ;(button ?? event.currentTarget).setPointerCapture(event.pointerId)
   }
@@ -52,8 +55,8 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
   const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
     const active = gesture.current
     if (!active || active.pointer !== event.pointerId) return
-    const dx = event.clientX - active.start.x, dy = event.clientY - active.start.y
-    if (!active.moved && Math.hypot(dx, dy) < 5) return
+    const dx = (event.clientX - active.start.x) / active.scale, dy = (event.clientY - active.start.y) / active.scale
+    if (!active.moved && Math.hypot(dx, dy) * active.scale < 5) return
     event.preventDefault()
     active.moved = true
     if (active.id) {
