@@ -171,6 +171,7 @@ export const PreviewViewport = forwardRef<
         cbs.onElementSelected?.(data as SelectedElement)
         break
       case "did-keydown":
+        if (workspace) break
         if (
           (data?.key === "Control" && data.ctrlKey === true) ||
           (data?.key === "Meta" && data.metaKey === true)
@@ -181,7 +182,7 @@ export const PreviewViewport = forwardRef<
         ) cbs.onShortcut?.("canvas-pan-start")
         break
     }
-  }, [])
+  }, [workspace])
 
   // Listen for postMessage (iframe fallback)
   useEffect(() => {

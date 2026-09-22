@@ -264,6 +264,7 @@ export function useCanvasTransform(
 
   // Temporary navigation restores the selected tool when the modifier lifts.
   useEffect(() => {
+    const editing = () => Boolean(document.activeElement?.matches("input,textarea,select,webview,iframe,[contenteditable]:not([contenteditable=false])"))
     const isTypingTarget = () => {
       const el = document.activeElement
       if (!el) return false
@@ -280,6 +281,7 @@ export function useCanvasTransform(
       )
     }
     const onKeyDown = (e: KeyboardEvent) => {
+      if (editing() || !viewportRef.current?.contains(document.activeElement)) return
       if (e.ctrlKey || e.metaKey) updateZoomHeld(true)
       // AltGr produces Ctrl+Alt on Windows; it must remain available for text.
       updateAltHeld(e.altKey && !e.ctrlKey && !e.metaKey)
@@ -298,8 +300,8 @@ export function useCanvasTransform(
       setSpaceHeld(true)
     }
     const onKeyUp = (e: KeyboardEvent) => {
-      updateZoomHeld(e.ctrlKey || e.metaKey)
-      updateAltHeld(e.altKey && !e.ctrlKey && !e.metaKey)
+      updateZoomHeld(!editing() && (e.ctrlKey || e.metaKey))
+      updateAltHeld(!editing() && e.altKey && !e.ctrlKey && !e.metaKey)
       if (e.code !== "Space") return
       setSpaceHeld(false)
     }
@@ -311,8 +313,8 @@ export function useCanvasTransform(
       setIsPanning(false)
     }
     const onPointerMove = (e: PointerEvent) => {
-      updateZoomHeld(e.ctrlKey || e.metaKey)
-      updateAltHeld(e.altKey && !e.ctrlKey && !e.metaKey)
+      updateZoomHeld(!editing() && (e.ctrlKey || e.metaKey))
+      updateAltHeld(!editing() && e.altKey && !e.ctrlKey && !e.metaKey)
     }
     const onVisibility = () => {
       if (document.visibilityState === "hidden") onBlur()
