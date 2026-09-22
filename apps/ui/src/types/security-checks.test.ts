@@ -1,11 +1,13 @@
 /// <reference types="node" />
-import { describe, it, expect } from "vitest"
+import { afterEach, describe, it, expect, vi } from "vitest"
 import { createRequire } from "node:module"
 import * as path from "node:path"
 
 // Loaded via createRequire because the module is .cjs and references
 // `appConfig.cjs` for DNS timeout — same pattern as the IPC parity test.
 const requireCjs = createRequire(import.meta.url)
+const dns = requireCjs("node:dns").promises as typeof import("node:dns/promises")
+afterEach(() => vi.restoreAllMocks())
 const {
   isPrivateOrReservedIp,
   assertSafePublicHost,
@@ -89,31 +91,21 @@ describe("isPrivateOrReservedIp", () => {
 
 describe("assertSafePublicHost", () => {
   it("rejects a hostname whose DNS lookup returns nothing", async () => {
-    // Use a hostname that's guaranteed to fail DNS in test env. The
-    // `.invalid` TLD is reserved (RFC 2606) and never resolves.
+    vi.spyOn(dns, "lookup").mockResolvedValue([])
     await expect(
       assertSafePublicHost("never-resolves-anywhere.invalid", { timeoutMs: 1000 }),
     ).rejects.toThrow(/DNS|invalid|resolution/i)
   })
 
   it("rejects a hostname that resolves to a private address (mocked)", async () => {
-    // localhost resolves to 127.0.0.1 / ::1 on every supported platform — both
-    // are caught by isPrivateOrReservedIp. Use a longer timeout so a slow CI
-    // resolver doesn't cause a false positive on the timeout path.
+    vi.spyOn(dns, "lookup").mockResolvedValue([{ address: "127.0.0.1", family: 4 }])
     await expect(
       assertSafePublicHost("localhost", { timeoutMs: 2000 }),
     ).rejects.toThrow(/private|reserved/i)
   })
 
   it("times out when DNS hangs", async () => {
-    // We want the timeout side of Promise.race to win. The smallest reliable
-    // way to test this without mocking the dns module is a tiny timeout: in
-    // 1ms a real DNS lookup never completes, so the sentinel wins, and
-    // assertSafePublicHost throws the timeout Error.
-    //
-    // Use real timers and attach the assertion BEFORE the timer can fire —
-    // that way no microtask boundary opens between the rejection and the
-    // handler, so Node never logs a PromiseRejectionHandledWarning.
+    vi.spyOn(dns, "lookup").mockImplementation(() => new Promise(() => {}))
     await expect(
       assertSafePublicHost("would-hang.example", { timeoutMs: 1 }),
     ).rejects.toThrow(/timed out|DNS|invalid|resolution/i)
@@ -122,12 +114,14 @@ describe("assertSafePublicHost", () => {
 
 describe("resolvePublicHostPinned (S1)", () => {
   it("rejects localhost — every resolved IP must be public", async () => {
+    vi.spyOn(dns, "lookup").mockResolvedValue([{ address: "127.0.0.1", family: 4 }])
     await expect(
       resolvePublicHostPinned("localhost", { timeoutMs: 2000 }),
     ).rejects.toThrow(/private|reserved/i)
   })
 
   it("times out when DNS hangs", async () => {
+    vi.spyOn(dns, "lookup").mockImplementation(() => new Promise(() => {}))
     await expect(
       resolvePublicHostPinned("would-hang.example", { timeoutMs: 1 }),
     ).rejects.toThrow(/timed out|DNS|invalid|resolution/i)
