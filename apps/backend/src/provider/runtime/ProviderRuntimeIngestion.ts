@@ -461,6 +461,7 @@ interface BufferedAssistantTranscript {
   reasoningBytes: number
   toolCalls: BufferedTranscriptToolCall[]
   toolCallsBytes: number
+  usage?: Record<string, number>
   providerKind?: string
   providerInstanceId?: string
   status?: string
@@ -1488,6 +1489,22 @@ export class ProviderRuntimeIngestion {
     if (!turnId) return true
     const key = assistantTranscriptKey(event.thread_id, turnId)
 
+    if (event.event_type === "token_usage" || event.event_type === "token.usage") {
+      if (this.isAssistantTranscriptEvicted(key, event.thread_id, turnId)) return true
+      const usage = transcriptUsage(payload.usage)
+      if (!usage) return true
+      const transcript = this.assistantTranscript(event, payload, turnId, recoverySnapshot)
+      if (projectionSequence <= transcript.lastAppliedProjectionSequence) {
+        return this.flushPreviouslyAppliedAssistantTranscript(key, transcript, flushImmediately)
+      }
+      transcript.usage = { ...transcript.usage, ...usage }
+      this.markAssistantTranscriptEventApplied(transcript, projectionSequence)
+      if (flushImmediately) return this.flushAssistantTranscript(key, false)
+      this.scheduleAssistantTranscriptFlush(transcript)
+      this.trimBufferedAssistantTranscripts()
+      return true
+    }
+
     if (isAssistantContentEvent(event.event_type, payload)) {
       if (this.isAssistantTranscriptEvicted(key, event.thread_id, turnId)) return true
       const text = providerTranscriptText(event.event_type, payload)
@@ -1699,6 +1716,7 @@ export class ProviderRuntimeIngestion {
       reasoningBytes,
       toolCalls,
       toolCallsBytes,
+      usage: transcriptUsage(persistedExtra.usage),
       providerKind: readString(
         payload,
         "providerKind",
@@ -2908,6 +2926,7 @@ function assistantTranscriptRequest(
           ? { assistantTextBoundaryPending: true }
           : {}),
         ...(transcript.reasoning ? { reasoning: transcript.reasoning } : {}),
+        ...(transcript.usage ? { usage: transcript.usage } : {}),
         ...(transcript.toolCalls.length > 0
           ? { toolCalls: transcript.toolCalls }
           : {}),
@@ -2926,6 +2945,16 @@ function assistantTranscriptRequest(
 
 function assistantTranscriptKey(threadId: string, turnId: string): string {
   return `${encodeURIComponent(threadId)}:${encodeURIComponent(turnId)}`
+}
+
+function transcriptUsage(value: unknown): Record<string, number> | undefined {
+  const source = asRecord(value)
+  const fields = ["inputTokens", "outputTokens", "usedTokens", "cachedInputTokens", "cacheReadTokens", "cacheCreationTokens", "reasoningOutputTokens", "totalCostUsd", "inputCostUsd", "outputCostUsd", "durationMs", "toolUses", "input_tokens", "output_tokens", "total_cost_usd", "cost", "totalCost", "total_cost"]
+  const usage = Object.fromEntries(fields.flatMap(key => {
+    const amount = source[key]
+    return typeof amount === "number" && Number.isFinite(amount) && amount >= 0 ? [[key, amount]] : []
+  }))
+  return Object.keys(usage).length ? usage : undefined
 }
 
 function positiveInteger(value: number | undefined, fallback: number): number {
