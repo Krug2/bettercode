@@ -12,7 +12,7 @@ export interface UsageLayout {
 interface UsageGraphState extends UsageLayout {
   toggle: (id: string) => void
   expand: (ids: string[]) => void
-  position: (id: string, point: Point) => void
+  move: (positions: Record<string, Point>) => void
   colorize: (ids: string[]) => void
   setCamera: (camera: UsageLayout["camera"]) => void
   reset: () => void
@@ -24,7 +24,7 @@ export const useUsageGraphStore = create<UsageGraphState>()(persist((set, get) =
   ...initial,
   toggle: id => set(state => ({ expanded: state.expanded.includes(id) ? state.expanded.filter(value => value !== id) : [...state.expanded, id] })),
   expand: expanded => set({ expanded }),
-  position: (id, point) => set(state => ({ positions: { ...state.positions, [id]: point } })),
+  move: positions => set(state => ({ positions: { ...state.positions, ...positions } })),
   setCamera: camera => set({ camera }),
   reset: () => set({ positions: {}, camera: initial.camera }),
   colorize: ids => {
