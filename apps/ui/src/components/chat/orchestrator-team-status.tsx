@@ -22,6 +22,7 @@ import {
 import {
   getOrchestratorStatus,
   stopOrchestrator,
+  resumeOrchestrator,
 } from "@/services/backend/orchestratorApi"
 
 const JOB_LABELS = {
@@ -145,6 +146,23 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
     }
   }
 
+  async function resume() {
+    if (stopping || !session) return
+    setStopping(true)
+    try {
+      const next = await resumeOrchestrator(session.threadId)
+      if (mounted.current) {
+        setSnapshot(next)
+        if (next.coordinator === "jev") useChatStore.getState().setThreadSetting(next.threadId, "orchestration", { enabled: true, coordinator: "jev", providers: next.allowedProviders, ...(next.selectedModels ? { models: next.selectedModels } : {}) })
+        setError(null)
+      }
+    } catch {
+      if (mounted.current) setError("Could not resume this workflow. Check its handoff and worker selection.")
+    } finally {
+      if (mounted.current) { setStopping(false); setReload(value => value + 1) }
+    }
+  }
+
   if (!session) return null
   const main = choices.find(
     (choice) => teamModelKey(choice.value) === teamModelKey(session.team.main)
@@ -193,7 +211,7 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
             {main?.label ?? session.team.main.modelId}
           </span>
         </span>
-        <span>· Chooses models and tasks</span>
+        <span>{session.coordinator === "jev" ? "· Jev coordinates" : "· Chooses models and tasks"}</span>
         {threadId !== rootId && (
           <Button
             size="sm"
@@ -206,10 +224,18 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
           </Button>
         )}
       </div>
+      {session.workflow && (
+        <div className="border-t border-border/40 px-4 py-3 text-xs">
+          <p className="font-medium">Jev · {session.workflow.status} · {session.workflow.active?.phase ?? session.workflow.records.at(-1)?.phase ?? "Ready"}</p>
+          <p className="mt-1 text-muted-foreground">{session.workflow.error ?? session.workflow.records.at(-1)?.result.summary ?? "Investigation, planning, implementation and review share a saved handoff."}</p>
+          {["failed", "cancelled", "interrupted"].includes(session.workflow.status) && (
+            <Button size="sm" variant="ghost" className="mt-2" disabled={stopping} onClick={() => void resume()}>Resume from handoff</Button>
+          )}
+        </div>
+      )}
       {!session.jobs.length ? (
         <p className="px-4 pb-4 text-xs text-muted-foreground">
-          Your main model will delegate when useful. Change the allowed
-          providers in + → Orchestration.
+          {session.coordinator === "jev" ? "Jev will select a worker for the next phase." : "Your main model will delegate when useful."} Change the allowed providers in + → Orchestration.
         </p>
       ) : (
         <div className="max-h-72 overflow-y-auto border-t border-border/40">
