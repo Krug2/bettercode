@@ -11,6 +11,7 @@ import "./usage-graph.css"
 
 export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
   const store = useUsageGraphStore()
+  const { colorize, positions, setCamera } = store
   const nodes = useMemo(() => usageNodes(models), [models])
   const visible = useMemo(() => visibleNodes(nodes, store.expanded), [nodes, store.expanded])
   const stage = useRef<HTMLDivElement>(null)
@@ -19,7 +20,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
   const scene = useBlobScene(nodes, visible, store.positions, store.camera)
   const { onKeyDown, ...pointerEvents } = useBlobInput(scene, () => { autoFit.current = false })
 
-  useEffect(() => { store.colorize(models.map(model => model.id)) }, [models, store.colorize])
+  useEffect(() => { colorize(models.map(model => model.id)) }, [models, colorize])
   useEffect(() => {
     if (!stage.current) return
     const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height }))
@@ -35,10 +36,10 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
 
   useLayoutEffect(() => {
     if (!autoFit.current) return
-    const targets = blobTargets(nodes, store.positions)
-    separateTargets(visible, targets, store.positions)
-    store.setCamera(fitBlobs(visible, targets, size.width, size.height))
-  }, [nodes, visible, store.positions, store.setCamera, size])
+    const targets = blobTargets(nodes, positions)
+    separateTargets(visible, targets, positions)
+    setCamera(fitBlobs(visible, targets, size.width, size.height))
+  }, [nodes, visible, positions, setCamera, size])
 
   const zoom = (factor: number) => {
     autoFit.current = false
