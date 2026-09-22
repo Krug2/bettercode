@@ -10,7 +10,7 @@ export interface BlobBody extends Point {
   motion: Point
   slosh: Point
   sloshVelocity: Point
-  direction: number
+  strain: Point
   scale: number
   scaleVelocity: number
   wobble: number
@@ -43,7 +43,7 @@ export class BlobPhysics {
       const target = targets.get(node.id)!
       let body = this.bodies.get(node.id)
       if (!body) {
-        body = { node, ...target, target, vx: 0, vy: 0, previous: { ...target }, motion: { x: 0, y: 0 }, slosh: { x: 0, y: 0 }, sloshVelocity: { x: 0, y: 0 }, direction: 0, scale: 0, scaleVelocity: 0, wobble: 0, wobbleVelocity: 0, phase: [...node.id].reduce((value, char) => (value * 31 + char.charCodeAt(0)) % 628, 0) / 100, visible: false, closing: false, launching: false, delay: 0 }
+        body = { node, ...target, target, vx: 0, vy: 0, previous: { ...target }, motion: { x: 0, y: 0 }, slosh: { x: 0, y: 0 }, sloshVelocity: { x: 0, y: 0 }, strain: { x: 0, y: 0 }, scale: 0, scaleVelocity: 0, wobble: 0, wobbleVelocity: 0, phase: [...node.id].reduce((value, char) => (value * 31 + char.charCodeAt(0)) % 628, 0) / 100, visible: false, closing: false, launching: false, delay: 0 }
         this.bodies.set(node.id, body)
       }
       body.node = node; body.target = target
@@ -76,34 +76,47 @@ export class BlobPhysics {
         this.stillContents(body)
         const dx = body.target.x - body.x, dy = body.target.y - body.y, distance = Math.hypot(dx, dy) || 1
         body.vx = dx / distance * 21; body.vy = dy / distance * 21
-        body.wobbleVelocity = 0.075; body.visible = true; body.launching = false
-        if (parent && parent.node.id !== this.dragging) { parent.vx -= dx / distance * 1.8; parent.vy -= dy / distance * 1.8 }
+        body.wobbleVelocity = 0.02; body.visible = true; body.launching = false
+        if (parent && parent.node.id !== this.dragging) { parent.vx -= dx / distance * 0.8; parent.vy -= dy / distance * 0.8 }
       }
       if (!body.visible) continue
       if (body.node.id !== this.dragging) {
         const target = body.closing ? this.bodies.get(body.node.parent ?? "") ?? body.target : body.target
-        body.vx = (body.vx + (target.x - body.x) * 0.04 * dt) * Math.pow(0.83, dt)
-        body.vy = (body.vy + (target.y - body.y) * 0.04 * dt) * Math.pow(0.83, dt)
+        body.vx = (body.vx + (target.x - body.x) * 0.055 * dt) * Math.pow(0.64, dt)
+        body.vy = (body.vy + (target.y - body.y) * 0.055 * dt) * Math.pow(0.64, dt)
         body.x += body.vx * dt; body.y += body.vy * dt
       }
       const motion = { x: (body.x - body.previous.x) / dt, y: (body.y - body.previous.y) / dt }
-      const acceleration = { x: motion.x - body.motion.x, y: motion.y - body.motion.y }
+      const limit = body.node.radius * 0.075
+      body.motion.x += (motion.x - body.motion.x) * (1 - Math.exp(-dt * 0.32))
+      body.motion.y += (motion.y - body.motion.y) * (1 - Math.exp(-dt * 0.32))
+      const speed = Math.hypot(body.motion.x, body.motion.y)
+      const lag = Math.min(0.22, limit / (speed || 1))
       for (const axis of ["x", "y"] as const) {
-        const impulse = Math.max(-20, Math.min(20, acceleration[axis])) * 0.42
-        body.sloshVelocity[axis] = (body.sloshVelocity[axis] - impulse - body.slosh[axis] * 0.065 * dt) * Math.pow(0.85, dt)
+        const target = -body.motion[axis] * lag
+        body.sloshVelocity[axis] = (body.sloshVelocity[axis] + (target - body.slosh[axis]) * 0.18 * dt) * Math.pow(0.48, dt)
         body.slosh[axis] += body.sloshVelocity[axis] * dt
       }
-      const slosh = Math.hypot(body.slosh.x, body.slosh.y), limit = body.node.radius * 0.16
+      const slosh = Math.hypot(body.slosh.x, body.slosh.y)
       if (slosh > limit) {
         body.slosh.x *= limit / slosh; body.slosh.y *= limit / slosh
         body.sloshVelocity.x *= 0.5; body.sloshVelocity.y *= 0.5
       }
-      body.previous = { x: body.x, y: body.y }; body.motion = motion
-      if (Math.hypot(motion.x, motion.y) > 0.1) body.direction = Math.atan2(motion.y, motion.x)
+      body.previous = { x: body.x, y: body.y }
       body.scaleVelocity = (body.scaleVelocity + ((body.closing ? 0 : 1) - body.scale) * 0.15 * dt) * Math.pow(0.68, dt)
-      body.scale = Math.max(0, Math.min(1.08, body.scale + body.scaleVelocity * dt))
-      body.wobbleVelocity = (body.wobbleVelocity - body.wobble * 0.11 * dt + Math.min(0.035, Math.hypot(acceleration.x, acceleration.y) * 0.0015)) * Math.pow(0.82, dt)
-      body.wobble = Math.max(-0.12, Math.min(0.12, body.wobble + body.wobbleVelocity * dt))
+      body.scale = Math.max(0, Math.min(1.03, body.scale + body.scaleVelocity * dt))
+      body.wobbleVelocity = (body.wobbleVelocity - body.wobble * 0.1 * dt) * Math.pow(0.58, dt)
+      body.wobble = Math.max(-0.035, Math.min(0.035, body.wobble + body.wobbleVelocity * dt))
+      const stretch = Math.min(0.07, speed * 0.0018) + body.wobble
+      const strain = speed > 0.01 ? {
+        x: stretch * (body.motion.x ** 2 - body.motion.y ** 2) / speed ** 2,
+        y: stretch * 2 * body.motion.x * body.motion.y / speed ** 2,
+      } : { x: 0, y: 0 }
+      for (const axis of ["x", "y"] as const) {
+        const change = (strain[axis] - body.strain[axis]) * (1 - Math.exp(-dt * 0.18))
+        body.strain[axis] += change
+        energy += Math.abs(change) * 80
+      }
       if (body.closing && body.scale < 0.025) { body.visible = false; body.closing = false }
       energy += Math.abs(body.vx) + Math.abs(body.vy) + Math.abs(body.scaleVelocity) * 30 + Math.abs(body.wobbleVelocity) * 30
       energy += Math.hypot(body.sloshVelocity.x, body.sloshVelocity.y) + slosh * 0.2 + Math.abs(body.wobble) * 5
@@ -162,5 +175,6 @@ export class BlobPhysics {
     body.motion = { x: 0, y: 0 }
     body.slosh = { x: 0, y: 0 }
     body.sloshVelocity = { x: 0, y: 0 }
+    body.strain = { x: 0, y: 0 }
   }
 }
