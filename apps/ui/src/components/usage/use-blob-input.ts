@@ -13,7 +13,7 @@ interface Gesture {
   moved: boolean
 }
 
-export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefObject<HTMLDivElement | null>, onManualMove: () => void) {
+export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefObject<HTMLDivElement | null>) {
   const gesture = useRef<Gesture | null>(null)
   const suppressClick = useRef(false)
   const { currentCamera } = scene
@@ -25,7 +25,6 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
       if (!event.deltaY || !Number.isFinite(event.deltaY)) return
       event.preventDefault()
       if (gesture.current) return
-      onManualMove()
       const bounds = element.getBoundingClientRect()
       const unit = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? bounds.height : 1
       const delta = Math.max(-240, Math.min(240, event.deltaY * unit))
@@ -37,7 +36,7 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
     }
     element.addEventListener("wheel", wheel, { passive: false })
     return () => element.removeEventListener("wheel", wheel)
-  }, [stage, currentCamera, onManualMove])
+  }, [stage, currentCamera])
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || gesture.current) return
@@ -57,7 +56,6 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
     if (!active.moved && Math.hypot(dx, dy) < 5) return
     event.preventDefault()
     active.moved = true
-    onManualMove()
     if (active.id) {
       scene.physics.moveBranch(active.id, { x: active.origin.x + dx / active.camera.zoom, y: active.origin.y + dy / active.camera.zoom }, scene.reducedMotion)
       scene.wake()
@@ -82,7 +80,6 @@ export function useBlobInput(scene: ReturnType<typeof useBlobScene>, stage: RefO
     const direction = directions[event.key], body = scene.physics.bodies.get(id)
     if (!direction || !body) return
     event.preventDefault()
-    onManualMove()
     const distance = event.shiftKey ? 60 : 20
     scene.physics.moveBranch(id, { x: body.x + direction.x * distance, y: body.y + direction.y * distance }, scene.reducedMotion)
     useUsageGraphStore.getState().move(scene.physics.releaseBranch())

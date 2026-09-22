@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react"
+import { useEffect, useMemo, useRef, type CSSProperties } from "react"
 import { ExpandIcon, MinusIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
 import type { UsageModel } from "@betterc0de/schema"
 import { Button } from "@/components/ui/button"
@@ -9,43 +9,27 @@ import { useBlobScene } from "./use-blob-scene"
 import { useBlobInput } from "./use-blob-input"
 import { blobPalette } from "./blob-palette"
 import { zoomCamera } from "./graph-camera"
+import { useGraphViewport } from "./use-graph-viewport"
 import "./usage-graph.css"
 
 export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
   const store = useUsageGraphStore()
-  const { colorize, positions, setCamera } = store
+  const { colorize, positions } = store
   const nodes = useMemo(() => usageNodes(models), [models])
   const visible = useMemo(() => visibleNodes(nodes, store.expanded), [nodes, store.expanded])
   const stage = useRef<HTMLDivElement>(null)
-  const autoFit = useRef(Object.keys(store.positions).length === 0 && store.camera.zoom === 1)
-  const [size, setSize] = useState({ width: 800, height: 520 })
+  const { size, height } = useGraphViewport(stage, nodes, visible, positions)
   const scene = useBlobScene(nodes, visible, store.positions, store.camera)
-  const manualMove = useCallback(() => { autoFit.current = false }, [])
-  const { onKeyDown, ...pointerEvents } = useBlobInput(scene, stage, manualMove)
+  const { onKeyDown, ...pointerEvents } = useBlobInput(scene, stage)
 
   useEffect(() => { colorize(models.map(model => model.id)) }, [models, colorize])
-  useEffect(() => {
-    if (!stage.current) return
-    const observer = new ResizeObserver(([entry]) => setSize({ width: entry.contentRect.width, height: entry.contentRect.height }))
-    observer.observe(stage.current)
-    return () => observer.disconnect()
-  }, [])
-
-  const fit = () => {
-    const targets = blobTargets(nodes, store.positions)
-    separateTargets(visible, targets, store.positions)
+  const fit = (saved = positions) => {
+    const targets = blobTargets(nodes, saved)
+    separateTargets(visible, targets, saved)
     store.setCamera(fitBlobs(visible, targets, size.width, size.height))
   }
 
-  useLayoutEffect(() => {
-    if (!autoFit.current) return
-    const targets = blobTargets(nodes, positions)
-    separateTargets(visible, targets, positions)
-    setCamera(fitBlobs(visible, targets, size.width, size.height))
-  }, [nodes, visible, positions, setCamera, size])
-
   const zoom = (factor: number) => {
-    autoFit.current = false
     store.setCamera(zoomCamera(scene.currentCamera.current, store.camera.zoom * factor))
   }
   const hue = (model: string | null) => model === null ? undefined : { "--blob-hue": store.colors[model] ?? 210 } as CSSProperties
@@ -58,11 +42,11 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
           <p>Open a blob to explore. Larger, darker blobs mean more usage. Drag to move a branch.</p>
         </div>
         <div className="usage-actions">
-          <Button variant="outline" size="sm" onClick={() => { autoFit.current = true; store.expand(nodes.filter(node => node.children.length).map(node => node.id)) }} disabled={!models.length}>Open all</Button>
-          <Button variant="ghost" size="sm" onClick={() => { autoFit.current = true; store.expand([]) }}>Collapse all</Button>
+          <Button variant="outline" size="sm" onClick={() => store.expand(nodes.filter(node => node.children.length).map(node => node.id))} disabled={!models.length}>Open all</Button>
+          <Button variant="ghost" size="sm" onClick={() => store.expand([])}>Collapse all</Button>
         </div>
       </div>
-      <div className="usage-graph-stage" ref={stage} {...pointerEvents} aria-label="Interactive token usage graph">
+      <div className="usage-graph-stage" ref={stage} style={height ? { height } : undefined} {...pointerEvents} aria-label="Interactive token usage graph">
         <div className="usage-graph-grid" ref={scene.grid} aria-hidden="true" />
         <div className="usage-graph-world" ref={scene.world} style={{ "--usage-zoom": store.camera.zoom } as CSSProperties}>
           <svg className="usage-graph-links" width="1" height="1" aria-hidden="true">
@@ -108,8 +92,8 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
           <Button variant="ghost" size="icon" aria-label="Zoom out" onClick={() => zoom(1 / 1.25)}><MinusIcon className="size-4" /></Button>
           <span className="usage-zoom">{Math.round(store.camera.zoom * 100)}%</span>
           <Button variant="ghost" size="icon" aria-label="Zoom in" onClick={() => zoom(1.25)}><PlusIcon className="size-4" /></Button>
-          <Button variant="ghost" size="icon" aria-label="Fit all visible blobs" onClick={fit}><ExpandIcon className="size-4" /></Button>
-          <Button variant="ghost" size="icon" aria-label="Reset blob positions" onClick={() => { autoFit.current = true; store.reset() }}><RotateCcwIcon className="size-4" /></Button>
+          <Button variant="ghost" size="icon" aria-label="Fit all visible blobs" onClick={() => fit()}><ExpandIcon className="size-4" /></Button>
+          <Button variant="ghost" size="icon" aria-label="Reset blob positions" onClick={() => { store.reset(); fit({}) }}><RotateCcwIcon className="size-4" /></Button>
         </div>
       </div>
     </section>
