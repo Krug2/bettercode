@@ -10,6 +10,7 @@ export default defineConfig({
     // information is visible at all rather than hover-only.
     include: ["src/**/*.test.{ts,tsx}"],
     environment: "node",
+    maxWorkers: 4,
     globals: true,
   },
   resolve: {
