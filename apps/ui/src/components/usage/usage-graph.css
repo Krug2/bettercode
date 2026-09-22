@@ -61,6 +61,9 @@
 .usage-blob-compact { gap: 2px; }
 .usage-blob-compact .usage-blob-label { display: block; white-space: nowrap; text-overflow: ellipsis; }
 .usage-blob-compact .usage-blob-hint { display: none; }
+.usage-blob-label { transform: translate(calc(var(--blob-slosh-x, 0px) * 1.05), calc(var(--blob-slosh-y, 0px) * 1.05)) rotate(var(--blob-tilt, 0deg)); }
+.usage-blob strong { transform: translate(calc(var(--blob-slosh-x, 0px) * 0.7), calc(var(--blob-slosh-y, 0px) * 0.7)) rotate(calc(var(--blob-tilt, 0deg) * -0.6)); }
+.usage-blob-hint { transform: translate(calc(var(--blob-slosh-x, 0px) * 1.2), calc(var(--blob-slosh-y, 0px) * 1.2)); }
 .usage-blob-toggle { position: absolute; bottom: 4px; font-size: 12px; line-height: 12px; opacity: 0.65; }
 .usage-graph-footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 20px; border-top: 1px solid var(--border); }
 .usage-graph-footer p { font-size: 11px; color: var(--muted-foreground); }

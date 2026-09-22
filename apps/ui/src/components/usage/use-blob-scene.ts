@@ -24,10 +24,14 @@ export function useBlobScene(nodes: BlobNode[], visible: BlobNode[], positions: 
       if (button) {
         button.hidden = !body.visible
         button.style.transform = `translate(${body.x - body.node.radius}px, ${body.y - body.node.radius}px) scale(${body.scale})`
+        button.style.setProperty("--blob-slosh-x", `${body.slosh.x.toFixed(3)}px`)
+        button.style.setProperty("--blob-slosh-y", `${body.slosh.y.toFixed(3)}px`)
+        button.style.setProperty("--blob-tilt", `${(body.slosh.x / body.node.radius * 24).toFixed(3)}deg`)
       }
       if (body.visible) {
-        const speed = Math.hypot(body.vx, body.vy)
-        shapes.current.get(id)?.setAttribute("d", blobShape(body.node.radius * 0.95, body.phase, Math.min(0.14, speed * 0.003) + body.wobble, Math.atan2(body.vy, body.vx)))
+        const speed = Math.hypot(body.motion.x, body.motion.y)
+        const ripple = Math.hypot(body.slosh.x, body.slosh.y) / body.node.radius * 0.4
+        shapes.current.get(id)?.setAttribute("d", blobShape(body.node.radius * 0.95, body.phase, Math.min(0.16, speed * 0.0035) + body.wobble, body.direction, ripple))
       }
       const link = links.current.get(id), parent = physics.bodies.get(body.node.parent ?? "")
       if (!link || !parent) continue
@@ -53,6 +57,7 @@ export function useBlobScene(nodes: BlobNode[], visible: BlobNode[], positions: 
       current.y += (target.y - current.y) * rate
       current.zoom += (target.zoom - current.zoom) * rate
       paint()
+      if (physics.dragging) steps = 0
       if ((energy > 0.025 || cameraEnergy > 0.1) && ++steps < 600) {
         frame.current = requestAnimationFrame(tick)
       } else {
