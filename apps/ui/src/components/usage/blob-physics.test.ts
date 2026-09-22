@@ -65,8 +65,10 @@ describe("blob motion", () => {
     expect(body.slosh.x).toBeLessThan(0)
     expect(body.slosh.y).toBeLessThan(0)
     expect(Math.hypot(body.strain.x, body.strain.y)).toBeGreaterThan(0)
-    expect(body.x).toBe(80)
-    expect(body.y).toBe(40)
+    expect(body.x).toBeGreaterThan(0)
+    expect(body.x).toBeLessThan(80)
+    expect(body.y).toBeGreaterThan(0)
+    expect(body.y).toBeLessThan(40)
     let largestRebound = 0
     for (let frame = 0; frame < 90; frame++) {
       engine.step(16.667)
@@ -76,7 +78,7 @@ describe("blob motion", () => {
     engine.releaseBranch()
     tick(engine)
     expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThan(0.001)
-    expect(body.x).toBe(80)
+    expect(body.x).toBeCloseTo(80, 6)
   })
 
   it("bounds liquid motion on rapid direction changes and removes it for reduced motion", () => {
@@ -105,5 +107,24 @@ describe("blob motion", () => {
       expect(body.strain.y).toBeCloseTo(0, 8)
       expect(body.strain.x).toBeLessThanOrEqual(0.071)
     }
+  })
+
+  it("smooths sparse pointer updates consistently across display refresh rates", () => {
+    const simulate = (interval: number) => {
+      const engine = new BlobPhysics()
+      engine.sync(nodes, visibleNodes(nodes, []), {}, true)
+      const body = engine.bodies.get("total")!
+      engine.moveBranch("total", { x: 600, y: 200 })
+      expect(body.x).toBe(0)
+      let previous = 0
+      for (let time = 0; time < 200 - 0.001; time += interval) {
+        engine.step(interval)
+        expect(body.x).toBeGreaterThanOrEqual(previous)
+        expect(body.x).toBeLessThanOrEqual(600)
+        previous = body.x
+      }
+      return body.x
+    }
+    expect(simulate(1000 / 30)).toBeCloseTo(simulate(1000 / 120), 5)
   })
 })
