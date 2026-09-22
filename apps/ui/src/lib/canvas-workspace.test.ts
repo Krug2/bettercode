@@ -19,6 +19,9 @@ describe("workspace layout", () => {
   it("normalizes websites and local servers but rejects executable URLs", () => {
     expect(workspaceUrl("github.com/Krug2/bettercode")).toBe("https://github.com/Krug2/bettercode")
     expect(workspaceUrl("localhost:3000")).toBe("http://localhost:3000/")
+    expect(workspaceUrl("localhost:3000?view=preview")).toBe("http://localhost:3000/?view=preview")
+    expect(workspaceUrl("127.0.0.2:8080")).toBe("http://127.0.0.2:8080/")
+    expect(workspaceUrl("example.com:8443/docs")).toBe("https://example.com:8443/docs")
     for (const url of ["javascript:alert(1)", "file:///etc/passwd", "data:text/html,test", "https://user:pass@example.com", ""]) expect(workspaceUrl(url)).toBeNull()
   })
 })
