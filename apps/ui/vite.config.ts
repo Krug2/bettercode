@@ -44,7 +44,6 @@ const VENDOR_CHUNK_MAP: Record<string, readonly string[]> = {
     "@radix-ui", "radix-ui",
     "class-variance-authority", "clsx", "tailwind-merge", "lucide-react",
     "@floating-ui", "tippy.js", "cmdk",
-    "embla-carousel", "embla-carousel-react", "embla-carousel-reactive-utils",
   ],
   "vendor-motion": ["motion", "framer-motion"],
   "vendor-remotion": ["remotion", "@remotion"],
