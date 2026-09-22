@@ -24,6 +24,7 @@ import { SidebarThreadList } from "@/components/sidebar/thread-list"
 import { SidebarTaskList } from "@/components/sidebar/thread-task-list"
 import { useAppearanceStore } from "@/lib/appearance-store"
 import { SidebarFooter } from "@/components/sidebar/sidebar-footer"
+import { WorkspaceSidebar } from "@/components/design/workspace-sidebar"
 import { SidebarProviderUpdatePill } from "@/components/sidebar/provider-update-pill"
 import type { ConfirmAction } from "@/components/dialogs/confirm-action-dialog"
 import { resolveThreadRuntimePath } from "@/lib/thread-context"
@@ -325,7 +326,7 @@ export function LeftSidebar({
           without an active project: no file tree, no chat list). Before
           this wrapper, skipping both blocks caused SidebarQuickActions +
           SidebarFooter to collapse together at the top. */}
-      {workspaceSidebar && (
+      {appMode === "editor" && (
         <EditorWorkspaceNavigation
           projectPath={editorProjectPath}
           projectName={activeThread?.projectName}
@@ -342,7 +343,8 @@ export function LeftSidebar({
       )}
       <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {/* Files, search, Git and Diff follow the active workspace in both workbenches. */}
-        {workspaceSidebar &&
+        {appMode === "design" && <WorkspaceSidebar />}
+        {appMode === "editor" &&
           (editorProjectPath ? (
             <EditorModeSidebarContent
               projectPath={editorProjectPath}
