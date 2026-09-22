@@ -37,7 +37,8 @@ export function solveContacts<T extends ContactBody>(bodies: T[], dragging: stri
         const pressure = Math.min(0.18, (gap - distance) / Math.min(ra, rb) * 0.7)
         a.pressure.x -= (nx * nx - ny * ny) * pressure; a.pressure.y -= 2 * nx * ny * pressure
         b.pressure.x -= (nx * nx - ny * ny) * pressure; b.pressure.y -= 2 * nx * ny * pressure
-        const push = Math.max(0, gap - distance - softness) * (1 - Math.exp(-6 * dt))
+        const penetration = gap - distance
+        const push = Math.max(Math.max(0, penetration - softness) * (1 - Math.exp(-6 * dt)), penetration - Math.min(ra, rb) * 0.18)
         if (push < 0.002) continue
         const wa = a.node.id === dragging ? 0 : 1 / ra ** 2
         const wb = b.node.id === dragging ? 0 : 1 / rb ** 2
