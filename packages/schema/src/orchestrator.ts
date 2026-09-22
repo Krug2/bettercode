@@ -50,6 +50,7 @@ export const chatOrchestrationSchema = z.discriminatedUnion("enabled", [
   z
     .object({
       enabled: z.literal(true),
+      coordinator: z.enum(["main", "jev"]).optional(),
       providers: z
         .array(orchestratorProviderSchema)
         .min(1)
@@ -109,6 +110,7 @@ export function orchestrationForMain(
   mainProvider: string | null | undefined
 ): ChatOrchestration {
   if (!selection.enabled) return selection
+  if (selection.coordinator === "jev") return selection
   const providers = selection.providers.filter(
     (provider) => provider !== mainProvider
   )
@@ -267,13 +269,38 @@ export const orchestratorJobSchema = z.object({
   error: z.string().nullable(),
   createdAt: z.string(),
   finishedAt: z.string().nullable(),
+  permissionLevel: z.enum(["read-only", "ask-on-edit"]).optional(),
+})
+export const orchestratorWorkflowSchema = z.object({
+  version: z.literal(1),
+  id: z.string(),
+  revision: z.number().int().nonnegative(),
+  goal: z.string().max(16000),
+  context: z.string().max(16000).default(""),
+  scope: z.array(z.string()).max(100),
+  constraints: z.array(z.string()).max(32),
+  allowWrite: z.boolean(),
+  maxSteps: z.number().int().min(2).max(12),
+  status: z.enum(["ready", "running", "completed", "blocked", "failed", "cancelled", "interrupted"]),
+  active: z.object({ requestId: z.string(), phase: z.enum(["investigate", "plan", "implement", "review"]), workerId: z.string() }).nullable(),
+  records: z.array(z.object({
+    requestId: z.string(), workerId: z.string(), phase: z.enum(["investigate", "plan", "implement", "review"]),
+    interrupted: z.boolean().optional(),
+    result: z.object({ summary: z.string().max(12000), files: z.array(z.string()).optional(), plan: z.array(z.string()).optional(), verdict: z.enum(["pass", "revise", "blocked"]).optional() }),
+  })).max(12),
+  decisions: z.array(z.object({ kind: z.string(), choice: z.string(), confidence: z.number().min(0).max(1), model: z.string(), revision: z.number().int() })).max(26),
+  usage: z.object({ inputTokens: z.number().int().nonnegative(), outputTokens: z.number().int().nonnegative() }),
+  error: z.string().nullable(),
+  updatedAt: z.string(),
 })
 export const orchestratorSessionSchema = z.object({
   threadId: z.string(),
   projectPath: z.string(),
   team: orchestratorTeamSchema,
   mode: z.enum(["team", "chat"]).default("team"),
-  allowedProviders: z.array(orchestratorProviderSchema).max(2).default([]),
+  allowedProviders: z.array(orchestratorProviderSchema).max(3).default([]),
+  coordinator: z.enum(["main", "jev"]).optional(),
+  workflow: orchestratorWorkflowSchema.optional(),
   availableMemberIds: z.array(z.string()).max(128).default([]),
   selectedModels: selectedModelsSchema.optional(),
   currentTaskCount: z.number().int().nonnegative().max(32).default(0),

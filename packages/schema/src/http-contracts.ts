@@ -245,6 +245,7 @@ export const httpContracts = {
   orchestratorStart: endpoint("POST", "/orchestrator/start", orchestratorStartSchema, orchestratorSessionSchema),
   orchestratorStatus: endpoint("POST", "/orchestrator/status", orchestratorThreadSchema, orchestratorSessionSchema.nullable()),
   orchestratorStop: endpoint("POST", "/orchestrator/stop", orchestratorThreadSchema, orchestratorSessionSchema),
+  orchestratorResume: endpoint("POST", "/orchestrator/resume", orchestratorThreadSchema, orchestratorSessionSchema),
   orchestratorContextGrant: endpoint("POST", "/orchestrator/context/grant", orchestratorContextGrantSchema, orchestratorContextSchema),
   orchestratorContextRead: endpoint("POST", "/orchestrator/context/read", orchestratorContextKeySchema, orchestratorContextSchema),
   orchestratorContextRemove: endpoint("POST", "/orchestrator/context/remove", orchestratorContextKeySchema, z.object({ removed: z.literal(true) })),
