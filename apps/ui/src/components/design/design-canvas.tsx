@@ -264,6 +264,7 @@ export function DesignCanvas({
             className="relative min-h-0 flex-1 overflow-hidden outline-none"
             style={gridStyle}
             onPointerDown={(event) => {
+              if (!event.currentTarget.contains(event.target as Node)) return
               if (!(event.target as Element).closest("[data-canvas-project],[data-workspace-window],[data-canvas-controls]")) panHandlers.onPointerDown(event)
             }}
             onPointerMove={panHandlers.onPointerMove}
