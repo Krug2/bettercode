@@ -64,7 +64,17 @@ export class BlobPhysics {
   }
 
   step(milliseconds: number): number {
-    const dt = Math.max(0.25, Math.min(2, milliseconds / 16.667))
+    if (milliseconds <= 0) return 1
+    const elapsed = Math.min(48, milliseconds), dragged = this.bodies.get(this.dragging ?? "")
+    const travel = dragged ? Math.hypot(dragged.target.x - dragged.x, dragged.target.y - dragged.y) * (1 - Math.exp(-elapsed / 16.667 * 0.85)) : 0
+    const slices = Math.min(64, Math.max(1, Math.ceil(elapsed / 8.333), Math.ceil(travel / 12)))
+    let energy = 0
+    for (let slice = 0; slice < slices; slice++) energy = this.advance(elapsed / slices)
+    return energy
+  }
+
+  private advance(milliseconds: number): number {
+    const dt = milliseconds / 16.667
     let energy = 0
     const bodies = [...this.bodies.values()]
     for (const body of bodies) {
@@ -80,7 +90,12 @@ export class BlobPhysics {
         if (parent && parent.node.id !== this.dragging) { parent.vx -= dx / distance * 0.8; parent.vy -= dy / distance * 0.8 }
       }
       if (!body.visible) continue
-      if (body.node.id !== this.dragging) {
+      if (body.node.id === this.dragging) {
+        const rate = 1 - Math.exp(-dt * 0.85)
+        body.vx = (body.target.x - body.x) * rate / dt
+        body.vy = (body.target.y - body.y) * rate / dt
+        body.x += body.vx * dt; body.y += body.vy * dt
+      } else {
         const target = body.closing ? this.bodies.get(body.node.parent ?? "") ?? body.target : body.target
         body.vx = (body.vx + (target.x - body.x) * 0.055 * dt) * Math.pow(0.64, dt)
         body.vy = (body.vy + (target.y - body.y) * 0.055 * dt) * Math.pow(0.64, dt)
@@ -143,12 +158,12 @@ export class BlobPhysics {
   moveBranch(id: string, point: Point, instant = false): void {
     const parent = this.bodies.get(id)
     if (!parent) return
-    const dx = point.x - parent.x, dy = point.y - parent.y
+    const dx = point.x - parent.target.x, dy = point.y - parent.target.y
     this.dragging = id
     for (const child of descendants(this.nodes, id)) {
       const body = this.bodies.get(child)!
       body.target = { x: body.target.x + dx, y: body.target.y + dy }
-      if (child === id || instant || !body.visible) { body.x += dx; body.y += dy; body.vx = body.vy = 0 }
+      if (instant || !body.visible) { body.x = body.target.x; body.y = body.target.y; body.vx = body.vy = 0 }
       if (instant) { this.stillContents(body); body.wobble = body.wobbleVelocity = 0 }
     }
     parent.target = { ...point }
@@ -157,6 +172,8 @@ export class BlobPhysics {
   releaseBranch(): Record<string, Point> {
     if (!this.dragging) return {}
     const positions = Object.fromEntries([...descendants(this.nodes, this.dragging)].map(id => [id, { ...this.bodies.get(id)!.target }]))
+    const body = this.bodies.get(this.dragging)!
+    body.vx = body.vy = 0
     this.dragging = null
     return positions
   }
