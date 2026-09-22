@@ -14,6 +14,7 @@ import { isAllowedBrowserOrigin } from "../security/origin";
 import { constantTimeEqual } from "../security/token";
 import { registerHealthRoute, registerRuntimeRoutes } from "./routes/runtime";
 import { registerSettingsRoutes } from "./routes/settings";
+import { registerDeviceRoutes } from "./routes/devices";
 import { registerThemesRoutes } from "./routes/themes";
 import { registerThreadsRoutes } from "./routes/threads";
 import { registerProjectsRoutes } from "./routes/projects";
@@ -92,6 +93,7 @@ function buildApiRoutes(state: AppState, config: ServerConfig): Hono {
     }),
   );
   registerRemoteRoutes(api, config, state);
+  registerDeviceRoutes(api, config, state);
   registerRuntimeRoutes(api, state);
   registerSettingsRoutes(api, state);
   registerThemesRoutes(api, config);
