@@ -195,9 +195,11 @@ describe("coordinator-scoped MCP harness", () => {
       "share_context",
       "spawn_agent",
       "spawn_task",
+      "start_workflow",
       "task_status",
       "team_members",
       "wait_task",
+      "wait_workflow",
     ])
     expect(tools.every((tool) => tool.outputSchema)).toBe(true)
     expect(

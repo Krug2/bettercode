@@ -6,6 +6,7 @@ import { z } from "zod"
 import {
   orchestratorJobSchema,
   orchestratorSessionSchema,
+  orchestratorWorkflowSchema,
   orchestratorContextSchema,
   orchestratorContextPreviewSchema,
   orchestratorContextAuthorSchema,
@@ -302,6 +303,28 @@ export class OrchestratorMcpHarness {
       (args) => run(() => this.service.shareContext(scope.threadId, args))
     )
     if (!this.service.isCoordinator(scope.threadId)) return server
+    const workflowOutput = z.object({
+      workflow: orchestratorWorkflowSchema,
+      waiting: z.array(z.object({ threadId: z.string(), name: z.string() })),
+    })
+    server.registerTool("start_workflow", {
+      description: "Start the saved user request under Jev coordination. Repeated calls return the same workflow. Jev chooses phases and workers; inspect it with wait_workflow.",
+      inputSchema: z.object({}).strict(), outputSchema: workflowOutput,
+      annotations: { readOnlyHint: false, idempotentHint: true },
+    }, () => run(() => this.service.startWorkflow(scope.threadId)))
+    server.registerTool("wait_workflow", {
+      description: "Wait up to 25 seconds for Jev's workflow to finish or need user input. Call again while running. A waiting worker needs attention in its thread; never approve it yourself.",
+      inputSchema: z.object({}).strict(), outputSchema: workflowOutput,
+      annotations: { readOnlyHint: true },
+    }, () => run(async () => {
+      const deadline = Date.now() + 25_000
+      let status = this.service.workflowStatus(scope.threadId)
+      while (["ready", "running"].includes(status.workflow.status) && !status.waiting.length && Date.now() < deadline) {
+        await delay(250, undefined, { signal })
+        status = this.service.workflowStatus(scope.threadId)
+      }
+      return status
+    }))
     server.registerTool(
       "available_models",
       {
