@@ -12,6 +12,13 @@ describe("workspace layout", () => {
     expect(data.panels[1].url).toBe("")
     expect(data.camera).toBeNull()
   })
+  it("preserves every saved window and the full note text", () => {
+    const text = "x".repeat(100_001)
+    const panels = Array.from({ length: 101 }, (_, index) => ({ ...panel, id: String(index), kind: "note", text: index === 100 ? text : "" }))
+    const restored = restoreWorkspace({ panels }).panels
+    expect(restored).toHaveLength(101)
+    expect(restored.at(-1)?.text).toBe(text)
+  })
   it("resizes in world coordinates at different zoom levels and enforces usable limits", () => {
     expect(resizeWorkspacePanel(panel, { x: 100, y: 50 }, 0.5)).toMatchObject({ x: -400, y: 120, width: 1100, height: 700 })
     expect(resizeWorkspacePanel(panel, { x: -2000, y: 3000 }, 1)).toMatchObject({ width: 320, height: 1800 })
