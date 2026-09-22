@@ -55,8 +55,8 @@
 .usage-blob:hover path { stroke-width: 2; }
 .usage-blob-root { color: var(--foreground); }
 .usage-blob-root path { fill: var(--background); stroke: var(--border); stroke-width: 1.5; }
-.usage-blob-label { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; font-weight: 500; }
-.usage-blob strong { font-size: 19px; line-height: 1.25; font-weight: 600; letter-spacing: -0.6px; }
+.usage-blob-label { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(10px, calc(10px / var(--usage-zoom, 1)), 15px); font-weight: 500; }
+.usage-blob strong { font-size: clamp(19px, calc(17px / var(--usage-zoom, 1)), 24px); line-height: 1.25; font-weight: 600; letter-spacing: -0.6px; }
 .usage-blob-root strong { font-size: 30px; letter-spacing: -1.2px; }
 .usage-blob-root .usage-blob-label { font-size: 12px; }
 .usage-blob-hint { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9px; opacity: 0.8; }

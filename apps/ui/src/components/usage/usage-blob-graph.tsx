@@ -61,7 +61,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
         </div>
       </div>
       <div className="usage-graph-stage" ref={stage} {...pointerEvents} aria-label="Interactive token usage graph">
-        <div className="usage-graph-world" ref={scene.world}>
+        <div className="usage-graph-world" ref={scene.world} style={{ "--usage-zoom": store.camera.zoom } as CSSProperties}>
           <svg className="usage-graph-links" width="1" height="1" aria-hidden="true">
             {nodes.filter(node => node.parent).map(node => (
               <path key={node.id} style={hue(node.model)} ref={element => { if (element) scene.links.current.set(node.id, element); else scene.links.current.delete(node.id) }} />
