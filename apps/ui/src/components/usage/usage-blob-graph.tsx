@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react"
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { ExpandIcon, MinusIcon, PlusIcon, RotateCcwIcon } from "lucide-react"
 import type { UsageModel } from "@betterc0de/schema"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,7 @@ import { useUsageGraphStore } from "./graph-store"
 import { useBlobScene } from "./use-blob-scene"
 import { useBlobInput } from "./use-blob-input"
 import { blobPalette } from "./blob-palette"
+import { zoomCamera } from "./graph-camera"
 import "./usage-graph.css"
 
 export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
@@ -19,7 +20,8 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
   const autoFit = useRef(Object.keys(store.positions).length === 0 && store.camera.zoom === 1)
   const [size, setSize] = useState({ width: 800, height: 520 })
   const scene = useBlobScene(nodes, visible, store.positions, store.camera)
-  const { onKeyDown, ...pointerEvents } = useBlobInput(scene, () => { autoFit.current = false })
+  const manualMove = useCallback(() => { autoFit.current = false }, [])
+  const { onKeyDown, ...pointerEvents } = useBlobInput(scene, stage, manualMove)
 
   useEffect(() => { colorize(models.map(model => model.id)) }, [models, colorize])
   useEffect(() => {
@@ -44,8 +46,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
 
   const zoom = (factor: number) => {
     autoFit.current = false
-    const camera = store.camera, next = Math.max(0.25, Math.min(2, camera.zoom * factor))
-    store.setCamera({ x: camera.x * next / camera.zoom, y: camera.y * next / camera.zoom, zoom: next })
+    store.setCamera(zoomCamera(scene.currentCamera.current, store.camera.zoom * factor))
   }
   const hue = (model: string | null) => model === null ? undefined : { "--blob-hue": store.colors[model] ?? 210 } as CSSProperties
 
@@ -102,7 +103,7 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
         </div>
       </div>
       <div className="usage-graph-footer">
-        <p>{models.length} {models.length === 1 ? "model" : "models"} · Tokens and spend scale separately. Drag empty space to pan. Arrow keys move a focused blob.</p>
+        <p>{models.length} {models.length === 1 ? "model" : "models"} · Tokens and spend scale separately. Scroll to zoom. Drag empty space to pan. Arrow keys move a focused blob.</p>
         <div className="usage-actions">
           <Button variant="ghost" size="icon" aria-label="Zoom out" onClick={() => zoom(1 / 1.25)}><MinusIcon className="size-4" /></Button>
           <span className="usage-zoom">{Math.round(store.camera.zoom * 100)}%</span>
