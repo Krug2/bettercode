@@ -31,6 +31,7 @@ import type {
 
 /** Imperative surface for hosts (reload, style pushes, page-level zoom …). */
 export interface PreviewViewportHandle {
+  navigate(url: string): void
   /** Reload the current webview/iframe document without replacing the guest. */
   reload(): void
   /** Post a bc-* command (bc-apply-style / bc-highlight) into the page. */
@@ -302,6 +303,13 @@ export const PreviewViewport = forwardRef<
   useImperativeHandle(
     ref,
     (): PreviewViewportHandle => ({
+      navigate(nextUrl) {
+        if (isElectron && webviewRef.current) {
+          void webviewRef.current.loadURL(nextUrl).catch(() => undefined)
+        } else {
+          iframeRef.current?.setAttribute("src", nextUrl)
+        }
+      },
       reload() {
         if (isElectron && webviewRef.current) {
           webviewRef.current.reload()

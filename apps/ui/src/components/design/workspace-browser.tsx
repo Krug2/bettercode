@@ -22,7 +22,7 @@ export function WorkspaceBrowser({ panel, interactive, onShortcut, onOpenUrl }: 
     const url = workspaceUrl(value)
     if (!url) { setError("Enter a website address, such as github.com or localhost:3000."); return }
     setError(null); setLoading(true)
-    if (url === source) viewport.current?.reload()
+    if (url === source) viewport.current?.navigate(url)
     else setSource(url)
     saveUrl(url)
   }

@@ -49,6 +49,7 @@ export interface SelectedElement {
  */
 export type ElectronWebviewElement = HTMLElement & {
   executeJavaScript(code: string): Promise<unknown>
+  loadURL(url: string): Promise<void>
   reload(): void
   goBack(): void
   goForward(): void
