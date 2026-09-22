@@ -80,7 +80,8 @@ export function selectedSubagentModels(
 }
 
 export function orchestrationWithModels(
-  models: readonly OrchestratorSelectedModel[]
+  models: readonly OrchestratorSelectedModel[],
+  coordinator?: "main" | "jev"
 ): ChatOrchestration {
   const unique = [
     ...new Map(
@@ -90,6 +91,7 @@ export function orchestrationWithModels(
   return unique.length
     ? {
         enabled: true,
+        ...(coordinator ? { coordinator } : {}),
         providers: [...new Set(unique.map((model) => model.providerKind))],
         models: unique,
       }

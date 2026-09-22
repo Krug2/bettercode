@@ -51,6 +51,7 @@ export function restoreOrchestrationSelection(
     session.status === "ready" && providers.length
       ? {
           enabled: true,
+          coordinator: session.coordinator,
           providers,
           ...(session.selectedModels ? { models: session.selectedModels } : {}),
         }
