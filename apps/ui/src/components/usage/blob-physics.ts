@@ -103,8 +103,8 @@ export class BlobPhysics {
         this.stillContents(body)
         const dx = body.target.x - body.x, dy = body.target.y - body.y, distance = Math.hypot(dx, dy) || 1
         body.vx = dx / distance * 21; body.vy = dy / distance * 21
-        body.wobbleVelocity = 0.02; body.visible = true; body.launching = false
-        if (parent && parent.node.id !== this.dragging) { parent.vx -= dx / distance * 0.8; parent.vy -= dy / distance * 0.8 }
+        body.wobbleVelocity = 0.04; body.visible = true; body.launching = false
+        if (parent && parent.node.id !== this.dragging) { parent.vx -= dx / distance * 1.2; parent.vy -= dy / distance * 1.2 }
       }
       if (!body.visible) continue
       if (instant) {
@@ -121,12 +121,12 @@ export class BlobPhysics {
         }
       } else {
         const target = body.closing ? this.bodies.get(body.node.parent ?? "") ?? body.target : body.target
-        body.vx = (body.vx + (target.x - body.x) * 0.055 * dt) * Math.pow(0.64, dt)
-        body.vy = (body.vy + (target.y - body.y) * 0.055 * dt) * Math.pow(0.64, dt)
+        body.vx = (body.vx + (target.x - body.x) * 0.05 * dt) * Math.pow(0.73, dt)
+        body.vy = (body.vy + (target.y - body.y) * 0.05 * dt) * Math.pow(0.73, dt)
         body.x += body.vx * dt; body.y += body.vy * dt
       }
       body.scaleVelocity = (body.scaleVelocity + ((body.closing ? 0 : 1) - body.scale) * 0.15 * dt) * Math.pow(0.68, dt)
-      body.scale = Math.max(0, Math.min(1.03, body.scale + body.scaleVelocity * dt))
+      body.scale = Math.max(0, Math.min(1.05, body.scale + body.scaleVelocity * dt))
       if (body.emerging && body.scale > 0.99 && Math.hypot(body.target.x - body.x, body.target.y - body.y) < 12) body.emerging = false
       if (body.closing && body.scale < 0.025) { body.visible = false; body.closing = false }
     }
@@ -152,8 +152,8 @@ export class BlobPhysics {
         body.sloshVelocity.x *= 0.5; body.sloshVelocity.y *= 0.5
       }
       body.previous = { x: body.x, y: body.y }
-      body.wobbleVelocity = (body.wobbleVelocity - body.wobble * 0.1 * dt) * Math.pow(0.58, dt)
-      body.wobble = Math.max(-0.035, Math.min(0.035, body.wobble + body.wobbleVelocity * dt))
+      body.wobbleVelocity = (body.wobbleVelocity - body.wobble * 0.1 * dt) * Math.pow(0.7, dt)
+      body.wobble = Math.max(-0.06, Math.min(0.06, body.wobble + body.wobbleVelocity * dt))
       const stretch = Math.min(0.07, speed * 0.0018) + body.wobble
       const strain = speed > 0.01 ? {
         x: stretch * (body.motion.x ** 2 - body.motion.y ** 2) / speed ** 2,
