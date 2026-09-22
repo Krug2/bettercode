@@ -11,6 +11,7 @@ export function useBlobScene(nodes: BlobNode[], visible: BlobNode[], positions: 
   const shapes = useRef(new Map<string, SVGPathElement>())
   const links = useRef(new Map<string, SVGPathElement>())
   const world = useRef<HTMLDivElement>(null)
+  const grid = useRef<HTMLDivElement>(null)
   const currentCamera = useRef({ ...camera })
   const targetCamera = useRef(camera)
   const frame = useRef(0)
@@ -19,6 +20,11 @@ export function useBlobScene(nodes: BlobNode[], visible: BlobNode[], positions: 
   const paint = useCallback(() => {
     const view = currentCamera.current
     if (world.current) world.current.style.transform = `translate(${view.x}px, ${view.y}px) scale(${view.zoom})`
+    if (grid.current) {
+      grid.current.style.backgroundPosition = `calc(50% + ${view.x}px) calc(50% + ${view.y}px)`
+      grid.current.style.backgroundSize = `${22 * view.zoom}px ${22 * view.zoom}px`
+      grid.current.style.setProperty("--grid-dot-radius", `${Math.max(0.5, view.zoom)}px`)
+    }
     for (const [id, body] of physics.bodies) {
       const button = buttons.current.get(id)
       if (button) {
@@ -95,5 +101,5 @@ export function useBlobScene(nodes: BlobNode[], visible: BlobNode[], positions: 
     frame.current = 0
   }, [])
 
-  return { physics, buttons, shapes, links, world, currentCamera, wake, reducedMotion }
+  return { physics, buttons, shapes, links, world, grid, currentCamera, wake, reducedMotion }
 }
