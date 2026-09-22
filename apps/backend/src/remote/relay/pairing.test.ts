@@ -18,7 +18,7 @@ async function fixture() {
   cleanups.push(() => fs.rmSync(directory, { recursive: true, force: true }))
   const db = openDatabase(path.join(directory, "test.sqlite"))
   runMigrations(db)
-  cleanups.push(() => db.close())
+  cleanups.push(() => { db.close() })
   const access = new RemoteAccessService(db, { isEnabled: () => true })
   cleanups.push(() => access.close())
   const vault = new DeviceVault(path.join(directory, "devices"), null)
