@@ -1,5 +1,13 @@
 import { z } from "zod"
-import { orchestratorSessionSchema, orchestratorStartSchema, orchestratorThreadSchema, orchestratorContextGrantSchema, orchestratorContextSchema, orchestratorContextKeySchema } from "./orchestrator"
+import {
+  orchestratorSessionSchema,
+  orchestratorStartSchema,
+  orchestratorThreadSchema,
+  orchestratorResumeSchema,
+  orchestratorContextGrantSchema,
+  orchestratorContextSchema,
+  orchestratorContextKeySchema,
+} from "./orchestrator"
 import { threadGoalSchema } from "./thread-goal"
 import {
   chatApprovalSchema,
@@ -211,13 +219,15 @@ export const chatSendResponseSchema = z
         ...contextCheckpointResponseFields,
       })
       .optional(),
-    providerHandoff: z.object({
-      reason: z.literal("provider-switch"),
-      sourceProvider: text.min(1),
-      targetProvider: text.min(1),
-      sourceModel: text.min(1),
-      ...contextCheckpointResponseFields,
-    }).optional(),
+    providerHandoff: z
+      .object({
+        reason: z.literal("provider-switch"),
+        sourceProvider: text.min(1),
+        targetProvider: text.min(1),
+        sourceModel: text.min(1),
+        ...contextCheckpointResponseFields,
+      })
+      .optional(),
   })
   .passthrough()
 export const approvalResponseSchema = z.discriminatedUnion("status", [
@@ -242,14 +252,54 @@ function endpoint<I extends z.ZodType, O extends z.ZodType>(
 }
 const noBody = z.undefined()
 export const httpContracts = {
-  orchestratorStart: endpoint("POST", "/orchestrator/start", orchestratorStartSchema, orchestratorSessionSchema),
-  orchestratorStatus: endpoint("POST", "/orchestrator/status", orchestratorThreadSchema, orchestratorSessionSchema.nullable()),
-  orchestratorStop: endpoint("POST", "/orchestrator/stop", orchestratorThreadSchema, orchestratorSessionSchema),
-  orchestratorResume: endpoint("POST", "/orchestrator/resume", orchestratorThreadSchema, orchestratorSessionSchema),
-  orchestratorContextGrant: endpoint("POST", "/orchestrator/context/grant", orchestratorContextGrantSchema, orchestratorContextSchema),
-  orchestratorContextRead: endpoint("POST", "/orchestrator/context/read", orchestratorContextKeySchema, orchestratorContextSchema),
-  orchestratorContextRemove: endpoint("POST", "/orchestrator/context/remove", orchestratorContextKeySchema, z.object({ removed: z.literal(true) })),
-  chatGoal: endpoint("POST", "/chat/goal", chatSendSchema, z.object({ goal: threadGoalSchema.nullable() })),
+  orchestratorStart: endpoint(
+    "POST",
+    "/orchestrator/start",
+    orchestratorStartSchema,
+    orchestratorSessionSchema
+  ),
+  orchestratorStatus: endpoint(
+    "POST",
+    "/orchestrator/status",
+    orchestratorThreadSchema,
+    orchestratorSessionSchema.nullable()
+  ),
+  orchestratorStop: endpoint(
+    "POST",
+    "/orchestrator/stop",
+    orchestratorThreadSchema,
+    orchestratorSessionSchema
+  ),
+  orchestratorResume: endpoint(
+    "POST",
+    "/orchestrator/resume",
+    orchestratorResumeSchema,
+    orchestratorSessionSchema
+  ),
+  orchestratorContextGrant: endpoint(
+    "POST",
+    "/orchestrator/context/grant",
+    orchestratorContextGrantSchema,
+    orchestratorContextSchema
+  ),
+  orchestratorContextRead: endpoint(
+    "POST",
+    "/orchestrator/context/read",
+    orchestratorContextKeySchema,
+    orchestratorContextSchema
+  ),
+  orchestratorContextRemove: endpoint(
+    "POST",
+    "/orchestrator/context/remove",
+    orchestratorContextKeySchema,
+    z.object({ removed: z.literal(true) })
+  ),
+  chatGoal: endpoint(
+    "POST",
+    "/chat/goal",
+    chatSendSchema,
+    z.object({ goal: threadGoalSchema.nullable() })
+  ),
   chatSend: endpoint(
     "POST",
     "/chat/send",

@@ -279,17 +279,64 @@ export const orchestratorWorkflowSchema = z.object({
   context: z.string().max(16000).default(""),
   scope: z.array(z.string()).max(100),
   constraints: z.array(z.string()).max(32),
+  clarifications: z
+    .array(
+      z.object({
+        text: z.string().trim().min(1).max(4000),
+        afterRecord: z.number().int().min(0).max(12),
+      })
+    )
+    .max(8)
+    .default([]),
   allowWrite: z.boolean(),
   maxSteps: z.number().int().min(2).max(12),
-  status: z.enum(["ready", "running", "completed", "blocked", "failed", "cancelled", "interrupted"]),
-  active: z.object({ requestId: z.string(), phase: z.enum(["investigate", "plan", "implement", "review"]), workerId: z.string() }).nullable(),
-  records: z.array(z.object({
-    requestId: z.string(), workerId: z.string(), phase: z.enum(["investigate", "plan", "implement", "review"]),
-    interrupted: z.boolean().optional(),
-    result: z.object({ summary: z.string().max(12000), files: z.array(z.string()).optional(), plan: z.array(z.string()).optional(), verdict: z.enum(["pass", "revise", "blocked"]).optional() }),
-  })).max(12),
-  decisions: z.array(z.object({ kind: z.string(), choice: z.string(), confidence: z.number().min(0).max(1), model: z.string(), revision: z.number().int() })).max(26),
-  usage: z.object({ inputTokens: z.number().int().nonnegative(), outputTokens: z.number().int().nonnegative() }),
+  status: z.enum([
+    "ready",
+    "running",
+    "completed",
+    "blocked",
+    "failed",
+    "cancelled",
+    "interrupted",
+  ]),
+  active: z
+    .object({
+      requestId: z.string(),
+      phase: z.enum(["investigate", "plan", "implement", "review"]),
+      workerId: z.string(),
+    })
+    .nullable(),
+  records: z
+    .array(
+      z.object({
+        requestId: z.string(),
+        workerId: z.string(),
+        phase: z.enum(["investigate", "plan", "implement", "review"]),
+        interrupted: z.boolean().optional(),
+        result: z.object({
+          summary: z.string().max(12000),
+          files: z.array(z.string()).optional(),
+          plan: z.array(z.string()).optional(),
+          verdict: z.enum(["pass", "revise", "blocked"]).optional(),
+        }),
+      })
+    )
+    .max(12),
+  decisions: z
+    .array(
+      z.object({
+        kind: z.string(),
+        choice: z.string(),
+        confidence: z.number().min(0).max(1),
+        model: z.string(),
+        revision: z.number().int(),
+      })
+    )
+    .max(26),
+  usage: z.object({
+    inputTokens: z.number().int().nonnegative(),
+    outputTokens: z.number().int().nonnegative(),
+  }),
   error: z.string().nullable(),
   updatedAt: z.string(),
 })
@@ -319,6 +366,9 @@ export const orchestratorStartSchema = z
 export const orchestratorThreadSchema = z
   .object({ threadId: z.string().trim().min(1).max(256) })
   .strict()
+export const orchestratorResumeSchema = orchestratorThreadSchema.extend({
+  clarification: z.string().trim().min(1).max(4000).optional(),
+})
 export type OrchestratorTeam = z.infer<typeof orchestratorTeamSchema>
 export type OrchestratorMember = z.infer<typeof orchestratorMemberSchema>
 export type OrchestratorJob = z.infer<typeof orchestratorJobSchema>
