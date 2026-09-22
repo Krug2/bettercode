@@ -3,7 +3,8 @@ import { Onboarding } from "@/components/onboarding"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { Titlebar } from "@/components/layout/titlebar"
 import { LeftSidebar } from "@/components/layout/left-sidebar"
-import { MainArea } from "@/components/layout/main-area"
+import { MainSurface } from "@/components/layout/main-surface"
+import { useUsagePageStore } from "@/lib/usage-page-store"
 import { WorkspaceRightPanel } from "@/components/layout/workspace-right-panel"
 import type {
   TitlebarProps,
@@ -44,6 +45,7 @@ export function AppShell({
   // rounded card on the dark sidebar surface (gap all around), and the
   // right workspace panel floats next to it as a second card.
   const floatingShell = leftSidebarProps.appMode === "agent"
+  const usageOpen = useUsagePageStore(state => state.open)
   return (
     <TooltipProvider>
       <Onboarding />
@@ -61,10 +63,10 @@ export function AppShell({
                   (MainArea's root has no flex-1 of its own). */}
               <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-xl border border-border/40 bg-background shadow-[0_18px_50px_-32px_rgba(0,0,0,0.9)] [&>*]:min-w-0 [&>*]:flex-1 [&>*]:bg-background">
                 <ErrorBoundary label="Main Area">
-                  <MainArea {...mainAreaProps} />
+                  <MainSurface {...mainAreaProps} />
                 </ErrorBoundary>
               </div>
-              {showWorkspaceRightPanel && (
+              {showWorkspaceRightPanel && !usageOpen && (
                 <ErrorBoundary label="Workspace Right Panel">
                   <WorkspaceRightPanel {...workspaceRightPanelProps} />
                 </ErrorBoundary>
@@ -73,9 +75,9 @@ export function AppShell({
           ) : (
             <>
               <ErrorBoundary label="Main Area">
-                <MainArea {...mainAreaProps} />
+                <MainSurface {...mainAreaProps} />
               </ErrorBoundary>
-              {showWorkspaceRightPanel && (
+              {showWorkspaceRightPanel && !usageOpen && (
                 <ErrorBoundary label="Workspace Right Panel">
                   <WorkspaceRightPanel {...workspaceRightPanelProps} />
                 </ErrorBoundary>
