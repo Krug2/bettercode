@@ -16,6 +16,7 @@ import { registerHealthRoute, registerRuntimeRoutes } from "./routes/runtime";
 import { registerSettingsRoutes } from "./routes/settings";
 import { registerThemesRoutes } from "./routes/themes";
 import { registerThreadsRoutes } from "./routes/threads";
+import { registerUsageRoutes } from "./routes/usage";
 import { registerProjectsRoutes } from "./routes/projects";
 import { registerProvidersRoutes } from "./routes/providers";
 import { registerChatRoutes } from "./routes/chat";
@@ -96,6 +97,7 @@ function buildApiRoutes(state: AppState, config: ServerConfig): Hono {
   registerSettingsRoutes(api, state);
   registerThemesRoutes(api, config);
   registerThreadsRoutes(api, state);
+  registerUsageRoutes(api, state);
   registerProjectsRoutes(api, state);
   registerProvidersRoutes(api, state);
   registerChatRoutes(api, state);
