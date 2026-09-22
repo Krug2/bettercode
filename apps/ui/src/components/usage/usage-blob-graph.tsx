@@ -71,10 +71,10 @@ export function UsageBlobGraph({ models }: { models: UsageModel[] }) {
             <button
               key={node.id}
               type="button"
-              className={`usage-blob${node.parent ? "" : " usage-blob-root"}`}
+              className={`usage-blob${node.parent ? "" : " usage-blob-root"}${node.radius < 48 ? " usage-blob-compact" : ""}`}
               data-blob={node.id}
               hidden
-              style={{ ...hue(node.model), width: node.radius * 2, height: node.radius * 2 }}
+              style={{ ...hue(node.model), "--blob-radius": `${node.radius}px`, width: node.radius * 2, height: node.radius * 2 } as CSSProperties}
               ref={element => { if (element) scene.buttons.current.set(node.id, element); else scene.buttons.current.delete(node.id) }}
               aria-label={`${node.label}: ${node.value}, ${node.hint}`}
               aria-expanded={node.children.length ? store.expanded.includes(node.id) : undefined}

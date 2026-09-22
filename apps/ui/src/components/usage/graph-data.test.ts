@@ -18,4 +18,12 @@ describe("usage branches", () => {
     expect(descendants(nodes, "model:a").size).toBe(6)
     expect(descendants(nodes, "model:a").has("model:b")).toBe(false)
   })
+  it("scales token amounts separately from costs and excludes missing costs", () => {
+    const amounts = usageNodes([{ ...models[0], input: 900, output: 100, cost: 3, inputCost: 2, outputCost: 1 }])
+    const find = (id: string) => amounts.find(node => node.id === id)!
+    expect(find("model:a:spend").radius).toBe(find("total").radius)
+    expect(find("model:a:spend:input").intensity).toBe(0.5)
+    expect(find("model:a:input").radius).toBeGreaterThan(find("model:a:output").radius)
+    expect(nodes.find(node => node.id === "model:a:spend")!.intensity).toBeNull()
+  })
 })
