@@ -233,11 +233,12 @@ describe("canvas mode instructions", () => {
     expect(prompt).toContain("# Special Focus: Frontend & UI/UX")
   })
 
-  it("falls back to asking for missing brief details when no brief exists", () => {
-    const prompt = buildDesignPrompt(null)
+  it("keeps general workspace chat free of design brief requirements", () => {
+    const prompt = buildDesignPrompt(null, { specialMode: "frontend" })
 
-    expect(prompt).toContain("No completed Design Brief is attached")
-    expect(prompt).toContain("ask only for the missing design-critical details")
+    expect(prompt).not.toContain("No completed Design Brief is attached")
+    expect(prompt).not.toContain("## Design-First Workflow")
+    expect(prompt).toContain("# Special Focus: Frontend & UI/UX")
     expect(prompt).not.toContain("## Target:")
   })
 

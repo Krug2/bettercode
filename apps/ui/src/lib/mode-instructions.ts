@@ -680,7 +680,7 @@ export function buildSystemInstruction(
   customRules?: string | null,
   subagents?: PromptSubagentContext[],
   projectRules?: string | null,
-  appMode?: "agent" | "editor" | "design" | null,
+  _appMode?: "agent" | "editor" | "design" | null,
   designContext?: DesignBrief | null,
   designDefaults?: DesignDefaults | null
 ): string {
@@ -701,10 +701,7 @@ export function buildSystemInstruction(
   const modeInstr = MODE_INSTRUCTIONS[mode] || MODE_INSTRUCTIONS.agent
   parts.push(modeInstr)
 
-  // 3b. App-mode overlay. Chat mode still controls permissions and tool
-  // access; this only gives the model the product design brief and design
-  // behavior when the user is in the dedicated Design surface.
-  const designActive = appMode === "design" || Boolean(designContext)
+  const designActive = Boolean(designContext)
   if (designActive) {
     parts.push(
       ...buildDesignOverlay(designContext, designDefaults ?? undefined)
