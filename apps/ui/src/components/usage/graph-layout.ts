@@ -38,12 +38,6 @@ function blobBounds(nodes: BlobNode[], targets: Map<string, Point>) {
   return { left, right, top, bottom }
 }
 
-export function graphHeight(nodes: BlobNode[], targets: Map<string, Point>, width: number, height: number, zoom: number) {
-  const { left, right, top, bottom } = blobBounds(nodes, targets)
-  const fittedZoom = Math.max(0.25, Math.min(zoom, (width - 56) / (right - left)))
-  return Math.max(height, Math.min(960, Math.ceil((bottom - top) * fittedZoom + 56)))
-}
-
 export function fitBlobs(nodes: BlobNode[], targets: Map<string, Point>, width: number, height: number, maximumZoom = 1) {
   const { left, right, top, bottom } = blobBounds(nodes, targets)
   const padding = 28
