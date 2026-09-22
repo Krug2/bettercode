@@ -25,6 +25,8 @@
     "build:frontend": "tsc -b apps/ui --pretty && vite build --config apps/ui/vite.config.ts && node scripts/audit-chunks.cjs && node scripts/audit-bundle-size.cjs",
     "build:schema": "node scripts/prune-build-output.mjs schema && tsc -p packages/schema",
     "build:remote": "tsc -p packages/remote-protocol",
+    "build:relay": "npm run build:remote && tsc -p apps/relay",
+    "relay:start": "node apps/relay/dist/index.js",
     "build:backend": "npm run build:schema && npm run build:remote && node scripts/prune-build-output.mjs backend && tsc -p apps/backend",
     "build:electron": "npm run build:backend && npm run build:frontend && npm run clean:release && node scripts/strip-packaging-artifacts.cjs && node scripts/pack-electron.cjs --win --publish never && npm run audit:package-size",
     "build:mac": "npm run build:schema && npm run build:backend && npm run build:frontend && npm run clean:release && node scripts/strip-packaging-artifacts.cjs && node scripts/pack-electron.cjs --mac --publish never",
