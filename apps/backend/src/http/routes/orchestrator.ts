@@ -87,4 +87,8 @@ export function registerOrchestratorRoutes(api: Hono, state: AppState): void {
       { operation: "orchestrator-stop" }
     )
   )
+  api.post("/orchestrator/resume", c => handleHttpContract(c, "orchestratorResume", async body => {
+    service().startWorkflow(body.threadId, true)
+    return service().status(body.threadId, false)!
+  }, { operation: "orchestrator-resume" }))
 }

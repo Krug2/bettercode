@@ -498,6 +498,7 @@ export async function dispatchChatTurn(
             : body
           goalHooks?.guard()
           state.orchestrator?.assertDispatchAllowed(body.thread_id)
+          setSessionPermission(body.thread_id, orchestrated.permission_level)
           // Hub and legacy providers share the admission, permission,
           // compaction, and durable-dispatch work above. The launch below
           // is the only provider-specific step; settlement (owner attach,
@@ -523,7 +524,7 @@ export async function dispatchChatTurn(
                     : {}),
                   projectPath: body.project_path ?? null,
                   systemInstruction: effectiveSystemInstruction,
-                  permissionLevel: body.permission_level ?? undefined,
+                  permissionLevel: orchestrated.permission_level ?? undefined,
                   reasoningEffort: body.reasoning_effort ?? null,
                   chatMode: body.chat_mode ?? null,
                   appMode: body.app_mode ?? null,
@@ -646,7 +647,7 @@ export async function dispatchChatTurn(
               ? { attachments: providerAttachments }
               : {}),
             system_instruction: effectiveSystemInstruction,
-            permission_level: body.permission_level,
+            permission_level: orchestrated.permission_level,
             openai_transport: body.openai_transport,
             sandbox: body.sandbox,
             approvalPolicy: body.approvalPolicy,
