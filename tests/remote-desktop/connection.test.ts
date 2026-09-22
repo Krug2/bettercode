@@ -1,11 +1,10 @@
-import http2 from "node:http2"
-import { Duplex } from "node:stream"
 import { randomBytes } from "node:crypto"
 import { afterEach, expect, it } from "vitest"
 import { startRelay } from "../../apps/relay/src/server"
 import { certificateId, createDeviceIdentity } from "../../apps/backend/src/remote/relay/identity"
 import { connectRelay, registerRelayHost } from "../../apps/backend/src/remote/relay/connection"
 import { secureClient, secureServer } from "../../apps/backend/src/remote/relay/tls-channel"
+import { acceptDeviceSession, openDeviceSession } from "../../apps/backend/src/remote/relay/http-channel"
 
 const cleanup: Array<() => void | Promise<void>> = []
 afterEach(async () => { for (const close of cleanup.splice(0).reverse()) await close() })
@@ -18,7 +17,7 @@ it("multiplexes encrypted requests through a real relay and closes on disconnect
   const registered = await registerRelayHost(relay.url, host, raw => {
     void secureServer(raw, host).then(peer => {
       expect(peer.id).toBe(certificateId(viewer.certificate))
-      const session = http2.performServerHandshake(Duplex.from({ readable: peer.socket, writable: peer.socket }))
+      const session = acceptDeviceSession(peer)
       session.on("error", () => undefined)
       session.on("stream", stream => {
         stream.on("error", () => undefined)
@@ -31,7 +30,7 @@ it("multiplexes encrypted requests through a real relay and closes on disconnect
   cleanup.push(() => registered.close())
   const raw = await connectRelay(relay.url, certificateId(host.certificate))
   const peer = await secureClient(raw, viewer, host.certificate)
-  const session = http2.connect("https://bettercode.remote", { createConnection: () => peer.socket })
+  const session = openDeviceSession(peer)
   session.on("error", () => undefined)
   cleanup.push(() => session.destroy())
   await Promise.all(Array.from({ length: 3 }, async () => {
