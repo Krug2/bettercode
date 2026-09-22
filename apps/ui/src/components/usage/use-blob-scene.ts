@@ -88,7 +88,7 @@ export function useBlobScene(nodes: BlobNode[], visible: BlobNode[], positions: 
   useEffect(() => () => {
     cancelAnimationFrame(frame.current)
     frame.current = 0
-  }, [wake])
+  }, [])
 
   return { physics, buttons, shapes, links, world, currentCamera, wake, reducedMotion }
 }
