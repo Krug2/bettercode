@@ -4,7 +4,7 @@
   "private": true,
   "type": "commonjs",
   "description": "BetterC0de Node.js backend (Hono HTTP + ws + better-sqlite3).",
-  "main": "dist/inProcess.cjs",
+  "main": "dist/inProcess.js",
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
