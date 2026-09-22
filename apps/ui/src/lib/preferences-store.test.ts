@@ -169,6 +169,7 @@ describe("PREFERENCE_DEFAULTS", () => {
         selectedProviderId: "codex",
         hiddenProviders: "not-an-array",
         hiddenModels: { invalid: true },
+        hiddenUsageBlocks: ["blobs", null, 4],
         favorites: 42,
         promptHistoryEntries: "invalid-history",
         promptStashEntries: [null, { id: "missing-fields" }],
@@ -184,6 +185,7 @@ describe("PREFERENCE_DEFAULTS", () => {
     const state = usePreferencesStore.getState()
     expect(state.hiddenProviders).toEqual(PREFERENCE_DEFAULTS.hiddenProviders)
     expect(state.hiddenModels).toEqual([])
+    expect(state.hiddenUsageBlocks).toEqual(["blobs"])
     expect(state.favorites).toEqual([])
     expect(state.promptHistoryEntries).toEqual([])
     expect(state.promptStashEntries).toEqual([])
