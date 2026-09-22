@@ -33,11 +33,11 @@ export function SettingsOrchestratorSection() {
   return (
     <SettingsSection
       title="Orchestration"
-      description="Let the model in your chat delegate work to other providers."
+      description="Coordinate work with Jev or the model in your chat."
     >
       <SettingsRow
         label="Experimental orchestration"
-        description="The model selected in chat leads. Under + → Orchestration, enable other providers for its agents: Claude, OpenAI or Grok. It chooses their models and tasks."
+        description="Under + → Orchestration, choose Jev and select worker models. Jev directs investigation, planning, implementation and review. Save its TypeSafe API key under Jev code search."
       >
         <Switch
           aria-label="Enable orchestrator mode"

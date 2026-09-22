@@ -78,10 +78,11 @@ export function ComposerOrchestrationMenu({
     }
   }, [])
   const mainKind = currentProvider?.providerKind
+  const coordinator = selection.enabled ? selection.coordinator ?? "main" : "jev"
   const supported =
     mainKind === "claude" || mainKind === "codex" || mainKind === "grok_cli"
-  const workers = PROVIDERS.filter(({ kind }) => kind !== mainKind)
-  const choices = subagentModelChoices(providers, mainKind)
+  const workers = PROVIDERS.filter(({ kind }) => coordinator === "jev" || kind !== mainKind)
+  const choices = subagentModelChoices(providers, coordinator === "jev" ? undefined : mainKind)
   const selectedModels = selectedSubagentModels(selection, choices)
   const available = workers.filter(({ kind }) =>
     choices.some((choice) => choice.value.providerKind === kind)
@@ -150,7 +151,8 @@ export function ComposerOrchestrationMenu({
                     (choice) =>
                       choice.value.providerKind === firstAvailable.kind
                   )
-                  .map((choice) => choice.value)
+                  .map((choice) => choice.value),
+                coordinator
               )
             )
         }}
@@ -160,6 +162,13 @@ export function ComposerOrchestrationMenu({
         {selection.enabled && <CheckIcon className="size-3.5" />}
       </SimpleDropdownSubItem>
       <SimpleDropdownSeparator />
+      {selection.enabled && (["jev", "main"] as const).map((value) => (
+        <SimpleDropdownSubItem key={value} keepOpen active={coordinator === value} disabled={locked}
+          onClick={() => void change(orchestrationWithModels(selectedModels.filter(model => value === "jev" || model.providerKind !== mainKind), value))}>
+          <span className="flex-1">{value === "jev" ? "Jev coordinates" : "Chat model coordinates"}</span>
+          {coordinator === value && <CheckIcon className="size-3.5" />}
+        </SimpleDropdownSubItem>
+      ))}
       {workers.map(({ kind }) => (
         <OrchestrationModelMenu
           key={kind}
@@ -182,7 +191,7 @@ export function ComposerOrchestrationMenu({
                   (model) => model.providerKind !== kind
                 ),
                 ...models,
-              ])
+              ], coordinator)
             )
           }
         />
@@ -194,11 +203,11 @@ export function ComposerOrchestrationMenu({
             ? "Choose Claude, Codex or Grok CLI as the main model."
             : isStreaming
               ? "Change the provider pool after this turn finishes."
-              : "The main model chooses agents from your selected models."}
+              : coordinator === "jev" ? "Jev selects each phase and worker. Your chat model reports progress and results." : "The main model chooses agents from your selected models."}
       </p>
       {!available.length && supported && (
         <p className="px-2 pb-2 text-xs text-muted-foreground">
-          Connect another provider in Settings first.
+          Connect a worker provider in Settings first.
         </p>
       )}
       {error && (
@@ -221,7 +230,7 @@ export function ComposerOrchestrationBadge({
       className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-3 pb-2 text-[11px] leading-4 text-muted-foreground"
       aria-label="Orchestration enabled"
     >
-      <span>Orchestration</span>
+      <span>{selection.coordinator === "jev" ? "Jev orchestration" : "Orchestration"}</span>
       <ul
         aria-label="Agent providers"
         className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-l border-border/60 pl-3"
