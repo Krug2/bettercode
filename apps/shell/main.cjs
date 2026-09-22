@@ -1290,11 +1290,14 @@ async function startSpawnedBackend() {
     }
     startupWatchdog = createBackendStartupWatchdog({
       idleTimeoutMs: BACKEND_STARTUP_TIMEOUT_MS,
+      initialTimeoutMs: appConfig.BACKEND_STARTUP_INITIAL_TIMEOUT_MS,
       hardTimeoutMs: BACKEND_STARTUP_HARD_TIMEOUT_MS,
       onTimeout: ({ kind, timeoutMs }) =>
         rejectStart(
           new Error(
-            kind === "idle"
+            kind === "initial"
+              ? `Node backend did not send its first startup heartbeat within ${timeoutMs}ms (process launch or module loading)`
+              : kind === "idle"
               ? `Node backend did not send a startup heartbeat within ${timeoutMs}ms`
               : `Node backend did not become ready within the ${timeoutMs}ms hard startup limit`,
           ),
@@ -1431,11 +1434,14 @@ async function startInProcessBackend() {
   })
   const startupWatchdog = createBackendStartupWatchdog({
     idleTimeoutMs: BACKEND_STARTUP_TIMEOUT_MS,
+    initialTimeoutMs: appConfig.BACKEND_STARTUP_INITIAL_TIMEOUT_MS,
     hardTimeoutMs: BACKEND_STARTUP_HARD_TIMEOUT_MS,
     onTimeout: ({ kind, timeoutMs }) => {
       const error = new Error(
-        kind === "idle"
-          ? `In-process backend did not send a startup heartbeat within ${timeoutMs}ms`
+        kind === "initial"
+          ? `In-process backend did not send its first startup heartbeat within ${timeoutMs}ms (module loading)`
+          : kind === "idle"
+            ? `In-process backend did not send a startup heartbeat within ${timeoutMs}ms`
           : `In-process backend did not become ready within the ${timeoutMs}ms hard startup limit`,
       )
       startupAbort.abort(error)

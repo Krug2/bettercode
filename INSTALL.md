@@ -151,6 +151,14 @@ npm ci --foreground-scripts --no-audit --no-fund --loglevel=info
 
 If you are on a company network, configure the required npm proxy or temporarily use a working network. Do not replace the lockfile or switch to `npm install` to work around a DNS failure.
 
+### `Node backend did not send a startup heartbeat`
+
+The desktop shell waits for the backend to finish loading before it can serve requests. On a busy Windows machine, a cold development start can take more than 30 seconds to load its modules. Current builds allow up to 120 seconds for the first heartbeat, then require a heartbeat at least every 30 seconds, with a five-minute overall startup limit.
+
+If an older checkout fails at exactly `30000ms` and then logs `Node backend ready`, update the checkout and restart with `npm run dev`. This command rebuilds the backend before launching. Installing TypeScript globally does not fix this timeout.
+
+If startup still fails, include the complete startup log and whether the failure mentions the **first heartbeat**, a later heartbeat, or the **hard startup limit** in the bug report. These identify different startup phases. Keep your local data directory intact.
+
 ### Native module or Node ABI errors
 
 Rebuild the local SQLite binding with the selected Node version:
