@@ -35,7 +35,7 @@ export default function UsagePage({ onClose }: { onClose: () => void }) {
           <UsageInsights data={data} />
           {data.models.length > 0 && <UsageModelTable models={data.models} />}
           <footer className="usage-page-footer">
-            <p>{data.calls.toLocaleString()} recorded responses{data.since ? ` since ${dateLabel(data.since)}` : ""} · {data.cost === null ? "Spend not reported" : `${formatCost(data.cost)} reported spend (USD)`} · {data.timeZone}</p>
+            <p>{data.calls.toLocaleString()} recorded responses{data.since ? ` since ${dateLabel(localDate(data.since, data.timeZone))}` : ""} · {data.cost === null ? "Spend not reported" : `${formatCost(data.cost)} reported spend (USD)`} · {data.timeZone}</p>
             <p>Based on retained conversation history. Costs appear only when reported by the provider; dashes mean unavailable. Account allowances and usage outside this app are not included.{data.unreported > 0 ? ` ${data.unreported.toLocaleString()} responses have incomplete token usage.` : ""}</p>
           </footer>
         </>}
