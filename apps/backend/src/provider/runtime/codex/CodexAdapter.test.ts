@@ -343,7 +343,12 @@ afterEach(async () => {
     sessionAdapters.splice(0).map((adapter) => adapter.stopAll())
   )
   while (tempRoots.length > 0) {
-    fs.rmSync(tempRoots.pop()!, { recursive: true, force: true })
+    fs.rmSync(tempRoots.pop()!, {
+      recursive: true,
+      force: true,
+      maxRetries: 20,
+      retryDelay: 50,
+    })
   }
 })
 
