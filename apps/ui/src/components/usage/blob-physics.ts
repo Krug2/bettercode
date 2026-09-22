@@ -136,14 +136,14 @@ export class BlobPhysics {
       if (!body.visible) continue
       if (instant) this.stillContents(body)
       const motion = { x: (body.x - body.previous.x) / dt, y: (body.y - body.previous.y) / dt }
-      const limit = body.node.radius * 0.075
+      const limit = body.node.radius * 0.11
       body.motion.x += (motion.x - body.motion.x) * (1 - Math.exp(-dt * 0.32))
       body.motion.y += (motion.y - body.motion.y) * (1 - Math.exp(-dt * 0.32))
       const speed = Math.hypot(body.motion.x, body.motion.y)
-      const lag = Math.min(0.22, limit / (speed || 1))
+      const lag = Math.min(0.36, limit / (speed || 1))
       for (const axis of ["x", "y"] as const) {
         const target = -body.motion[axis] * lag
-        body.sloshVelocity[axis] = (body.sloshVelocity[axis] + (target - body.slosh[axis]) * 0.18 * dt) * Math.pow(0.48, dt)
+        body.sloshVelocity[axis] = (body.sloshVelocity[axis] + (target - body.slosh[axis]) * 0.14 * dt) * Math.pow(0.62, dt)
         body.slosh[axis] += body.sloshVelocity[axis] * dt
       }
       const slosh = Math.hypot(body.slosh.x, body.slosh.y)
@@ -154,7 +154,7 @@ export class BlobPhysics {
       body.previous = { x: body.x, y: body.y }
       body.wobbleVelocity = (body.wobbleVelocity - body.wobble * 0.1 * dt) * Math.pow(0.7, dt)
       body.wobble = Math.max(-0.06, Math.min(0.06, body.wobble + body.wobbleVelocity * dt))
-      const stretch = Math.min(0.07, speed * 0.0018) + body.wobble
+      const stretch = Math.min(0.1, speed * 0.0026) + body.wobble
       const strain = speed > 0.01 ? {
         x: stretch * (body.motion.x ** 2 - body.motion.y ** 2) / speed ** 2,
         y: stretch * 2 * body.motion.x * body.motion.y / speed ** 2,
