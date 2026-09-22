@@ -295,7 +295,12 @@ describe("CodexSessionRuntime", () => {
       )
     } finally {
       await runtime.close().catch(() => {})
-      fs.rmSync(fake.dir, { recursive: true, force: true })
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
     }
   })
 
@@ -367,7 +372,12 @@ describe("CodexSessionRuntime", () => {
       )
     } finally {
       await runtime.close().catch(() => {})
-      fs.rmSync(fake.dir, { recursive: true, force: true })
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
     }
   })
 
@@ -391,7 +401,12 @@ describe("CodexSessionRuntime", () => {
       expect(fs.existsSync(path.join(fake.dir, "config.toml"))).toBe(false)
     } finally {
       await runtime.close()
-      fs.rmSync(fake.dir, { recursive: true, force: true })
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
     }
   })
 
@@ -406,7 +421,15 @@ describe("CodexSessionRuntime", () => {
         "mcp_servers.betterc0de_code_search": { enabled: false, url: "http://127.0.0.1:9/mcp" },
       } }) })
       expect(fs.existsSync(path.join(fake.dir, "config.toml"))).toBe(false)
-    } finally { await runtime.close(); fs.rmSync(fake.dir, { recursive: true, force: true }) }
+    } finally {
+      await runtime.close()
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
+    }
   })
 
   it("emits approval resolution notifications after responding", async () => {
@@ -480,7 +503,12 @@ describe("CodexSessionRuntime", () => {
       )
     } finally {
       await runtime.close().catch(() => {})
-      fs.rmSync(fake.dir, { recursive: true, force: true })
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
     }
   })
 
@@ -562,7 +590,12 @@ describe("CodexSessionRuntime", () => {
       )
     } finally {
       await runtime.close().catch(() => {})
-      fs.rmSync(fake.dir, { recursive: true, force: true })
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
     }
   })
 
@@ -623,7 +656,12 @@ describe("CodexSessionRuntime", () => {
       })
     } finally {
       await runtime.close().catch(() => {})
-      fs.rmSync(fake.dir, { recursive: true, force: true })
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
     }
   })
 
@@ -683,7 +721,12 @@ describe("CodexSessionRuntime", () => {
       )
     } finally {
       await runtime.close().catch(() => {})
-      fs.rmSync(fake.dir, { recursive: true, force: true })
+      fs.rmSync(fake.dir, {
+        recursive: true,
+        force: true,
+        maxRetries: 20,
+        retryDelay: 50,
+      })
     }
   })
 })
