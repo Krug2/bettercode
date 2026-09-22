@@ -10,7 +10,7 @@ function load(canvas) {
     console,
     window: { innerWidth: 1000, innerHeight: 800, addEventListener: (type, fn) => listeners.set(type, fn) },
     document: { addEventListener: () => {} },
-    require: () => ({ contextBridge: { exposeInMainWorld: () => {} }, ipcRenderer: { sendToHost: (...args) => sent.push(args) }, webFrame: { setVisualZoomLevelLimits: (...args) => zoom.push(args), executeJavaScript: () => Promise.resolve() } }),
+    require: () => ({ contextBridge: { exposeInMainWorld: () => {} }, ipcRenderer: { on: () => {}, sendToHost: (...args) => sent.push(args) }, webFrame: { setVisualZoomLevelLimits: (...args) => zoom.push(args), executeJavaScript: () => Promise.resolve() } }),
   })
   return { listeners, sent, zoom }
 }
