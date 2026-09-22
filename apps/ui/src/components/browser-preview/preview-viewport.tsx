@@ -106,6 +106,7 @@ export const PreviewViewport = forwardRef<
   const webviewRef = useRef<ElectronWebviewElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const isElectron = !!window.electronAPI
+  const popupAttributes: Record<string, string> = workspace ? { allowpopups: "true" } : {}
   const electronPreloadPath = window.__BETTERC0DE__?.electronPath
   const webviewPreload = electronPreloadPath
     ? toFileUrl(`${electronPreloadPath}/browser-preview-preload.cjs`)
@@ -369,7 +370,7 @@ export const PreviewViewport = forwardRef<
           tabIndex={selectionMode ? -1 : 0}
           ref={webviewRef as React.RefObject<HTMLWebViewElement>}
           src={url}
-          allowpopups={workspace || undefined}
+          {...popupAttributes}
           className="size-full border-0 bg-background"
           style={{ display: "inline-flex" }}
           preload={webviewPreload || undefined}
