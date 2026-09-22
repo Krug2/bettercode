@@ -56,7 +56,7 @@ describe("blob motion", () => {
     expect(engine.bodies.get("model:b")!.x).toBeCloseTo(130, 2)
   })
 
-  it("sloshes contents opposite a drag, rebounds and settles without moving the anchor", () => {
+  it("gently lags behind a drag and settles without moving the anchor", () => {
     const engine = new BlobPhysics()
     engine.sync(nodes, visibleNodes(nodes, []), {}, true)
     const body = engine.bodies.get("total")!
@@ -64,15 +64,15 @@ describe("blob motion", () => {
     engine.step(16.667)
     expect(body.slosh.x).toBeLessThan(0)
     expect(body.slosh.y).toBeLessThan(0)
-    expect(body.wobble).toBeGreaterThan(0)
+    expect(Math.hypot(body.strain.x, body.strain.y)).toBeGreaterThan(0)
     expect(body.x).toBe(80)
     expect(body.y).toBe(40)
-    let rebounded = false
+    let largestRebound = 0
     for (let frame = 0; frame < 90; frame++) {
       engine.step(16.667)
-      if (body.slosh.x > 0.1) rebounded = true
+      largestRebound = Math.max(largestRebound, body.slosh.x)
     }
-    expect(rebounded).toBe(true)
+    expect(largestRebound).toBeLessThan(0.1)
     engine.releaseBranch()
     tick(engine)
     expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThan(0.001)
@@ -86,11 +86,24 @@ describe("blob motion", () => {
     for (let frame = 0; frame < 120; frame++) {
       engine.moveBranch("total", { x: frame % 2 ? 800 : -800, y: frame * 2 })
       engine.step(frame % 2 ? 8.33 : 32)
-      expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThanOrEqual(body.node.radius * 0.16 + 1e-8)
+      expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThanOrEqual(body.node.radius * 0.075 + 1e-8)
     }
     engine.moveBranch("total", { x: 0, y: 0 }, true)
     engine.step(16.667)
     expect(body.slosh).toEqual({ x: 0, y: 0 })
     expect(body.wobble).toBe(0)
+  })
+
+  it("does not rotate the outline sideways when drag direction reverses", () => {
+    const engine = new BlobPhysics()
+    engine.sync(nodes, visibleNodes(nodes, []), {}, true)
+    const body = engine.bodies.get("total")!
+    for (let frame = 0; frame < 80; frame++) {
+      engine.moveBranch("total", { x: frame < 40 ? frame * 20 : (80 - frame) * 20, y: 0 })
+      engine.step(16.667)
+      expect(body.strain.x).toBeGreaterThanOrEqual(0)
+      expect(body.strain.y).toBeCloseTo(0, 8)
+      expect(body.strain.x).toBeLessThanOrEqual(0.071)
+    }
   })
 })
