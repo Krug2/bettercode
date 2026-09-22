@@ -75,6 +75,9 @@ interface PreviewViewportProps {
   onShortcut?: (shortcut: string) => void
   /** Canvas owns the transform; guest page zoom stays at 100% in its own session. */
   canvas?: boolean
+  workspace?: boolean
+  onOpenUrl?: (url: string) => void
+  onLoadError?: (message: string | null) => void
 }
 
 export const PreviewViewport = forwardRef<
@@ -94,6 +97,9 @@ export const PreviewViewport = forwardRef<
     onConsoleEntries,
     onShortcut,
     canvas = false,
+    workspace = false,
+    onOpenUrl,
+    onLoadError,
   },
   ref
 ) {
@@ -122,6 +128,8 @@ export const PreviewViewport = forwardRef<
     onConsoleEntries,
     onShortcut,
     onNavigate,
+    onOpenUrl,
+    onLoadError,
   })
   callbacksRef.current = {
     onLoadingChange,
@@ -130,6 +138,8 @@ export const PreviewViewport = forwardRef<
     onConsoleEntries,
     onShortcut,
     onNavigate,
+    onOpenUrl,
+    onLoadError,
   }
 
   // Normalize + dispatch bc-* messages from either transport ("bc-" prefixed
@@ -207,12 +217,23 @@ export const PreviewViewport = forwardRef<
       // Inject the inspector script (uses window.cursorBrowser.send exposed by preload)
       wv.executeJavaScript(INJECT_SCRIPT_WEBVIEW).catch(() => { /* Expected: webview may not be ready for JS injection */ })
     }
+    const onStart = () => { callbacksRef.current.onLoadingChange?.(true); callbacksRef.current.onLoadError?.(null) }
+    const onStop = () => callbacksRef.current.onLoadingChange?.(false)
+    const onError = (event: Event) => {
+      const error = event as Event & { errorCode?: number; errorDescription?: string; isMainFrame?: boolean }
+      if (error.errorCode !== -3 && error.isMainFrame !== false) callbacksRef.current.onLoadError?.(error.errorDescription || "This page could not be loaded.")
+    }
     const onNavigation = (event: Event) => {
       const nextUrl = (event as Event & { url?: string }).url
       if (nextUrl && /^(?:https?|betterc0de-html):\/\//.test(nextUrl)) callbacksRef.current.onNavigate?.(nextUrl, { back: wv.canGoBack(), forward: wv.canGoForward() })
     }
 
     const onIpcMessage = ((e: ElectronWebviewIpcEvent) => {
+      if (e.channel === "workspace-open-url" && workspace) {
+        const url = e.args?.[0]
+        if (typeof url === "string" && /^https?:\/\//i.test(url)) callbacksRef.current.onOpenUrl?.(url)
+        return
+      }
       if (e.channel === "canvas-wheel" && canvas) {
         forwardCanvasWheel(wv, e.args?.[0])
         return
@@ -229,14 +250,20 @@ export const PreviewViewport = forwardRef<
     wv.addEventListener("ipc-message", onIpcMessage)
     wv.addEventListener("did-navigate", onNavigation)
     wv.addEventListener("did-navigate-in-page", onNavigation)
+    wv.addEventListener("did-start-loading", onStart)
+    wv.addEventListener("did-stop-loading", onStop)
+    wv.addEventListener("did-fail-load", onError)
 
     return () => {
       wv.removeEventListener("dom-ready", onDomReady)
       wv.removeEventListener("ipc-message", onIpcMessage)
       wv.removeEventListener("did-navigate", onNavigation)
       wv.removeEventListener("did-navigate-in-page", onNavigation)
+      wv.removeEventListener("did-start-loading", onStart)
+      wv.removeEventListener("did-stop-loading", onStop)
+      wv.removeEventListener("did-fail-load", onError)
     }
-  }, [isElectron, handleBcMessage, canvas])
+  }, [isElectron, handleBcMessage, canvas, workspace])
 
   // iframe fallback injection
   const handleIframeLoad = useCallback(() => {
@@ -345,7 +372,7 @@ export const PreviewViewport = forwardRef<
           style={{ display: "inline-flex" }}
           preload={webviewPreload || undefined}
           partition={
-            canvas ? "betterc0de-canvas-preview" : window.__BETTERC0DE__?.previewPartition || "betterc0de-preview"
+            workspace ? "persist:betterc0de-workspace-browser" : canvas ? "betterc0de-canvas-preview" : window.__BETTERC0DE__?.previewPartition || "betterc0de-preview"
           }
         />
       ) : (

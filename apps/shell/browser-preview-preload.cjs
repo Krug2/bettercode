@@ -8,6 +8,10 @@ const { ipcRenderer, contextBridge, webFrame } = require("electron");
 
 const IS_MAC = process.platform === "darwin";
 
+ipcRenderer.on("workspace-open-url", (_event, url) => {
+  if (typeof url === "string" && /^https?:\/\//i.test(url)) ipcRenderer.sendToHost("workspace-open-url", url);
+});
+
 // Set by the main process's webview policy, never by page JavaScript. Capture
 // pinch/Ctrl-wheel before Chromium or the page can zoom the embedded document.
 if (process.argv.includes("--betterc0de-canvas-preview")) {

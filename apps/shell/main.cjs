@@ -34,6 +34,7 @@ function getHtmlPreviews() {
   return htmlPreviews
 }
 const CANVAS_PREVIEW_PARTITION = "betterc0de-canvas-preview"
+const WORKSPACE_BROWSER_PARTITION = "persist:betterc0de-workspace-browser"
 
 // Enforce single-instance before anything else — a second launch of
 // BetterC0de.exe otherwise spawns a second process that fights the first
@@ -1859,14 +1860,22 @@ function attachWebviewPolicy(contents) {
     webPreferences.webviewTag = false
     // Both fixed guest sessions are sandboxed and denied app permissions.
     // Canvas guests keep a fixed page zoom, independent of the editor browser.
-    const canvas = params?.partition === CANVAS_PREVIEW_PARTITION
-    forcePreviewPartition(webPreferences, params, canvas ? CANVAS_PREVIEW_PARTITION : PREVIEW_SESSION_PARTITION)
+    const workspace = params?.partition === WORKSPACE_BROWSER_PARTITION
+    const canvas = workspace || params?.partition === CANVAS_PREVIEW_PARTITION
+    forcePreviewPartition(webPreferences, params, workspace ? WORKSPACE_BROWSER_PARTITION : canvas ? CANVAS_PREVIEW_PARTITION : PREVIEW_SESSION_PARTITION)
     webPreferences.additionalArguments = canvas ? ["--betterc0de-canvas-preview"] : []
     delete webPreferences.preload
     delete webPreferences.preloadURL
     if (canvas || isOwnPreviewPreload(requestedPreload)) {
       webPreferences.preload = PREVIEW_PRELOAD_PATH
     }
+  })
+  contents.on("did-attach-webview", (_event, guest) => {
+    if (guest.session !== session.fromPartition(WORKSPACE_BROWSER_PARTITION)) return
+    guest.setWindowOpenHandler(({ url }) => {
+      if (/^https?:\/\//i.test(url)) guest.send("workspace-open-url", url)
+      return { action: "deny" }
+    })
   })
 }
 
@@ -2583,7 +2592,7 @@ app.whenReady().then(async () => {
         && isTrustedRendererPermission(webContents, details, getRendererSecurityPolicy())
         && details.mediaType === "audio",
     )
-    for (const partition of [PREVIEW_SESSION_PARTITION, CANVAS_PREVIEW_PARTITION]) {
+    for (const partition of [PREVIEW_SESSION_PARTITION, CANVAS_PREVIEW_PARTITION, WORKSPACE_BROWSER_PARTITION]) {
       const previewSession = session.fromPartition(partition)
       previewSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false))
       previewSession.setPermissionCheckHandler(() => false)
