@@ -272,6 +272,7 @@ export function DesignCanvas({
             onLostPointerCapture={panHandlers.onLostPointerCapture}
             onPointerDownCapture={(event) => {
               if (!event.ctrlKey && !event.metaKey && !event.altKey) return
+              if ((event.target as Element).closest("input,textarea,select,[contenteditable]:not([contenteditable=false])")) return
               if (!(event.target as Element).closest("[data-canvas-project],[data-workspace-window]"))
                 return
               event.preventDefault()
@@ -300,6 +301,7 @@ export function DesignCanvas({
             }}
             onClickCapture={(event) => {
               if (!event.ctrlKey && !event.metaKey && !event.altKey) return
+              if ((event.target as Element).closest("input,textarea,select,[contenteditable]:not([contenteditable=false])")) return
               if (!(event.target as Element).closest("[data-canvas-project],[data-workspace-window]"))
                 return
               event.preventDefault()
