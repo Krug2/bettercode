@@ -1,5 +1,6 @@
 import { useState, type MouseEvent } from "react"
 import {
+  ChartNoAxesColumnIcon,
   CheckIcon,
   ChevronDownIcon,
   CodeIcon,
@@ -15,6 +16,7 @@ import {
 } from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
 import { useChatStore } from "@/lib/chat-store"
+import { useUsagePageStore } from "@/lib/usage-page-store"
 import { resolveThreadRuntimePath } from "@/lib/thread-context"
 import { openAppWindow } from "@/lib/open-app-window"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -87,6 +89,7 @@ export function SidebarFooter({
   setSettingsOpen: (open: boolean) => void
 }) {
   const [modeMenuOpen, setModeMenuOpen] = useState(false)
+  const usageOpen = useUsagePageStore(state => state.open)
   const canOpenWindow = typeof window !== "undefined" && Boolean(window.electronAPI?.windowOpenWith)
   const windowHint = canOpenWindow ? "Right-click to open in a new window" : undefined
   const activeTemplate = useAppearanceStore((s) => s.template)
@@ -291,6 +294,22 @@ export function SidebarFooter({
           </DropdownMenuContent>
         </DropdownMenu>
       )}
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            data-usage-nav
+            aria-label="Usage"
+            aria-pressed={usageOpen}
+            className={cn("flex shrink-0 items-center justify-center rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-foreground", usageOpen && "bg-sidebar-accent text-sidebar-foreground")}
+            onClick={() => useUsagePageStore.getState().setOpen(!usageOpen)}
+          >
+            <ChartNoAxesColumnIcon className="size-3.5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">Usage</TooltipContent>
+      </Tooltip>
 
       {/* Appearance */}
       <SimpleDropdown
