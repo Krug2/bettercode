@@ -1,5 +1,6 @@
 import {
   BookOpen01Icon,
+  ChartHistogramIcon,
   CpuIcon,
   TestTube01Icon,
   LinkIcon,
@@ -38,6 +39,12 @@ export const settingsTabs = [
     label: "Providers",
     icon: CpuIcon,
     description: "API keys, provider settings, and model visibility",
+  },
+  {
+    id: "usage",
+    label: "Usage",
+    icon: ChartHistogramIcon,
+    description: "Choose which blocks appear in your usage dashboard",
   },
   {
     id: "plugins",
