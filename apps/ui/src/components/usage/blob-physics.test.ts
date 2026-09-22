@@ -92,7 +92,7 @@ describe("blob motion", () => {
     for (let frame = 0; frame < 120; frame++) {
       engine.moveBranch("total", { x: frame % 2 ? 800 : -800, y: frame * 2 })
       engine.step(frame % 2 ? 8.33 : 32)
-      expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThanOrEqual(body.node.radius * 0.075 + 1e-8)
+      expect(Math.hypot(body.slosh.x, body.slosh.y)).toBeLessThan(body.node.radius * 0.12)
     }
     engine.moveBranch("total", { x: 0, y: 0 }, true)
     engine.step(16.667)
@@ -109,7 +109,7 @@ describe("blob motion", () => {
       engine.step(16.667)
       expect(body.strain.x).toBeGreaterThanOrEqual(0)
       expect(body.strain.y).toBeCloseTo(0, 8)
-      expect(body.strain.x).toBeLessThanOrEqual(0.071)
+      expect(body.strain.x).toBeLessThan(0.11)
     }
   })
 

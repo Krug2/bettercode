@@ -33,7 +33,7 @@ export function useBlobScene(nodes: BlobNode[], visible: BlobNode[], positions: 
         button.style.transform = `translate(${body.x - body.node.radius}px, ${body.y - body.node.radius}px) scale(${body.scale})`
         button.style.setProperty("--blob-slosh-x", `${body.slosh.x.toFixed(3)}px`)
         button.style.setProperty("--blob-slosh-y", `${body.slosh.y.toFixed(3)}px`)
-        button.style.setProperty("--blob-tilt", `${(body.slosh.x / body.node.radius * 12).toFixed(3)}deg`)
+        button.style.setProperty("--blob-tilt", `${(body.slosh.x / body.node.radius * 16).toFixed(3)}deg`)
       }
       if (body.visible) {
         const stretch = Math.hypot(body.strain.x, body.strain.y)
