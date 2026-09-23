@@ -84,7 +84,7 @@ export function SettingsDevicesSection() {
       {!status.persistent && <p className="rounded-lg border p-3 text-sm text-muted-foreground">secure storage is unavailable. device links on this computer last until the app closes.</p>}
       <SettingsSection title="this computer" description="share this computer through your relay. both computers connect outward, so they can be on different networks.">
         <SettingsRow label="device name"><Input aria-label="device name" className="max-w-xs" maxLength={80} value={draft.label} onChange={e => setDraft({ ...draft, label: e.target.value })} /></SettingsRow>
-        <SettingsRow label="receive device connections"><Switch aria-label="receive device connections" checked={draft.enabled} onCheckedChange={enabled => setDraft({ ...draft, enabled })} /></SettingsRow>
+        <SettingsRow label="receive device connections" description="turning off all remote access revokes existing device approvals."><Switch aria-label="receive device connections" checked={draft.enabled} onCheckedChange={enabled => setDraft({ ...draft, enabled })} /></SettingsRow>
         <div className="space-y-3 p-4">
           <label className="space-y-2 text-sm"><span>relay address</span><Input aria-label="relay address" placeholder="https://relay.example.com" maxLength={2048} value={draft.relayUrl} onChange={e => setDraft({ ...draft, relayUrl: e.target.value })} /></label>
           <div className="flex items-center justify-between gap-3"><span role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><span className={`size-2 rounded-full ${status.state === "online" ? "bg-emerald-500" : "bg-muted-foreground/50"}`} />{status.state}</span>
