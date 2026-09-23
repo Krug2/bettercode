@@ -84,6 +84,15 @@ describe("remote backend security", () => {
     expect(buildRemoteWsUrl()).toBe("ws://127.0.0.1:4773/ws")
   })
 
+  it("allows isolated device origins and rejects lookalikes", () => {
+    const host = `device-${"a".repeat(32)}.localhost`
+    configureRemoteBackend({ baseUrl: `http://${host}:4773`, wsUrl: `ws://${host}:4773` })
+    expect(buildRemoteWsUrl()).toBe(`ws://${host}:4773/ws`)
+    for (const invalid of [`${host}.example.com`, `device-${"a".repeat(31)}.localhost`, "device-other.localhost"]) {
+      expect(() => configureRemoteBackend({ baseUrl: `http://${invalid}:4773` })).toThrow(/encrypted transport/)
+    }
+  })
+
   it("clears stale credentials and websocket routing when the backend origin changes", () => {
     configureRemoteBackend({
       baseUrl: "https://first.example",
