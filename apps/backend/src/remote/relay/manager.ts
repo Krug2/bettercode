@@ -13,6 +13,7 @@ import { certificateId } from "./identity"
 import { DevicePairing, deviceLabel, devicePermission, pairingCode, readInvitation } from "./pairing"
 import { secureClient, secureServer } from "./tls-channel"
 import { DeviceVault, type SavedHost } from "./vault"
+import { createViewerBridge, type ViewerBridge } from "./viewer-bridge"
 
 const hostInfo = z.object({
   version: z.literal(1), id: z.string(), label: deviceLabel, environmentId: z.string().uuid(),
@@ -34,6 +35,7 @@ export class DeviceManager {
   private hostError: string | undefined
   private configuration = ""
   private fetch?: (request: Request) => Response | Promise<Response>
+  private webRoot?: string
   private stopped = false
   private readonly incoming = new Set<ServerHttp2Session>()
   private readonly connections = new Map<string, ConnectedHost>()
@@ -41,6 +43,7 @@ export class DeviceManager {
   private readonly outgoing = new Map<string, AbortController>()
   private readonly cooldown = new Map<string, { until: number; failures: number; error: string }>()
   private readonly links = new Map<string, { state: LinkState; abort: AbortController }>()
+  private readonly views = new Map<string, Promise<ViewerBridge>>()
 
   constructor(private readonly options: {
     dataDir: string; access: RemoteAccessService; settings(): RelaySettings; localPort(): number;
@@ -60,8 +63,9 @@ export class DeviceManager {
     return this.initializing
   }
 
-  start(fetch: (request: Request) => Response | Promise<Response>): void {
+  start(fetch: (request: Request) => Response | Promise<Response>, webRoot?: string): void {
     this.fetch = fetch
+    this.webRoot = webRoot
     this.reconcile()
   }
 
@@ -239,12 +243,33 @@ export class DeviceManager {
     return host
   }
 
+  async openView(id: string) {
+    if (!this.webRoot) throw new DeviceRequestError("Build the app client before opening a device view", 503)
+    const host = await this.savedHost(id)
+    await this.connect(id)
+    if (!this.views.has(id)) {
+      const pending = createViewerBridge({
+        host, webRoot: this.webRoot, connect: () => this.connect(id),
+        connectionState: () => this.connections.has(id) ? "online" : this.connecting.has(id) ? "reconnecting" : "offline",
+      }).then(async bridge => {
+        if (this.stopped || !this.vault?.hosts().some(host => host.id === id)) { await bridge.close(); throw new Error("Device view was closed") }
+        return bridge
+      }).catch(error => { this.views.delete(id); throw error })
+      this.views.set(id, pending)
+    }
+    const bridge = await this.views.get(id)!
+    return { url: bridge.open(), hostId: id, label: host.label, environmentId: host.environmentId }
+  }
+
   async forget(id: string): Promise<void> {
     const vault = await this.initialize()
     vault.removeHost(id)
     this.outgoing.get(id)?.abort()
     this.connections.get(id)?.session.destroy()
     this.cooldown.delete(id)
+    const bridge = this.views.get(id)
+    this.views.delete(id)
+    if (bridge) await bridge.then(view => view.close()).catch(() => undefined)
   }
 
   async revoke(id: string): Promise<void> {
@@ -254,7 +279,7 @@ export class DeviceManager {
     vault.removeGrant(id)
   }
 
-  close(): void {
+  async close(): Promise<void> {
     this.stopped = true
     this.hostAbort?.abort()
     this.registration?.close()
@@ -264,5 +289,7 @@ export class DeviceManager {
     for (const abort of this.outgoing.values()) abort.abort()
     for (const session of this.incoming) session.destroy()
     for (const connection of this.connections.values()) connection.session.destroy()
+    await Promise.allSettled([...this.views.values()].map(async pending => (await pending).close()))
+    this.views.clear()
   }
 }

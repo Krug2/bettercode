@@ -40,4 +40,5 @@ export function registerDeviceRoutes(api: Hono, config: ServerConfig, state: App
   })
   api.delete("/devices/grants/:id", async c => { await state.devices!.revoke(c.req.param("id")); return c.json({ revoked: true }) })
   api.delete("/devices/hosts/:id", async c => { await state.devices!.forget(c.req.param("id")); return c.json({ forgotten: true }) })
+  api.post("/devices/hosts/:id/view", async c => c.json(await state.devices!.openView(c.req.param("id"))))
 }

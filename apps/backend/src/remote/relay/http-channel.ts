@@ -51,8 +51,8 @@ export class DeviceRequestError extends Error {
   constructor(message: string, readonly status: number) { super(message) }
 }
 
-export function requestDevice(session: ClientHttp2Session, path: string, method = "GET"): ClientHttp2Stream {
-  const stream = session.request({ ":path": path, ":method": method })
+export function requestDevice(session: ClientHttp2Session, path: string, method = "GET", headers: Record<string, string> = {}): ClientHttp2Stream {
+  const stream = session.request({ ...headers, ":path": path, ":method": method })
   stream.on("error", () => undefined)
   stream.setTimeout(120_000, () => stream.destroy(new Error("Device request timed out")))
   return stream

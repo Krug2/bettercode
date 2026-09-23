@@ -147,7 +147,7 @@ export async function runGracefulShutdown(deps: ShutdownDeps): Promise<void> {
   const { transcriptRecoveryTimer, providerSessionReaper, vacuumTimer } = timers
   logger.info("Graceful shutdown initiated")
   requestAdmission.beginDrain()
-  settingsCtx.devices?.close()
+  await settingsCtx.devices?.close()
   let orchestratorShutdownFailure: unknown = null
   const orchestratorShutdown = Promise.allSettled([
     providersCtx.state.orchestrator?.close(), providersCtx.orchestratorHarness.close(),

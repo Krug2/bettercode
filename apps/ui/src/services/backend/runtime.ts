@@ -93,6 +93,7 @@ function isLoopbackHostname(hostname: string): boolean {
   const normalized = hostname.toLowerCase().replace(/^\[|\]$/g, '')
   return (
     normalized === 'localhost' ||
+    /^device-[a-f0-9]{32}\.localhost$/.test(normalized) ||
     normalized === '127.0.0.1' ||
     normalized === '::1'
   )
