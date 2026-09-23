@@ -39,6 +39,7 @@ export function SettingsDevicesSection() {
   const [status, setStatus] = useState<DeviceStatus>()
   const [draft, setDraft] = useState<{ label: string; relayUrl: string; enabled: boolean }>()
   const [error, setError] = useState("")
+  const [loadError, setLoadError] = useState("")
   const [busy, setBusy] = useState(false)
   const [invitation, setInvitation] = useState<{ code: string; expiresAt: string }>()
   const [code, setCode] = useState("")
@@ -58,10 +59,11 @@ export function SettingsDevicesSection() {
       try {
         const value = await getDevices()
         if (active) {
+          setLoadError("")
           setStatus(value)
           setDraft(previous => previous ?? { label: value.label, relayUrl: value.relayUrl, enabled: value.enabled })
         }
-      } catch (reason) { if (active) setError(reason instanceof Error ? reason.message : "could not load devices") }
+      } catch (reason) { if (active) setLoadError(reason instanceof Error ? reason.message : "could not load devices") }
       finally { running = false }
     }
     void update()
@@ -77,7 +79,7 @@ export function SettingsDevicesSection() {
   }
   if (remote) return <p className="text-sm text-muted-foreground">manage linked computers in the local desktop app.</p>
   return <>
-    {error && <p role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive">{error}</p>}
+    {(error || loadError) && <p role="alert" className="rounded-lg border border-destructive/40 p-3 text-sm text-destructive">{error || loadError}</p>}
     {!status || !draft ? <Button variant="ghost" onClick={() => void run(refresh)} disabled={busy}><RefreshCw className="size-4" />load devices</Button> : <>
       {!status.persistent && <p className="rounded-lg border p-3 text-sm text-muted-foreground">secure storage is unavailable. device links on this computer last until the app closes.</p>}
       <SettingsSection title="this computer" description="share this computer through your relay. both computers connect outward, so they can be on different networks.">
