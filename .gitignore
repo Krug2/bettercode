@@ -80,3 +80,4 @@ playwright-report/
 *.jks
 credentials.json
 /deploy/relay.env
+*.md
