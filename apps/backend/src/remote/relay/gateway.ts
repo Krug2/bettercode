@@ -28,7 +28,7 @@ function json(stream: ServerHttp2Stream, value: unknown, status = 200): void {
 }
 
 export function allowedDevicePath(value: string): boolean {
-  if (value.length > 8192 || !value.startsWith("/api/v1/") || /[\\\x00-\x20\x7f]/.test(value)) return false
+  if (value.length > 8192 || !value.startsWith("/api/v1/") || value.includes("\\") || [...value].some(char => char.charCodeAt(0) <= 32 || char.charCodeAt(0) === 127)) return false
   try {
     const url = new URL(value, "https://bettercode.remote")
     if (url.origin !== "https://bettercode.remote" || `${url.pathname}${url.search}` !== value || /%2f|%5c|%2e/i.test(url.pathname)) return false

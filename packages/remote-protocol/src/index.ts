@@ -17,7 +17,7 @@ export function relayUrl(value: string): string {
 }
 
 export function channelFrame(id: string, data: Uint8Array): Buffer {
-  if (!/^[a-f0-9]{32}$/.test(id) || data.byteLength > RELAY_FRAME_LIMIT - RELAY_CHANNEL_BYTES)
+  if (!/^[a-f0-9]{32}$/.test(id) || !data.byteLength || data.byteLength > RELAY_FRAME_LIMIT - RELAY_CHANNEL_BYTES)
     throw new Error("Invalid relay frame")
   return Buffer.concat([Buffer.from(id, "hex"), data])
 }

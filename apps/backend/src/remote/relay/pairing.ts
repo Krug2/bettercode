@@ -7,7 +7,7 @@ import { DeviceRequestError } from "./http-channel"
 import type { SecurePeer } from "./tls-channel"
 import type { DeviceGrant, DeviceVault } from "./vault"
 
-export const deviceLabel = z.string().trim().min(1).max(80).regex(/^[^\x00-\x1f\x7f]+$/)
+export const deviceLabel = z.string().trim().min(1).max(80).refine(value => [...value].every(char => char.charCodeAt(0) >= 32 && char.charCodeAt(0) !== 127))
 export const devicePermission = z.object({ accessLevel: z.enum(["full", "read_only"]), allowTerminal: z.boolean().default(false) })
 const invitationSchema = z.object({
   version: z.literal(1), relayUrl: z.string().max(2048), hostId: z.string().regex(/^[a-f0-9]{64}$/),
