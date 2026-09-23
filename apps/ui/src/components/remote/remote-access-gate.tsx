@@ -13,6 +13,7 @@ import {
   pairRemoteBrowser,
 } from "@/services/backend/remoteApi"
 import { isRemoteRuntime } from "@/services/backend/runtime"
+import { DeviceViewContext, type DeviceView } from "./device-view"
 
 type GateState =
   | { status: "checking" }
@@ -69,6 +70,7 @@ export function RemoteAccessGate({ children }: { children: ReactNode }) {
     remote ? { status: "checking" } : { status: "ready" }
   )
   const [pairingCode, setPairingCode] = useState("")
+  const [device, setDevice] = useState<DeviceView>()
 
   const check = useCallback(async (linkToken?: string) => {
     try {
@@ -77,6 +79,7 @@ export function RemoteAccessGate({ children }: { children: ReactNode }) {
         await pairRemoteBrowser(linkToken, browserLabel())
       }
       const bootstrap = await getRemoteBootstrap()
+      setDevice(bootstrap.device)
       if (!bootstrap.enabled) {
         setState({ status: "disabled" })
       } else if (bootstrap.authenticated) {
@@ -113,7 +116,7 @@ export function RemoteAccessGate({ children }: { children: ReactNode }) {
     await check(code)
   }
 
-  if (state.status === "ready") return children
+  if (state.status === "ready") return <DeviceViewContext.Provider value={device}>{children}</DeviceViewContext.Provider>
 
   const loading = state.status === "checking" || state.status === "pairing"
   return (

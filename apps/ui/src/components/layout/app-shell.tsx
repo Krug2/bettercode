@@ -2,6 +2,7 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { Onboarding } from "@/components/onboarding"
 import { ErrorBoundary } from "@/components/error-boundary"
 import { Titlebar } from "@/components/layout/titlebar"
+import { DeviceConnectionBar } from "@/components/remote/device-view"
 import { LeftSidebar } from "@/components/layout/left-sidebar"
 import { MainArea } from "@/components/layout/main-area"
 import { WorkspaceRightPanel } from "@/components/layout/workspace-right-panel"
@@ -48,6 +49,7 @@ export function AppShell({
     <TooltipProvider>
       <Onboarding />
       <div className="flex h-svh flex-col overflow-hidden bg-background text-foreground">
+        <DeviceConnectionBar />
         <ErrorBoundary label="Titlebar">
           <Titlebar {...titlebarProps} />
         </ErrorBoundary>

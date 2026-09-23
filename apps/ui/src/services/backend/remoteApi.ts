@@ -9,6 +9,7 @@ export interface RemoteSession {
 }
 
 export interface RemoteBootstrapResponse {
+  device?: { id: string; label: string; state: string }
   enabled: boolean
   authenticated: boolean
   authentication: "local" | "remote" | null
