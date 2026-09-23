@@ -205,6 +205,7 @@
       "!apps/ui/dist/sounds/**",
       "!apps/ui/dist/sounds/mechvibes/**",
       "apps/shell/main.cjs",
+      "apps/shell/device-windows.cjs",
       "apps/shell/preload.cjs",
       "apps/shell/backend-dev-reloader.cjs",
       "apps/shell/plugin-ipc.cjs",
