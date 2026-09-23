@@ -4,6 +4,8 @@
 
 {$RELAY_DOMAIN} {
     @relay path /v1/relay /health
-    reverse_proxy @relay relay:8080
+    reverse_proxy @relay relay:8080 {
+        header_up X-Bettercode-Client-IP {remote_host}
+    }
     respond 404
 }

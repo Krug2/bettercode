@@ -10,6 +10,7 @@ services:
     security_opt: [no-new-privileges:true]
     mem_limit: 512m
     environment:
+      RELAY_TRUST_PROXY: "true"
       RELAY_MAX_CONNECTIONS: ${RELAY_MAX_CONNECTIONS:-128}
       RELAY_MAX_PEERS: ${RELAY_MAX_PEERS:-16}
       RELAY_BYTES_PER_SECOND: ${RELAY_BYTES_PER_SECOND:-8388608}

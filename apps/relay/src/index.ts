@@ -20,6 +20,7 @@ async function main() {
       "",
       "PORT=8080 RELAY_HOST=127.0.0.1 RELAY_MAX_CONNECTIONS=1024",
       "RELAY_MAX_PEERS=16 RELAY_BYTES_PER_SECOND=8388608",
+      "RELAY_TRUST_PROXY=true only when the relay is reachable solely through the supplied proxy",
       "the relay stores no device keys or application data; keep the host computer awake",
       "",
     ].join("\n"))
@@ -31,6 +32,7 @@ async function main() {
     maxConnections: positive("RELAY_MAX_CONNECTIONS", 1024),
     maxPeersPerHost: positive("RELAY_MAX_PEERS", 16),
     maxBytesPerSecond: positive("RELAY_BYTES_PER_SECOND", 8 * 1024 * 1024),
+    trustProxy: process.env.RELAY_TRUST_PROXY === "true",
   })
   process.stdout.write(`relay listening on port ${(relay.server.address() as { port: number }).port}\n`)
   let stopping = false

@@ -57,4 +57,15 @@ describe("relay server", () => {
       expect((await closed)[0]).toBe(4001)
     }
   })
+
+  it.each([false, true])("only trusts proxy addresses when configured: %s", async trustProxy => {
+    const relay = await startRelay({ port: 0, trustProxy })
+    relays.push(relay)
+    const accepted = await Promise.all(Array.from({ length: 32 }, (_, index) => new Promise<boolean>(resolve => {
+      const socket = new WebSocket(`${relay.url}/v1/relay`, { headers: { "X-Bettercode-Client-IP": `192.0.2.${index + 1}` } })
+      socket.once("error", () => resolve(false))
+      socket.once("message", () => { socket.terminate(); resolve(true) })
+    })))
+    expect(accepted.filter(Boolean)).toHaveLength(trustProxy ? 32 : 30)
+  })
 })

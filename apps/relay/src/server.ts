@@ -1,4 +1,5 @@
 import http from "node:http"
+import { isIP } from "node:net"
 import { createHash, createPublicKey, randomBytes, verify } from "node:crypto"
 import { WebSocket, WebSocketServer } from "ws"
 import { channelFrame, readChannelFrame, RELAY_FRAME_LIMIT, RELAY_QUEUE_LIMIT, RELAY_VERSION } from "@betterc0de/remote-protocol"
@@ -13,6 +14,7 @@ export interface RelayOptions {
   maxConnections?: number
   maxPeersPerHost?: number
   maxBytesPerSecond?: number
+  trustProxy?: boolean
 }
 
 export async function startRelay(options: RelayOptions = {}) {
@@ -37,7 +39,9 @@ export async function startRelay(options: RelayOptions = {}) {
   const sockets = new WebSocketServer({ noServer: true, maxPayload: RELAY_FRAME_LIMIT, perMessageDeflate: false })
 
   server.on("upgrade", (request, socket, head) => {
-    const ip = request.socket.remoteAddress ?? "unknown"
+    const forwarded = request.headers["x-bettercode-client-ip"]
+    const ip = options.trustProxy && typeof forwarded === "string" && isIP(forwarded)
+      ? forwarded : request.socket.remoteAddress ?? "unknown"
     const now = Date.now()
     for (const [key, value] of attempts) if (now - value.time > 60_000) attempts.delete(key)
     const budget = attempts.get(ip) ?? { tokens: 30, time: now }
