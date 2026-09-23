@@ -20,6 +20,11 @@ const VENDORED_PACKAGES = [
     sourceDir: path.join(repoRoot, "packages", "schema"),
     name: "@betterc0de/schema",
   },
+  {
+    pkgDir: path.join(repoRoot, "node_modules", "@betterc0de", "remote-protocol"),
+    sourceDir: path.join(repoRoot, "packages", "remote-protocol"),
+    name: "@betterc0de/remote-protocol",
+  },
 ];
 
 let restored = 0;

@@ -5,9 +5,11 @@ const root = path.resolve(import.meta.dirname, "..")
 const manifests = [
   "package.json",
   "apps/backend/package.json",
+  "apps/relay/package.json",
   "apps/shell/package.json",
   "apps/ui/package.json",
   "packages/schema/package.json",
+  "packages/remote-protocol/package.json",
   "packages/util/package.json",
 ]
 

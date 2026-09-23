@@ -21,15 +21,16 @@ const path = require("path");
 
 const repoRoot = path.resolve(__dirname, "..");
 
-// Only schema is required at backend runtime — confirmed by grepping
-// `apps/backend/dist/` for external requires. Other workspace-package
-// symlinks (shell, ui, util, backend) under @betterc0de/ aren't loaded
-// from `node_modules/`, so we leave them alone.
 const VENDORED_PACKAGES = [
   {
     pkgDir: path.join(repoRoot, "node_modules", "@betterc0de", "schema"),
     sourceDir: path.join(repoRoot, "packages", "schema"),
     name: "@betterc0de/schema",
+  },
+  {
+    pkgDir: path.join(repoRoot, "node_modules", "@betterc0de", "remote-protocol"),
+    sourceDir: path.join(repoRoot, "packages", "remote-protocol"),
+    name: "@betterc0de/remote-protocol",
   },
 ];
 
