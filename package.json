@@ -54,7 +54,7 @@
     "test:backend": "vitest run --root apps/backend --config vitest.config.ts",
     "test:devices": "npm run build:remote && vitest run --config vitest.devices.config.ts",
     "check:versions": "node scripts/check-workspace-versions.mjs",
-    "verify:source": "npm run check:versions && npm run build:backend && npm run typecheck && npm run typecheck:backend && npm run typecheck:mobile && npm run typecheck:remotion && npm run lint && npm run test:packaging && npm test && npm run test:backend && npm run test:mobile",
+    "verify:source": "npm run check:versions && npm run build:backend && npm run typecheck && npm run typecheck:backend && npm run typecheck:mobile && npm run typecheck:remotion && npm run lint && npm run test:packaging && npm test && npm run test:backend && npm run test:devices && npm run test:mobile",
     "test:packaging": "node --test scripts/*.test.mjs",
     "smoke:backend": "node scripts/backend-startup-smoke.mjs",
     "smoke:remote": "node scripts/remote-access-smoke.mjs",
