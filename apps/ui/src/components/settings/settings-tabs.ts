@@ -76,6 +76,12 @@ export const settingsTabs = [
     description: "Pair trusted phones and browsers with this BetterC0de host",
   },
   {
+    id: "devices",
+    label: "devices",
+    icon: WifiSyncIcon,
+    description: "connect computers across networks",
+  },
+  {
     id: "permissions",
     label: "Permissions",
     icon: ShieldKeyIcon,
