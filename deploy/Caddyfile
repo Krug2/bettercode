@@ -1,0 +1,9 @@
+{
+    email {$ACME_EMAIL}
+}
+
+{$RELAY_DOMAIN} {
+    @relay path /v1/relay /health
+    reverse_proxy @relay relay:8080
+    respond 404
+}

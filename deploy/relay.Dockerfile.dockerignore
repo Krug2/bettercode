@@ -1,0 +1,17 @@
+**
+!package.json
+!package-lock.json
+!tsconfig.base.json
+!apps/
+!apps/relay/
+!apps/relay/package.json
+!apps/relay/tsconfig.json
+!apps/relay/src/
+!apps/relay/src/*.ts
+apps/relay/src/*.test.ts
+!packages/
+!packages/remote-protocol/
+!packages/remote-protocol/package.json
+!packages/remote-protocol/tsconfig.json
+!packages/remote-protocol/src/
+!packages/remote-protocol/src/index.ts

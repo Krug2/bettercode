@@ -7,6 +7,24 @@ function positive(name: string, fallback: number): number {
 }
 
 async function main() {
+  if (process.argv.includes("--help")) {
+    process.stdout.write([
+      "bettercode relay",
+      "",
+      "local test: npm run build:relay && npm run relay:start",
+      "public deployment:",
+      "  copy deploy/relay.env.example to deploy/relay.env and set the domain and email",
+      "  point the domain at the server and allow inbound ports 80 and 443",
+      "  docker compose --env-file deploy/relay.env -f deploy/relay.compose.yml up --build -d",
+      "  enter https://your-domain in settings > devices on the host computer",
+      "",
+      "PORT=8080 RELAY_HOST=127.0.0.1 RELAY_MAX_CONNECTIONS=1024",
+      "RELAY_MAX_PEERS=16 RELAY_BYTES_PER_SECOND=8388608",
+      "the relay stores no device keys or application data; keep the host computer awake",
+      "",
+    ].join("\n"))
+    return
+  }
   const relay = await startRelay({
     host: process.env.RELAY_HOST || "127.0.0.1",
     port: positive("PORT", 8080),
