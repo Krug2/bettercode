@@ -120,6 +120,7 @@ export interface ElectronAPI {
 
   // ── Window controls ──
   windowMinimize: () => Promise<void>
+  deviceOpen: (id: string) => Promise<{ ok: boolean; error?: string }>
   windowMaximize: () => Promise<void>
   windowClose: () => Promise<void>
   windowIsMaximized: () => Promise<boolean>

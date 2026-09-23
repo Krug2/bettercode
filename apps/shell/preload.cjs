@@ -23,6 +23,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   windowIsMaximized: () => ipcRenderer.invoke("window:isMaximized"),
   windowToggleDevTools: () => ipcRenderer.invoke("window:toggleDevTools"),
   windowOpenWith: (opts) => ipcRenderer.invoke("window:open-with", opts || {}),
+  deviceOpen: (id) => ipcRenderer.invoke("device:open", id),
 
   openExternal: (url) => ipcRenderer.invoke("open-external", url),
   openPath: (p) => ipcRenderer.invoke("open-path", p),

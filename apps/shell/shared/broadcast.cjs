@@ -1,4 +1,6 @@
 const { BrowserWindow } = require("electron")
+let allowedReceiver = () => true
+function setBroadcastFilter(filter) { allowedReceiver = filter }
 
 /**
  * Send `payload` on `channel` to every alive BrowserWindow's webContents.
@@ -30,6 +32,7 @@ function broadcast(channel, payload) {
       if (win.isDestroyed()) continue
       const wc = win.webContents
       if (!wc || wc.isDestroyed()) continue
+      if (!allowedReceiver(wc)) continue
       wc.send(channel, payload)
     } catch (err) {
       // Best-effort — log once per broadcast so we don't spam the
@@ -43,4 +46,4 @@ function broadcast(channel, payload) {
   }
 }
 
-module.exports = { broadcast }
+module.exports = { broadcast, setBroadcastFilter }

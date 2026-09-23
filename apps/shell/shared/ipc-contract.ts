@@ -17,6 +17,7 @@ export const IpcChannel = {
   /** Spawn a secondary BrowserWindow with mode + cwd carried in the
    *  URL hash. Used by the file-tree's "Open in Editor Mode" entry. */
   WindowOpenWith: "window:open-with",
+  DeviceOpen: "device:open",
   OpenExternal: "open-external",
   OpenPath: "open-path",
   PickFolder: "pick-folder",

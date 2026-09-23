@@ -173,7 +173,8 @@ const { buildRuntimeConfigScript } = require("./shared/runtimeConfig.cjs")
 const { setBackendConnection } = require("./shared/backend-endpoint.cjs")
 const { IpcChannel, IpcEvent } = require("./shared/ipc-contract.cjs")
 const { ok } = require("./shared/ipc-envelope.cjs")
-const { broadcast } = require("./shared/broadcast.cjs")
+const { broadcast, setBroadcastFilter } = require("./shared/broadcast.cjs")
+const { createDeviceWindows } = require("./device-windows.cjs")
 const { installPreviewRequestCapture } = require("./preview-request-capture.cjs")
 const {
   createBackendStartupWatchdog,
@@ -204,6 +205,7 @@ let nodeBackendHandle = null
 let mainWindow = null
 let serverPort = 0
 let serverToken = ""
+const deviceWindows = createDeviceWindows({ getBackendConnection: () => serverPort && serverToken ? { port: serverPort, token: serverToken } : null })
 // Provider OAuth and workspace-trust checks read this live. A boot-time
 // copy would go stale the first time the backend restarts on a new port.
 setBackendConnection(() =>
@@ -239,6 +241,7 @@ function registerTrustedRendererContents(contents) {
     htmlPreviews?.revokeOwner(contents.id)
   })
 }
+setBroadcastFilter(contents => trustedRendererWebContentsIds.has(contents.id))
 
 function resolveDevNodeExecPath() {
   if (app.isPackaged) return null
@@ -709,6 +712,7 @@ function emitBackendStatus(status, payload = {}) {
 }
 
 function resetBackendRuntime() {
+  deviceWindows.closeAll()
   serverPort = 0
   serverToken = ""
 }
@@ -726,6 +730,7 @@ async function syncRuntimeConfigToRenderers() {
   const updates = []
   for (const win of BrowserWindow.getAllWindows()) {
     if (win.isDestroyed()) continue
+    if (!trustedRendererWebContentsIds.has(win.webContents.id)) continue
     updates.push(win.webContents.executeJavaScript(script))
   }
   const results = await Promise.allSettled(updates)
@@ -2250,6 +2255,10 @@ ipcMain.handle(IpcChannel.WindowOpenWith, async (_event, opts = {}) => {
 ipcMain.handle(IpcChannel.WindowToggleDevTools, (event) =>
   BrowserWindow.fromWebContents(event.sender)?.webContents.toggleDevTools()
 )
+ipcMain.handle(IpcChannel.DeviceOpen, async (_event, id) => {
+  try { return await deviceWindows.open(id) }
+  catch (error) { return { ok: false, error: error instanceof Error ? error.message : "Could not open this device" } }
+})
 
 ipcMain.handle(IpcChannel.AppInfo, () => ({
   isPackaged: app.isPackaged,
