@@ -84,6 +84,7 @@
     "node-pty": "^1.1.0",
     "openai": "^6.34.0",
     "pino": "^9.5.0",
+    "selfsigned": "5.5.0",
     "tar": "^7.5.13",
     "ws": "^8.18.0",
     "zod": "^4.0.0"
@@ -267,6 +268,16 @@
       "node_modules/isexe/**/*",
       "!**/*.map",
       "!**/*.md",
+      {
+        "from": "packages/remote-protocol",
+        "to": "node_modules/@betterc0de/remote-protocol",
+        "filter": [
+          "package.json",
+          "dist/**/*",
+          "!dist/**/*.map",
+          "!dist/**/*.test.*"
+        ]
+      },
       {
         "from": "packages/schema",
         "to": "node_modules/@betterc0de/schema",
