@@ -21,6 +21,7 @@ const grant = peer.extend({
 const host = peer.extend({
   environmentId: z.string(),
   relayUrl: z.string().max(2048),
+  viewerPort: z.number().int().min(1024).max(65535).optional(),
   accessLevel: z.enum(["full", "read_only"]),
   expiresAt: z.string().datetime(),
 })

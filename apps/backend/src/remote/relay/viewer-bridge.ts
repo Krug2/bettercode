@@ -108,14 +108,20 @@ export async function createViewerBridge(options: {
     }
   })
   registerRemoteWebRoutes(app, config, options.webRoot)
-  const server = await new Promise<http.Server>((resolve, reject) => {
-    const listening = serve({ fetch: app.fetch, hostname: "127.0.0.1", port: 0 }, info => {
+  const listen = (port: number) => new Promise<http.Server>((resolve, reject) => {
+    const listening = serve({ fetch: app.fetch, hostname: "127.0.0.1", port }, info => {
       config.port = info.port
       origin = `http://device-${options.host.id.slice(0, 32)}.localhost:${info.port}`
       resolve(listening as http.Server)
     })
     listening.once("error", reject)
   })
+  let server: http.Server
+  try { server = await listen(options.host.viewerPort ?? 0) }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "EADDRINUSE" || !options.host.viewerPort) throw error
+    server = await listen(0)
+  }
   server.requestTimeout = 120_000
   server.headersTimeout = 10_000
   const sockets = new WebSocketServer({ noServer: true, perMessageDeflate: false, maxPayload: 4 * 1024 * 1024 })
@@ -146,6 +152,7 @@ export async function createViewerBridge(options: {
       return `${origin}/#token=${token}`
     },
     async close(): Promise<void> {
+      if (closed) return
       closed = true
       invitations.clear()
       cookies.clear()

@@ -172,10 +172,16 @@ export class DeviceManager {
         const info = hostInfo.parse(await deviceJson(session, "/_device/pair", { token: invitation.token, label: this.label() }))
         abort.signal.throwIfAborted()
         if (info.id !== invitation.hostId) throw new Error("Device identity changed")
+        const previous = vault.hosts().find(host => host.id === info.id)
         vault.putHost({
           id: info.id, label: info.label, certificate: invitation.certificate, createdAt: new Date().toISOString(),
           environmentId: info.environmentId, relayUrl: invitation.relayUrl, accessLevel: info.accessLevel, expiresAt: info.expiresAt,
+          ...(previous?.viewerPort ? { viewerPort: previous.viewerPort } : {}),
         })
+        const view = this.views.get(info.id)
+        this.views.delete(info.id)
+        if (view) await view.then(view => view.close()).catch(() => undefined)
+        abort.signal.throwIfAborted()
         this.remember(info.id, { session, info })
         state.status = "linked"
       } catch (error) {
@@ -253,6 +259,8 @@ export class DeviceManager {
         connectionState: () => this.connections.has(id) ? "online" : this.connecting.has(id) ? "reconnecting" : "offline",
       }).then(async bridge => {
         if (this.stopped || !this.vault?.hosts().some(host => host.id === id)) { await bridge.close(); throw new Error("Device view was closed") }
+        try { this.vault.putHost({ ...(await this.savedHost(id)), viewerPort: Number(new URL(bridge.origin).port) }) }
+        catch (error) { await bridge.close(); throw error }
         return bridge
       }).catch(error => { this.views.delete(id); throw error })
       this.views.set(id, pending)
@@ -278,6 +286,8 @@ export class DeviceManager {
     if (grant) await this.options.access.revokeSessionAndWait(grant.sessionId)
     vault.removeGrant(id)
   }
+
+  sessionIds(): ReadonlySet<string> { return new Set(this.vault?.grants().map(grant => grant.sessionId) ?? []) }
 
   async close(): Promise<void> {
     this.stopped = true

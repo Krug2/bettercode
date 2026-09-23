@@ -24,18 +24,19 @@ function createDeviceWindows({ getBackendConnection }) {
       const view = await response.json()
       if (!response.ok) throw new Error(typeof view?.error === "string" ? view.error : "Could not open this device")
       const url = validateDeviceView(view, id)
-      if (getBackendConnection()?.port !== backend.port) throw new Error("The local backend restarted; open the device again")
-      let win = windows.get(id)
+      const current = getBackendConnection()
+      if (current?.port !== backend.port || current.token !== backend.token) throw new Error("The local backend restarted; open the device again")
+      let win = windows.get(id)?.window
       if (!win || win.isDestroyed()) {
         win = new BrowserWindow({
           width: 1280, height: 850, minWidth: 640, minHeight: 480, title: `${view.label} · betterc0de`,
           autoHideMenuBar: true, show: false,
           webPreferences: {
-            partition: `bettercode-device-${id}`, sandbox: true, contextIsolation: true, nodeIntegration: false,
+            partition: `persist:bettercode-device-${id}`, sandbox: true, contextIsolation: true, nodeIntegration: false,
             webSecurity: true, allowRunningInsecureContent: false, webviewTag: false,
           },
         })
-        windows.set(id, win)
+        windows.set(id, { window: win, origin: url.origin })
         const contents = win.webContents
         contents.session.setPermissionRequestHandler((_contents, _permission, callback) => callback(false))
         contents.session.setPermissionCheckHandler(() => false)
@@ -44,7 +45,7 @@ function createDeviceWindows({ getBackendConnection }) {
           return { action: "deny" }
         })
         const guard = (event, target) => {
-          try { if (new URL(target).origin === url.origin) return } catch {}
+          try { if (new URL(target).origin === windows.get(id)?.origin) return } catch {}
           event.preventDefault()
         }
         contents.on("will-navigate", guard)
@@ -53,14 +54,15 @@ function createDeviceWindows({ getBackendConnection }) {
         contents.on("page-title-updated", event => event.preventDefault())
         win.once("closed", () => windows.delete(id))
       }
-      await win.loadURL(url.href)
+      windows.get(id).origin = url.origin
+      await win.loadURL(url.href).catch(() => { throw new Error("Could not load the device window") })
       if (!win.isDestroyed()) { win.show(); win.focus() }
       return { ok: true }
     })().finally(() => opening.delete(id))
     opening.set(id, operation)
     return operation
   }
-  return { open, closeAll() { for (const win of windows.values()) if (!win.isDestroyed()) win.destroy(); windows.clear() } }
+  return { open, closeAll() { for (const { window } of windows.values()) if (!window.isDestroyed()) window.destroy(); windows.clear() } }
 }
 
 module.exports = { createDeviceWindows, validateDeviceView }
