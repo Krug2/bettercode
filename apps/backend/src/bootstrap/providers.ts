@@ -170,6 +170,7 @@ export function wireProviders(
   const acpMcpServerResolver = async (cwd: string) =>
     portableMcpServersToAcp(await directAgentTools.mcpServerResolver(cwd))
   let remoteAccessWasEnabled = currentSettings.remote_access_enabled === true || currentSettings.remote_relay_enabled === true
+  let directAccessWasEnabled = currentSettings.remote_access_enabled === true
 
   const anthropicKey = resolveAnthropicKey(currentSettings)
   providerRegistry.register(
@@ -396,6 +397,10 @@ export function wireProviders(
       next.remote_access_tailscale_serve === true
     if (remoteAccessWasEnabled && next.remote_access_enabled !== true && next.remote_relay_enabled !== true) {
       remoteAccess.revokeOtherSessions()
+    }
+    if (directAccessWasEnabled && next.remote_access_enabled !== true) {
+      const devices = settingsCtx.devices?.sessionIds() ?? new Set<string>()
+      for (const session of remoteAccess.listSessions()) if (!devices.has(session.id)) remoteAccess.revokeSession(session.id)
       // Hosting off means the tailnet endpoint must disappear too; the
       // setting survives so re-enabling hosting brings it back.
       if (next.remote_access_tailscale_serve === true) {
@@ -408,6 +413,7 @@ export function wireProviders(
       }
     }
     remoteAccessWasEnabled = next.remote_access_enabled === true || next.remote_relay_enabled === true
+    directAccessWasEnabled = next.remote_access_enabled === true
     settingsCtx.devices?.reconcile()
     if (remoteTerminalGrantRevoked(remoteTerminalSettings, next)) {
       for (const ownerId of remoteTerminalRevocationOwners(

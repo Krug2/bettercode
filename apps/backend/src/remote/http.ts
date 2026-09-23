@@ -787,7 +787,7 @@ async function handlePairing(
   delivery: "cookie" | "bearer"
 ): Promise<Response> {
   const service = state.remoteAccess
-  if (!service?.enabled()) {
+  if (!service?.enabled() || state.settings.get().remote_access_enabled !== true) {
     return c.json({ error: "remote access is disabled" }, 403)
   }
   if (!isRemoteRequestTransportAllowed(c, config)) {
@@ -866,7 +866,7 @@ export function registerRemoteRoutes(
     const service = remoteService(state)
     const identity = requestIdentity(c, config, state)
     return c.json({
-      enabled: service.enabled(),
+      enabled: state.settings.get().remote_access_enabled === true,
       listeningOnNetwork:
         service.enabled() &&
         config.host !== "127.0.0.1" &&
@@ -915,7 +915,7 @@ export function registerRemoteRoutes(
     if (typeof body.enabled !== "boolean") {
       return c.json({ error: "enabled must be a boolean" }, 400)
     }
-    if (body.enabled && !remoteService(state).enabled()) {
+    if (body.enabled && state.settings.get().remote_access_enabled !== true) {
       return c.json({ error: "remote access is disabled" }, 409)
     }
     try {
@@ -950,7 +950,7 @@ export function registerRemoteRoutes(
       )
     }
     const service = remoteService(state)
-    if (!service.enabled()) {
+    if (!service.enabled() || state.settings.get().remote_access_enabled !== true) {
       return c.json({ error: "remote access is disabled" }, 409)
     }
     let body: unknown = {}

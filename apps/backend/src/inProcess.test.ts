@@ -423,6 +423,21 @@ describe("startNodeBackend", () => {
     expect(observed).toEqual(EXPECTED_STARTUP_CLEANUP_ORDER)
   })
 
+  it("revokes direct sessions separately from linked devices", async () => {
+    const started = await boot({ dataDir: makeDataDir("device-transports"), preferredPort: 0 })
+    const { settings, remoteAccess, devices } = started.state
+    await settings.updatePublic({ remote_access_enabled: true, remote_relay_enabled: true, remote_relay_url: "ws://127.0.0.1:1" })
+    const direct = remoteAccess!.consumePairingCredential(remoteAccess!.issuePairingGrant().credential)!
+    const linked = remoteAccess!.consumePairingCredential(remoteAccess!.issuePairingGrant().credential)!
+    vi.spyOn(devices!, "sessionIds").mockReturnValue(new Set([linked.id]))
+    await settings.updatePublic({ remote_access_enabled: false })
+    expect(remoteAccess!.isSessionActive(direct.id)).toBe(false)
+    expect(remoteAccess!.isSessionActive(linked.id)).toBe(true)
+    expect(started.config.host).toBe("127.0.0.1")
+    await settings.updatePublic({ remote_relay_enabled: false })
+    expect(remoteAccess!.isSessionActive(linked.id)).toBe(false)
+  })
+
   it("rejects before touching anything when the startup signal is already aborted", async () => {
     const dataDir = makeDataDir("pre-aborted")
     const controller = new AbortController()

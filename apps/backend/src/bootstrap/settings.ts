@@ -170,7 +170,7 @@ export function reconcileTailscaleServeForPort(
 ): void {
   void reconcileTailscaleServe(settingsCtx.tailscale, {
     enabled: settingsCtx.settings.get().remote_access_tailscale_serve === true,
-    remoteAccessEnabled: settingsCtx.remoteAccess.enabled(),
+    remoteAccessEnabled: settingsCtx.settings.get().remote_access_enabled === true,
     localPort,
   })
 }
