@@ -71,12 +71,22 @@ export interface UseCanvasTransformResult {
 export function useCanvasTransform(
   viewportRef: RefObject<HTMLDivElement | null>,
   artboard: { x?: number; y?: number; width: number; height: number },
-  autoFitOnChange = true
+  autoFitOnChange = true,
+  options: { initial?: CanvasTransform | null; onChange?: (camera: CanvasTransform) => void; wheelZoom?: boolean } = {}
 ): UseCanvasTransformResult {
-  const [transform, setTransform] = useState<CanvasTransform>({
+  const [transform, setTransform] = useState<CanvasTransform>(options.initial ?? {
     zoom: 1,
     pan: { x: 0, y: 0 },
   })
+  const latest = useRef(transform)
+  const onChange = useRef(options.onChange)
+  latest.current = transform
+  onChange.current = options.onChange
+  useEffect(() => {
+    const timer = window.setTimeout(() => onChange.current?.(transform), 150)
+    return () => window.clearTimeout(timer)
+  }, [transform])
+  useEffect(() => () => onChange.current?.(latest.current), [])
   const [isPanning, setIsPanning] = useState(false)
   const [spaceHeld, setSpaceHeld] = useState(false)
   const [altHeld, setAltHeld] = useState(false)
@@ -103,7 +113,7 @@ export function useCanvasTransform(
     updateAltHeld(true)
     viewportRef.current?.focus({ preventScroll: true })
   }, [updateAltHeld, viewportRef])
-  const fitted = useRef(false)
+  const fitted = useRef(Boolean(options.initial))
   const dragRef = useRef<{
     pointerId: number
     startX: number
@@ -212,7 +222,7 @@ export function useCanvasTransform(
         e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? el.clientHeight : 1
       const deltaX = e.deltaX * unit
       const deltaY = e.deltaY * unit
-      if (e.ctrlKey || e.metaKey) {
+      if (e.ctrlKey || e.metaKey || (options.wheelZoom && !e.shiftKey)) {
         const rect = el.getBoundingClientRect()
         const cx = e.clientX - rect.left
         const cy = e.clientY - rect.top
@@ -250,10 +260,11 @@ export function useCanvasTransform(
       el.removeEventListener("wheel", onZoomWheel, true)
       el.removeEventListener("wheel", onWheel)
     }
-  }, [viewportRef])
+  }, [viewportRef, options.wheelZoom])
 
   // Temporary navigation restores the selected tool when the modifier lifts.
   useEffect(() => {
+    const editing = () => Boolean(document.activeElement?.matches("input,textarea,select,webview,iframe,[contenteditable]:not([contenteditable=false])"))
     const isTypingTarget = () => {
       const el = document.activeElement
       if (!el) return false
@@ -270,6 +281,7 @@ export function useCanvasTransform(
       )
     }
     const onKeyDown = (e: KeyboardEvent) => {
+      if (editing() || !viewportRef.current?.contains(document.activeElement)) return
       if (e.ctrlKey || e.metaKey) updateZoomHeld(true)
       // AltGr produces Ctrl+Alt on Windows; it must remain available for text.
       updateAltHeld(e.altKey && !e.ctrlKey && !e.metaKey)
@@ -288,8 +300,8 @@ export function useCanvasTransform(
       setSpaceHeld(true)
     }
     const onKeyUp = (e: KeyboardEvent) => {
-      updateZoomHeld(e.ctrlKey || e.metaKey)
-      updateAltHeld(e.altKey && !e.ctrlKey && !e.metaKey)
+      updateZoomHeld(!editing() && (e.ctrlKey || e.metaKey))
+      updateAltHeld(!editing() && e.altKey && !e.ctrlKey && !e.metaKey)
       if (e.code !== "Space") return
       setSpaceHeld(false)
     }
@@ -301,8 +313,8 @@ export function useCanvasTransform(
       setIsPanning(false)
     }
     const onPointerMove = (e: PointerEvent) => {
-      updateZoomHeld(e.ctrlKey || e.metaKey)
-      updateAltHeld(e.altKey && !e.ctrlKey && !e.metaKey)
+      updateZoomHeld(!editing() && (e.ctrlKey || e.metaKey))
+      updateAltHeld(!editing() && e.altKey && !e.ctrlKey && !e.metaKey)
     }
     const onVisibility = () => {
       if (document.visibilityState === "hidden") onBlur()

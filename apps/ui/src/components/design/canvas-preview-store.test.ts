@@ -18,6 +18,7 @@ function viewport(): PreviewViewportHandle & { posted: unknown[] } {
   const posted: unknown[] = []
   return {
     posted,
+    navigate: vi.fn(),
     reload: vi.fn(), highlight: vi.fn(), openDevTools: vi.fn(),
     goBackInPage: vi.fn(), goForwardInPage: vi.fn(),
     pageZoomIn: vi.fn(), pageZoomOut: vi.fn(), pageZoomReset: vi.fn(),

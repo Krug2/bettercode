@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react"
 import { ContextMenu } from "radix-ui"
 import {
   HandIcon,
@@ -40,14 +40,24 @@ import { MENU_PANEL, MENU_ITEM } from "@/components/ui/menu-chrome"
 import { CanvasProjectFrame } from "./canvas-project-frame"
 import { CanvasProjectPicker } from "./canvas-project-picker"
 import { ToolButton, ToolbarDivider } from "./design-preview-controls"
+import { useCanvasWorkspaceStore } from "@/lib/canvas-workspace-store"
+import type { WorkspaceKind } from "@/lib/canvas-workspace"
+import { useWorkspaceGesture } from "@/hooks/use-workspace-gesture"
+import { WorkspaceWindow } from "./workspace-window"
+import { WorkspaceBrowser } from "./workspace-browser"
+import { WorkspaceAddMenu, workspaceChoices } from "./workspace-add-menu"
+
+const WorkspaceUsage = lazy(() => import("./workspace-usage"))
 
 /** One camera and one dot grid. Project frames share its coordinate space. */
 export function DesignCanvas({
   activeThreadId,
   providers,
+  renderChatPanel,
 }: {
   activeThreadId: string | null
   providers?: UiProvider[]
+  renderChatPanel?: (frame: { className?: string; style?: CSSProperties }) => ReactNode
 }) {
   const canvasRef = useRef<HTMLDivElement>(null)
   const threads = useChatStore((state) => state.threads)
@@ -71,7 +81,8 @@ export function DesignCanvas({
     (state) => state.inspector.cssChanges.length
   )
   const insertionPoint = useRef<CanvasPoint | null>(null)
-  const lastActive = useRef<string | null>(null)
+  const workspace = useCanvasWorkspaceStore()
+  const initialCamera = useRef(workspace.camera)
   const visible = useMemo(
     () =>
       placements.filter(
@@ -83,11 +94,11 @@ export function DesignCanvas({
   )
   const rectangles = useMemo(
     () =>
-      visible.map((placement) => ({
+      [...visible.map((placement) => ({
         ...placement,
         ...canvasProjectSize(settings[placement.threadId]),
-      })),
-    [visible, settings]
+      })), ...workspace.panels],
+    [visible, settings, workspace.panels]
   )
   const bounds = useMemo(() => canvasBounds(rectangles), [rectangles])
   const {
@@ -107,7 +118,24 @@ export function DesignCanvas({
     fit,
     fitBounds,
     panHandlers,
-  } = useCanvasTransform(canvasRef, bounds, false)
+  } = useCanvasTransform(canvasRef, bounds, false, { initial: initialCamera.current, onChange: workspace.saveCamera, wheelZoom: true })
+  const windowGesture = useWorkspaceGesture(zoom, workspace.update)
+  const addWindow = useCallback((kind: WorkspaceKind, url?: string) => {
+    const point = insertionPoint.current ?? nextCanvasPosition(rectangles)
+    insertionPoint.current = null
+    useCanvasWorkspaceStore.getState().add(kind, point, url)
+  }, [rectangles])
+  useEffect(() => {
+    if (!workspace.requested) return
+    addWindow(workspace.requested.kind, workspace.requested.url)
+    useCanvasWorkspaceStore.setState({ requested: null })
+  }, [workspace.requested, addWindow])
+  useEffect(() => {
+    if (!workspace.focusRequest) return
+    const panel = workspace.panels.find(panel => panel.id === workspace.focusRequest!.id)
+    if (panel) fitBounds(panel)
+    useCanvasWorkspaceStore.setState({ focusRequest: null })
+  }, [workspace.focusRequest, workspace.panels, fitBounds])
   // Guests re-render at the settled zoom, not at every frame of a gesture.
   const panActive = tool === "hand" || spaceHeld || altHeld
 
@@ -121,40 +149,12 @@ export function DesignCanvas({
       /* The board still works without storage. */
     }
   }, [placements])
-  useEffect(() => {
-    if (
-      !activeThreadId ||
-      !threads.some((thread) => thread.id === activeThreadId) ||
-      lastActive.current === activeThreadId
-    )
-      return
-    const initialSelection = lastActive.current === null
-    lastActive.current = activeThreadId
-    const existing = placements.find(
-      (placement) => placement.threadId === activeThreadId
-    )
-    if (existing) {
-      if (initialSelection) fitBounds(canvasBounds(rectangles))
-      return
-    }
-    const point = nextCanvasPosition(rectangles)
-    setPlacements((previous) => [
-      ...previous,
-      { threadId: activeThreadId, ...point },
-    ])
-    fitBounds(
-      canvasBounds([
-        ...rectangles,
-        { ...point, ...canvasProjectSize(settings[activeThreadId]) },
-      ])
-    )
-  }, [activeThreadId, threads, placements, rectangles, settings, fitBounds])
-
   const openChat = useCallback((threadId: string) => {
     const store = useChatStore.getState()
     const thread = store.threads.find((item) => item.id === threadId)
     if (!thread) return
     store.setActiveThread(threadId)
+    useCanvasWorkspaceStore.getState().request("chat")
     window.dispatchEvent(
       new CustomEvent("betterc0de:open-thread", {
         detail: { threadId, label: thread.title || "Chat" },
@@ -177,7 +177,6 @@ export function DesignCanvas({
       ...previous.filter((item) => item.threadId !== threadId),
       { threadId, ...point },
     ])
-    lastActive.current = threadId
     openChat(threadId)
     fitBounds(
       canvasBounds([
@@ -261,16 +260,21 @@ export function DesignCanvas({
             ref={canvasRef}
             data-canvas-viewport
             tabIndex={0}
-            aria-label="Project canvas"
+            aria-label="Canvas workspace"
             className="relative min-h-0 flex-1 overflow-hidden outline-none"
             style={gridStyle}
             onPointerDown={(event) => {
-              if (event.target === event.currentTarget)
-                event.currentTarget.focus()
+              if (!event.currentTarget.contains(event.target as Node)) return
+              if (!(event.target as Element).closest("[data-canvas-project],[data-workspace-window],[data-canvas-controls]")) panHandlers.onPointerDown(event)
             }}
+            onPointerMove={panHandlers.onPointerMove}
+            onPointerUp={panHandlers.onPointerUp}
+            onPointerCancel={panHandlers.onPointerCancel}
+            onLostPointerCapture={panHandlers.onLostPointerCapture}
             onPointerDownCapture={(event) => {
               if (!event.ctrlKey && !event.metaKey && !event.altKey) return
-              if (!(event.target as Element).closest("[data-canvas-project]"))
+              if ((event.target as Element).closest("input,textarea,select,[contenteditable]:not([contenteditable=false])")) return
+              if (!(event.target as Element).closest("[data-canvas-project],[data-workspace-window]"))
                 return
               event.preventDefault()
               event.stopPropagation()
@@ -282,7 +286,7 @@ export function DesignCanvas({
                 zoomHeld ||
                 panActive ||
                 (event.target as Element).closest(
-                  "[data-canvas-project],[data-canvas-controls]"
+                  "[data-canvas-project],[data-workspace-window],[data-canvas-controls]"
                 )
               ) {
                 event.preventDefault()
@@ -298,7 +302,8 @@ export function DesignCanvas({
             }}
             onClickCapture={(event) => {
               if (!event.ctrlKey && !event.metaKey && !event.altKey) return
-              if (!(event.target as Element).closest("[data-canvas-project]"))
+              if ((event.target as Element).closest("input,textarea,select,[contenteditable]:not([contenteditable=false])")) return
+              if (!(event.target as Element).closest("[data-canvas-project],[data-workspace-window]"))
                 return
               event.preventDefault()
               event.stopPropagation()
@@ -373,25 +378,27 @@ export function DesignCanvas({
                   </div>
                 )
               })}
+              {workspace.panels.map((saved, index) => {
+                const panel = windowGesture.preview?.id === saved.id ? windowGesture.preview : saved
+                return <WorkspaceWindow key={panel.id} panel={panel} active={workspace.selected === panel.id} layer={index + 1} onGesture={windowGesture.begin} onFocus={() => workspace.focus(panel.id)}>
+                  {panel.kind === "browser" && <WorkspaceBrowser panel={panel} interactive={!panActive && !zoomHeld && !windowGesture.preview} onShortcut={shortcut} onOpenUrl={url => addWindow("browser", url)} />}
+                  {(panel.kind === "usage" || panel.kind === "activity") && <Suspense fallback={<p className="p-6 text-sm text-muted-foreground">Loading usage…</p>}><WorkspaceUsage kind={panel.kind} /></Suspense>}
+                  {panel.kind === "note" && <textarea aria-label="Workspace note" className="workspace-note" value={panel.text} placeholder="Ideas, links, things to come back to…" onChange={event => workspace.update(panel.id, { text: event.target.value })} />}
+                  {panel.kind === "chat" && renderChatPanel?.({ className: "!size-full !rounded-none !border-0", style: { width: "100%" } })}
+                </WorkspaceWindow>
+              })}
             </div>
-            {!visible.length && (
+            {!rectangles.length && (
               <div className="pointer-events-none absolute inset-0 grid place-items-center">
                 <div
                   className="pointer-events-auto max-w-xs space-y-3 text-center"
                   data-canvas-controls
                 >
-                  <p className="text-sm font-medium">Your project canvas</p>
+                  <p className="text-lg font-medium tracking-tight">Your open workspace</p>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    Bring a repo or chat onto the canvas to connect its live
-                    preview.
+                    Websites, usage, notes, and chats. Place them anywhere and zoom out to see the whole picture.
                   </p>
-                  <button
-                    type="button"
-                    onClick={addProject}
-                    className="rounded-lg border border-border bg-card px-3 py-2 text-xs hover:bg-muted"
-                  >
-                    Add your first project
-                  </button>
+                  <div className="flex justify-center"><WorkspaceAddMenu onAdd={addWindow} onProject={addProject} /></div>
                 </div>
               </div>
             )}
@@ -427,6 +434,7 @@ export function DesignCanvas({
                 {...drag.overlayProps}
               />
             )}
+            {windowGesture.preview && <div data-workspace-drag-overlay aria-hidden="true" className={`fixed inset-0 z-50 touch-none ${windowGesture.resizing ? "cursor-nwse-resize" : "cursor-grabbing"}`} {...windowGesture.overlayProps} />}
             <div
               data-canvas-controls
               className="absolute top-3 left-3 z-40 flex max-w-[calc(100%-24px)] flex-wrap items-center gap-1 rounded-xl border border-border/60 bg-card/95 px-1.5 py-1 shadow-xl backdrop-blur-sm"
@@ -452,17 +460,11 @@ export function DesignCanvas({
                 <HandIcon className="size-3.5" />
               </ToolButton>
               <ToolbarDivider />
-              <button
-                type="button"
-                onClick={addProject}
-                className="flex h-7 items-center gap-1.5 rounded-md px-2 text-[11px] font-medium hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-              >
-                <PlusIcon className="size-3.5" />
-                Add project
-              </button>
+              <WorkspaceAddMenu onAdd={addWindow} onProject={addProject} />
               <span className="px-2 text-[10px] text-muted-foreground tabular-nums">
-                {visible.length} {visible.length === 1 ? "project" : "projects"}
+                {rectangles.length} {rectangles.length === 1 ? "window" : "windows"}
               </span>
+              {visible.length > 0 && <>
               <ToolbarDivider />
               <SelectBrowseToggle
                 selectionMode={selectionMode}
@@ -493,12 +495,13 @@ export function DesignCanvas({
                   </span>
                 </button>
               )}
+              </>}
             </div>
             <div
               data-canvas-controls
               className="absolute right-3 bottom-3 z-40 flex items-center gap-0.5 rounded-lg border border-border/60 bg-card/95 px-1 py-0.5 shadow-lg backdrop-blur-sm"
             >
-              <ToolButton title="Fit all projects (Ctrl 0)" onClick={fit}>
+              <ToolButton title="Fit workspace (Ctrl 0)" onClick={fit}>
                 <MaximizeIcon className="size-3.5" />
               </ToolButton>
               <ToolbarDivider />
@@ -523,6 +526,7 @@ export function DesignCanvas({
           <ContextMenu.Content
             className={cn(MENU_PANEL, "z-50 min-w-48 text-foreground")}
           >
+            {workspaceChoices.map(choice => <ContextMenu.Item key={choice.label} className={cn(MENU_ITEM, "flex cursor-default items-center outline-none data-highlighted:bg-accent")} onSelect={() => addWindow(choice.kind, choice.url)}><choice.icon />{choice.label}</ContextMenu.Item>)}
             <ContextMenu.Item
               className={cn(
                 MENU_ITEM,
@@ -541,7 +545,7 @@ export function DesignCanvas({
               onSelect={fit}
             >
               <MaximizeIcon />
-              Fit all projects
+              Fit workspace
             </ContextMenu.Item>
           </ContextMenu.Content>
         </ContextMenu.Portal>

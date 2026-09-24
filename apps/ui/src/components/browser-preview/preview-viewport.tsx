@@ -31,6 +31,7 @@ import type {
 
 /** Imperative surface for hosts (reload, style pushes, page-level zoom …). */
 export interface PreviewViewportHandle {
+  navigate(url: string): void
   /** Reload the current webview/iframe document without replacing the guest. */
   reload(): void
   /** Post a bc-* command (bc-apply-style / bc-highlight) into the page. */
@@ -75,6 +76,9 @@ interface PreviewViewportProps {
   onShortcut?: (shortcut: string) => void
   /** Canvas owns the transform; guest page zoom stays at 100% in its own session. */
   canvas?: boolean
+  workspace?: boolean
+  onOpenUrl?: (url: string) => void
+  onLoadError?: (message: string | null) => void
 }
 
 export const PreviewViewport = forwardRef<
@@ -94,12 +98,16 @@ export const PreviewViewport = forwardRef<
     onConsoleEntries,
     onShortcut,
     canvas = false,
+    workspace = false,
+    onOpenUrl,
+    onLoadError,
   },
   ref
 ) {
   const webviewRef = useRef<ElectronWebviewElement>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const isElectron = !!window.electronAPI
+  const popupAttributes: Record<string, string> = workspace ? { allowpopups: "true" } : {}
   const electronPreloadPath = window.__BETTERC0DE__?.electronPath
   const webviewPreload = electronPreloadPath
     ? toFileUrl(`${electronPreloadPath}/browser-preview-preload.cjs`)
@@ -122,6 +130,8 @@ export const PreviewViewport = forwardRef<
     onConsoleEntries,
     onShortcut,
     onNavigate,
+    onOpenUrl,
+    onLoadError,
   })
   callbacksRef.current = {
     onLoadingChange,
@@ -130,6 +140,8 @@ export const PreviewViewport = forwardRef<
     onConsoleEntries,
     onShortcut,
     onNavigate,
+    onOpenUrl,
+    onLoadError,
   }
 
   // Normalize + dispatch bc-* messages from either transport ("bc-" prefixed
@@ -161,6 +173,7 @@ export const PreviewViewport = forwardRef<
         cbs.onElementSelected?.(data as SelectedElement)
         break
       case "did-keydown":
+        if (workspace) break
         if (
           (data?.key === "Control" && data.ctrlKey === true) ||
           (data?.key === "Meta" && data.metaKey === true)
@@ -171,7 +184,7 @@ export const PreviewViewport = forwardRef<
         ) cbs.onShortcut?.("canvas-pan-start")
         break
     }
-  }, [])
+  }, [workspace])
 
   // Listen for postMessage (iframe fallback)
   useEffect(() => {
@@ -205,7 +218,13 @@ export const PreviewViewport = forwardRef<
       if (canvas) wv.setZoomFactor(1)
       callbacksRef.current.onLoadingChange?.(false)
       // Inject the inspector script (uses window.cursorBrowser.send exposed by preload)
-      wv.executeJavaScript(INJECT_SCRIPT_WEBVIEW).catch(() => { /* Expected: webview may not be ready for JS injection */ })
+      if (!workspace) wv.executeJavaScript(INJECT_SCRIPT_WEBVIEW).catch(() => { /* Expected: webview may not be ready for JS injection */ })
+    }
+    const onStart = () => { callbacksRef.current.onLoadingChange?.(true); callbacksRef.current.onLoadError?.(null) }
+    const onStop = () => callbacksRef.current.onLoadingChange?.(false)
+    const onError = (event: Event) => {
+      const error = event as Event & { errorCode?: number; errorDescription?: string; isMainFrame?: boolean }
+      if (error.errorCode !== -3 && error.isMainFrame !== false) callbacksRef.current.onLoadError?.(error.errorDescription || "This page could not be loaded.")
     }
     const onNavigation = (event: Event) => {
       const nextUrl = (event as Event & { url?: string }).url
@@ -213,6 +232,11 @@ export const PreviewViewport = forwardRef<
     }
 
     const onIpcMessage = ((e: ElectronWebviewIpcEvent) => {
+      if (e.channel === "workspace-open-url" && workspace) {
+        const url = e.args?.[0]
+        if (typeof url === "string" && /^https?:\/\//i.test(url)) callbacksRef.current.onOpenUrl?.(url)
+        return
+      }
       if (e.channel === "canvas-wheel" && canvas) {
         forwardCanvasWheel(wv, e.args?.[0])
         return
@@ -229,14 +253,20 @@ export const PreviewViewport = forwardRef<
     wv.addEventListener("ipc-message", onIpcMessage)
     wv.addEventListener("did-navigate", onNavigation)
     wv.addEventListener("did-navigate-in-page", onNavigation)
+    wv.addEventListener("did-start-loading", onStart)
+    wv.addEventListener("did-stop-loading", onStop)
+    wv.addEventListener("did-fail-load", onError)
 
     return () => {
       wv.removeEventListener("dom-ready", onDomReady)
       wv.removeEventListener("ipc-message", onIpcMessage)
       wv.removeEventListener("did-navigate", onNavigation)
       wv.removeEventListener("did-navigate-in-page", onNavigation)
+      wv.removeEventListener("did-start-loading", onStart)
+      wv.removeEventListener("did-stop-loading", onStop)
+      wv.removeEventListener("did-fail-load", onError)
     }
-  }, [isElectron, handleBcMessage, canvas])
+  }, [isElectron, handleBcMessage, canvas, workspace])
 
   // iframe fallback injection
   const handleIframeLoad = useCallback(() => {
@@ -273,6 +303,13 @@ export const PreviewViewport = forwardRef<
   useImperativeHandle(
     ref,
     (): PreviewViewportHandle => ({
+      navigate(nextUrl) {
+        if (isElectron && webviewRef.current) {
+          void webviewRef.current.loadURL(nextUrl).catch(() => undefined)
+        } else {
+          iframeRef.current?.setAttribute("src", nextUrl)
+        }
+      },
       reload() {
         if (isElectron && webviewRef.current) {
           webviewRef.current.reload()
@@ -341,11 +378,12 @@ export const PreviewViewport = forwardRef<
           tabIndex={selectionMode ? -1 : 0}
           ref={webviewRef as React.RefObject<HTMLWebViewElement>}
           src={url}
+          {...popupAttributes}
           className="size-full border-0 bg-background"
           style={{ display: "inline-flex" }}
           preload={webviewPreload || undefined}
           partition={
-            canvas ? "betterc0de-canvas-preview" : window.__BETTERC0DE__?.previewPartition || "betterc0de-preview"
+            workspace ? "persist:betterc0de-workspace-browser" : canvas ? "betterc0de-canvas-preview" : window.__BETTERC0DE__?.previewPartition || "betterc0de-preview"
           }
         />
       ) : (

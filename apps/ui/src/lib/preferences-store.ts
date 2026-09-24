@@ -88,6 +88,7 @@ export interface PreferencesState {
   // Collections (migrated from legacy bc_* keys)
   hiddenProviders: string[]
   hiddenModels: string[]
+  hiddenUsageBlocks: string[]
   favorites: string[]
   promptHistoryEntries: PromptHistoryEntry[]
   promptStashEntries: PromptStashEntry[]
@@ -173,6 +174,7 @@ const DEFAULTS: Omit<
   // Collections
   hiddenProviders: [...DEFAULT_HIDDEN_PROVIDERS],
   hiddenModels: [],
+  hiddenUsageBlocks: [],
   favorites: [],
   promptHistoryEntries: [],
   promptStashEntries: [],
@@ -300,6 +302,7 @@ function sanitizeStoredPreferences(value: unknown): StoredPreferences {
     if (
       key === "hiddenProviders" ||
       key === "hiddenModels" ||
+      key === "hiddenUsageBlocks" ||
       key === "favorites"
     ) {
       const collection = sanitizeStringCollection(candidate)

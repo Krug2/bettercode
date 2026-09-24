@@ -14,18 +14,23 @@ const end = source.indexOf("function createWindow()", start)
 assert.ok(start >= 0 && end > start)
 const previewPartition = "persist:test-preview"
 const canvasPartition = "persist:test-canvas"
+const workspacePartition = "persist:test-workspace"
+const workspaceSession = {}
 
-function attach(preferences, params) {
+function attach(preferences, params, guest) {
   const listeners = new Map()
   runInNewContext(`${source.slice(start, end)}\nattachWebviewPolicy(contents)`, {
     path, require, process, __dirname: shellDirectory,
     ...require("../apps/shell/shared/urlPolicy.cjs"),
     PREVIEW_SESSION_PARTITION: previewPartition,
     CANVAS_PREVIEW_PARTITION: canvasPartition,
+    WORKSPACE_BROWSER_PARTITION: workspacePartition,
+    session: { fromPartition: () => workspaceSession },
     contents: { on: (channel, listener) => listeners.set(channel, listener) },
   })
   let prevented = false
   listeners.get("will-attach-webview")({ preventDefault: () => { prevented = true } }, preferences, params)
+  if (guest) listeners.get("did-attach-webview")({}, guest)
   return prevented
 }
 
@@ -46,6 +51,23 @@ test("guest preferences cannot disable web security or enable nested Node contex
   assert.equal(params.partition, previewPartition)
   assert.equal(preferences.preload, undefined)
   assert.equal(preferences.additionalArguments.length, 0)
+})
+
+test("workspace guests remain isolated and popup links become workspace windows", () => {
+  const preferences = { nodeIntegration: true, preload: "/untrusted.cjs" }
+  const params = { src: "https://github.com", partition: workspacePartition }
+  const sent = []
+  let open
+  attach(preferences, params, { session: workspaceSession, setWindowOpenHandler: handler => { open = handler }, send: (...args) => sent.push(args) })
+  assert.equal(preferences.partition, workspacePartition)
+  assert.equal(preferences.nodeIntegration, false)
+  assert.equal(preferences.sandbox, true)
+  assert.equal(preferences.contextIsolation, true)
+  assert.deepEqual([...preferences.additionalArguments], ["--betterc0de-canvas-preview", "--betterc0de-workspace-browser"])
+  assert.equal(open({ url: "file:///private.txt" }).action, "deny")
+  assert.equal(sent.length, 0)
+  assert.equal(open({ url: "https://github.com/example" }).action, "deny")
+  assert.deepEqual(sent, [["workspace-open-url", "https://github.com/example"]])
 })
 
 test("canvas guests retain only the app bridge and unapproved URL schemes are blocked", () => {

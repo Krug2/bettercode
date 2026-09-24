@@ -35,6 +35,7 @@ import { SettingsDocsSection } from "@/components/settings/docs-section"
 import { SettingsBetterC0deSection } from "@/components/settings/betterc0de-section"
 import { SettingsRemoteAccessSection } from "@/components/settings/remote-access-section"
 import { SettingsDevicesSection } from "@/components/settings/devices-section"
+import { SettingsUsageSection } from "@/components/settings/usage-section"
 
 export function SettingsModal({ defaultTab = "general" }: { defaultTab?: string }) {
   const { theme, setTheme } = useTheme()
@@ -120,6 +121,7 @@ export function SettingsModal({ defaultTab = "general" }: { defaultTab?: string 
                     />
                   )}
                   {tab.id === "appearance" && <SettingsAppearanceSection />}
+                  {tab.id === "usage" && <SettingsUsageSection />}
                   {tab.id === "models" && (
                     <>
                       <SettingsProvidersSection />
