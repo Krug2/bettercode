@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { decisionSnapshotSchema } from "./decisions"
 import { orchestratorSessionSchema, orchestratorStartSchema, orchestratorThreadSchema, orchestratorContextGrantSchema, orchestratorContextSchema, orchestratorContextKeySchema } from "./orchestrator"
 import { threadGoalSchema } from "./thread-goal"
 import {
@@ -244,6 +245,7 @@ const noBody = z.undefined()
 export const httpContracts = {
   orchestratorStart: endpoint("POST", "/orchestrator/start", orchestratorStartSchema, orchestratorSessionSchema),
   orchestratorStatus: endpoint("POST", "/orchestrator/status", orchestratorThreadSchema, orchestratorSessionSchema.nullable()),
+  orchestratorDecisions: endpoint("POST", "/orchestrator/decisions", orchestratorThreadSchema, decisionSnapshotSchema),
   orchestratorStop: endpoint("POST", "/orchestrator/stop", orchestratorThreadSchema, orchestratorSessionSchema),
   orchestratorContextGrant: endpoint("POST", "/orchestrator/context/grant", orchestratorContextGrantSchema, orchestratorContextSchema),
   orchestratorContextRead: endpoint("POST", "/orchestrator/context/read", orchestratorContextKeySchema, orchestratorContextSchema),

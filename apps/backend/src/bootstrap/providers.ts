@@ -21,6 +21,8 @@ import {
 } from "../provider/runtime/cursor/AcpMcpServers"
 import { CodeSearchHarness } from "../services/code-search/harness"
 import { OrchestratorService } from "../services/orchestrator/service"
+import { DecisionService } from "../services/decisions/service"
+import { broadcastThreadActivity } from "../ws/threadActivityBroadcast"
 import { createContextSourceReader } from "../services/orchestrator/context-sources"
 import { orchestrationModelCatalog } from "../services/orchestrator/model-catalog"
 import { OrchestratorMcpHarness } from "../services/orchestrator/mcp"
@@ -141,16 +143,37 @@ export function wireProviders(
     },
   })
   startupCleanup.push({ name: "code search harness", run: () => codeSearch.close() })
+  const decisions = new DecisionService({
+    settings: () => settings.get(),
+    load: threadId => threadActivities.payloadById(threadId, `decisions:${threadId}`),
+    publish: snapshot => {
+      const activity = {
+        activity_id: `decisions:${snapshot.threadId}`, thread_id: snapshot.threadId, turn_id: null,
+        kind: "harness.decisions", tone: "info" as const, summary: "Decision activity", payload: snapshot,
+        created_at: new Date().toISOString(),
+      }
+      threadActivities.upsert(activity)
+      broadcastThreadActivity(activity)
+    },
+  })
   const orchestrator: OrchestratorService = new OrchestratorService({
+    decisions,
     modelCatalog: (cwd, providers) => orchestrationModelCatalog(providerHub, cwd, providers),
     readContextSource: createContextSourceReader(db),
     settings: () => settings.get(),
     allowed: cwd => agentPermissions.getWorkspaceTrust(cwd).state === "trusted",
     load: threadId => threadActivities.payloadById(threadId, `orchestrator:${threadId}`),
-    persist: session => threadActivities.upsert({
-      activity_id: `orchestrator:${session.threadId}`, thread_id: session.threadId, turn_id: null,
-      kind: "orchestrator.session", tone: "info", summary: "Orchestrator team", payload: session, created_at: session.createdAt,
-    }),
+    persist: session => {
+      const activity = {
+        activity_id: `orchestrator:${session.threadId}`, thread_id: session.threadId, turn_id: null,
+        kind: "orchestrator.session", tone: "info" as const, summary: "Orchestrator team", payload: session, created_at: session.createdAt,
+      }
+      threadActivities.upsert(activity)
+      broadcastThreadActivity({ ...activity, payload: { ...session,
+        context: session.context.map(entry => ({ ...entry, body: "" })),
+        jobs: session.jobs.map(job => ({ ...job, task: job.task.slice(0, 500), output: "" })),
+      } })
+    },
     createThread: input => {
       const now = new Date().toISOString()
       threads.upsertThreadMeta({ thread_id: input.id, title: input.title, project_name: path.basename(input.projectPath), project_path: input.projectPath,
@@ -390,6 +413,7 @@ export function wireProviders(
   const onSettingsChange = (next: Settings) => {
     codeSearch.settingsChanged()
     orchestrator.settingsChanged()
+    decisions.settingsChanged()
     configureBackendLogging(next)
     // The forwarded-header trust follows the serve setting without a
     // restart: the route that flips the setting has already run the CLI.

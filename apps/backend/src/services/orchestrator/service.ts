@@ -3,6 +3,7 @@ import path from "node:path"
 import { randomUUID } from "node:crypto"
 import {
   chatSendSchema,
+  emptyDecisionSnapshot,
   orchestratorSessionSchema,
   orchestratorContextGrantSchema,
   orchestratorContextShareSchema,
@@ -436,6 +437,11 @@ export class OrchestratorService {
   }
 
   decisionsEnabled(): boolean { return this.deps.decisions?.enabled() ?? false }
+
+  decisionSnapshot(threadId: string) {
+    const rootId = this.owners.get(threadId)?.session.threadId ?? threadId
+    return this.deps.decisions?.snapshot(rootId) ?? emptyDecisionSnapshot(rootId)
+  }
 
   async routeTask(threadId: string, task: string, requestId: string, assignment: { name: string; role: string }, signal?: AbortSignal): Promise<OrchestratorJob | null> {
     const session = this.requireReady(threadId)

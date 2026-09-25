@@ -36,6 +36,9 @@ export function registerOrchestratorRoutes(api: Hono, state: AppState): void {
       { operation: "orchestrator-status" }
     )
   )
+  api.post("/orchestrator/decisions", c =>
+    handleHttpContract(c, "orchestratorDecisions", async body => service().decisionSnapshot(body.threadId), { operation: "decision-status" })
+  )
   api.post("/orchestrator/context/grant", (c) =>
     handleHttpContract(
       c,
