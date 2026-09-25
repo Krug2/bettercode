@@ -36,6 +36,7 @@ import { SettingsBetterC0deSection } from "@/components/settings/betterc0de-sect
 import { SettingsRemoteAccessSection } from "@/components/settings/remote-access-section"
 import { SettingsDevicesSection } from "@/components/settings/devices-section"
 import { SettingsUsageSection } from "@/components/settings/usage-section"
+import { SettingsDecisionSection } from "@/components/settings/decision-section"
 
 export function SettingsModal({ defaultTab = "general" }: { defaultTab?: string }) {
   const { theme, setTheme } = useTheme()
@@ -132,7 +133,7 @@ export function SettingsModal({ defaultTab = "general" }: { defaultTab?: string 
                   {tab.id === "rules" && <SettingsRulesSection />}
                   {tab.id === "skills" && <SettingsSkillsSection />}
                   {tab.id === "tools" && <SettingsMcpSection />}
-                  {tab.id === "experimental" && <><SettingsOrchestratorSection /><SettingsCodeSearchSection /></>}
+                  {tab.id === "experimental" && <><SettingsOrchestratorSection /><SettingsDecisionSection /><SettingsCodeSearchSection /></>}
                   {tab.id === "hooks" && <SettingsHooksSection />}
                   {tab.id === "remote" && <SettingsRemoteAccessSection />}
                   {tab.id === "devices" && <SettingsDevicesSection />}

@@ -4,7 +4,7 @@ import {
   DEFAULT_DESIGN_DEFAULTS,
   type DesignDefaults,
 } from "@betterc0de/schema/design"
-import type { Skill, McpServer, Hook } from "@betterc0de/schema"
+import { decisionSettingsSchema, type DecisionSettings, type Skill, type McpServer, type Hook } from "@betterc0de/schema"
 import { handleError } from "@/lib/errors"
 
 /**
@@ -48,6 +48,7 @@ export interface SettingsState {
   confirmDelete: boolean
   autoTrustWorkspaces: boolean
   orchestratorEnabled: boolean
+  decisionLayer: DecisionSettings
   notificationAgent: boolean
   notificationPermissions: boolean
   notificationErrors: boolean
@@ -118,6 +119,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   confirmDelete: true,
   autoTrustWorkspaces: true,
   orchestratorEnabled: false,
+  decisionLayer: decisionSettingsSchema.parse({}),
   notificationAgent: true,
   notificationPermissions: true,
   notificationErrors: false,
@@ -238,6 +240,7 @@ type PersistedSettingsState = Omit<
 // One exhaustive mapping for startup, optimistic updates, and server responses.
 const settingsFields = {
   orchestratorEnabled: { key: "orchestrator_enabled", read: (value: unknown) => value === true },
+  decisionLayer: { key: "decision_layer", read: (value: unknown) => decisionSettingsSchema.parse(value) },
   theme: {
     key: "theme",
     read: (value: unknown) => value as SettingsState["theme"],
