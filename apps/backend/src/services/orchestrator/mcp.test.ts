@@ -4,6 +4,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import {
   chatSendSchema,
+  decisionSettingsSchema,
   orchestratorJobSchema,
   orchestratorContextSchema,
   orchestratorTeamSchema,
@@ -11,12 +12,13 @@ import {
 } from "@betterc0de/schema"
 import { OrchestratorService } from "./service"
 import { OrchestratorMcpHarness } from "./mcp"
+import { DecisionService } from "../decisions/service"
 
 const cleanups: Array<() => Promise<unknown>> = []
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0).reverse()) await cleanup()
 })
-async function fixture() {
+async function fixture(decisions?: DecisionService) {
   const cwd = await fs.realpath(process.cwd())
   const settings = {
     orchestrator_enabled: true,
@@ -40,6 +42,7 @@ async function fixture() {
   }
   const dispatch = vi.fn(async () => undefined)
   const service = new OrchestratorService({
+    decisions,
     settings: () => settings,
     allowed: () => true,
     load: () => null,
@@ -89,6 +92,39 @@ async function fixture() {
 }
 
 describe("coordinator-scoped MCP harness", () => {
+  it("exposes working decision tools while keeping worker context scoped", async () => {
+    const select = vi.fn(async (input: { candidates: readonly { id: string }[] }) => ({
+      choice: input.candidates[0]!.id, model: "fixture", confidence: null, inputTokens: 9, outputTokens: 2,
+    }))
+    const decisions = new DecisionService({
+      settings: () => ({ decision_layer: decisionSettingsSchema.parse({ mode: "local", localModel: "fixture" }) }),
+      load: () => null, publish: () => undefined, select,
+    })
+    const f = await fixture(decisions)
+    expect((await f.client.listTools()).tools.map(tool => tool.name)).toEqual(expect.arrayContaining(["route_task", "select_context", "choose_recovery"]))
+    const grant = f.service.grantContext({ threadId: f.session.threadId, requestId: "private-note", recipient: { kind: "main" }, content: { kind: "note", title: "Private plan", body: "Main only" } })
+    const context = await f.client.callTool({ name: "select_context", arguments: { task: "Find the plan" } })
+    expect(context.isError).toBeFalsy()
+    expect(context.structuredContent).toMatchObject({ context: { id: grant.id, body: "Main only" } })
+    const routed = await f.client.callTool({ name: "route_task", arguments: { requestId: "routed", name: "Review", role: "Inspect", task: "Inspect the source" } })
+    expect(routed.isError).toBeFalsy()
+    const job = orchestratorJobSchema.parse(routed.structuredContent?.job)
+    expect(job.memberId).toBe("builder")
+    expect(f.dispatch).toHaveBeenCalledOnce()
+    const recovery = await f.client.callTool({ name: "choose_recovery", arguments: { task: "A focused check failed" } })
+    expect(recovery.isError).toBeFalsy()
+    expect(recovery.structuredContent).toEqual({ choice: "inspect_failure", advisory: true })
+    expect(f.dispatch).toHaveBeenCalledOnce()
+    const workerServer = await f.harness.resolveServer(f.cwd, job.threadId)
+    if (!workerServer) throw new Error("Worker server missing")
+    const worker = new Client({ name: "selector-worker-test", version: "1" })
+    cleanups.push(() => worker.close())
+    await worker.connect(new StreamableHTTPClientTransport(new URL(workerServer.url), { requestInit: { headers: workerServer.headers } }))
+    expect((await worker.listTools()).tools.map(tool => tool.name)).not.toContain("route_task")
+    expect((await worker.callTool({ name: "select_context", arguments: { task: "Find the private plan" } })).structuredContent).toEqual({ context: null })
+    expect(select).toHaveBeenCalledTimes(3)
+    expect(f.service.decisionSnapshot(f.session.threadId)).toMatchObject({ calls: 3, selected: 3, inputTokens: 27, outputTokens: 6 })
+  })
   it("gives workers scoped context tools without delegation or arbitrary thread reads", async () => {
     const f = await fixture()
     const job = f.service.spawn(
