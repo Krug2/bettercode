@@ -3,13 +3,55 @@ import fs from "node:fs/promises"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   chatSendSchema,
+  decisionSettingsSchema,
   orchestratorTeamSchema,
   providerRuntimeEventSchema,
   type OrchestratorSession,
 } from "@betterc0de/schema"
 import { OrchestratorService, type OrchestratorDependencies } from "./service"
+import { DecisionService } from "../decisions/service"
 
 const services: OrchestratorService[] = []
+const selector = (choice = "grok") => new DecisionService({
+  settings: () => ({ decision_layer: decisionSettingsSchema.parse({ mode: "local", localModel: "test" }) }),
+  load: () => null, publish: () => undefined,
+  select: async () => ({ choice, confidence: null, model: "test", inputTokens: 10, outputTokens: 2 }),
+})
+
+describe("automatic worker routing", () => {
+  it("dispatches the selected authorized model once across duplicate requests", async () => {
+    const f = await fixture({ decisions: selector() })
+    f.prepare("read-only")
+    const assignment = { name: "Inspect", role: "Inspect sources" }
+    const jobs = await Promise.all([
+      f.service.routeTask(f.session.threadId, "Inspect auth", "auto1", assignment),
+      f.service.routeTask(f.session.threadId, "Inspect auth", "auto1", assignment),
+    ])
+    expect(jobs[0]?.memberId).toBe("grok")
+    expect(jobs[0]?.id).toBe(jobs[1]?.id)
+    await vi.waitFor(() => expect(f.dispatch).toHaveBeenCalledTimes(1))
+    expect(f.dispatch.mock.calls[0]?.[0].permission_level).toBe("read-only")
+    await expect(f.service.routeTask(f.session.threadId, "Different", "auto1", assignment)).rejects.toThrow("different work")
+  })
+  it("returns to the main model without spawning on abstention", async () => {
+    const f = await fixture({ decisions: selector("abstain") })
+    f.prepare()
+    expect(await f.service.routeTask(f.session.threadId, "Inspect auth", "auto2", { name: "Inspect", role: "Review" })).toBeNull()
+    expect(f.dispatch).not.toHaveBeenCalled()
+  })
+  it("rejects stopped sessions while selection is pending", async () => {
+    let release!: (value: { choice: string; confidence: null; model: string; inputTokens: null; outputTokens: null }) => void
+    const decisions = new DecisionService({ settings: () => ({ decision_layer: decisionSettingsSchema.parse({ mode: "local", localModel: "test" }) }), load: () => null, publish: () => undefined,
+      select: () => new Promise(resolve => { release = resolve }) })
+    const f = await fixture({ decisions })
+    f.prepare()
+    const job = f.service.routeTask(f.session.threadId, "Inspect", "auto3", { name: "Inspect", role: "Review" })
+    await f.service.stop(f.session.threadId)
+    release({ choice: "grok", confidence: null, model: "test", inputTokens: null, outputTokens: null })
+    expect(await job).toBeNull()
+    expect(f.dispatch).not.toHaveBeenCalled()
+  })
+})
 afterEach(async () => {
   await Promise.all(services.splice(0).map((service) => service.close()))
   vi.useRealTimers()

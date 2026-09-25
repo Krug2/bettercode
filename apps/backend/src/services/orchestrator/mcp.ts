@@ -301,7 +301,27 @@ export class OrchestratorMcpHarness {
       },
       (args) => run(() => this.service.shareContext(scope.threadId, args))
     )
+    if (this.service.decisionsEnabled()) {
+      server.registerTool("select_context", {
+        description: "Select and read the most relevant shared reference for a task. Only your existing inbox is eligible. A null result means use context_inbox normally.",
+        inputSchema: z.object({ task: z.string().trim().min(1).max(12000) }).strict(),
+        outputSchema: z.object({ context: orchestratorContextSchema.nullable() }),
+        annotations: { readOnlyHint: true },
+      }, args => run(async () => ({ context: await this.service.selectContext(scope.threadId, args.task, signal) })))
+      server.registerTool("choose_recovery", {
+        description: "Suggest a bounded next step after a tool failure. Send a short error summary without secrets. This is advice only, never permission to retry or execute an action.",
+        inputSchema: z.object({ task: z.string().trim().min(1).max(4000) }).strict(),
+        outputSchema: z.object({ choice: z.string(), advisory: z.literal(true) }),
+        annotations: { readOnlyHint: true },
+      }, args => run(() => this.service.chooseRecovery(scope.threadId, args.task, signal)))
+    }
     if (!this.service.isCoordinator(scope.threadId)) return server
+    if (this.service.decisionsEnabled()) server.registerTool("route_task", {
+      description: "Select an eligible worker for an unpinned task and start it. Include a bounded task, name, role and stable requestId. If job is null, choose a model yourself using available_models and spawn_agent. Do not call this when the user requested an exact worker model.",
+      inputSchema: z.object({ requestId: taskId, name: z.string().trim().min(1).max(80), role: z.string().trim().min(1).max(2000), task: z.string().trim().min(1).max(24000) }).strict(),
+      outputSchema: z.object({ job: orchestratorJobSchema.nullable() }),
+      annotations: { readOnlyHint: false, idempotentHint: true },
+    }, args => run(async () => ({ job: await this.service.routeTask(scope.threadId, args.task, args.requestId, { name: args.name, role: args.role }, signal) })))
     server.registerTool(
       "available_models",
       {
