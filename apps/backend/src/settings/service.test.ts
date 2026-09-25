@@ -145,6 +145,20 @@ describe("SettingsService secret contract", () => {
     expect(reopened.getPublic().jev_api_key).toMatchObject({ configured: false })
   })
 
+  it("preserves decision settings and the shared key across unrelated updates and restart", () => {
+    const service = new SettingsService(filePath)
+    expect(service.get().decision_layer.mode).toBe("off")
+    service.updatePublic({ decision_layer: { mode: "jev", timeoutMs: 3500 }, jev_api_key: { set: "selector-private-key" } })
+    service.updatePublic({ theme: "dark" })
+    const reopened = new SettingsService(filePath)
+    expect(reopened.get().decision_layer).toMatchObject({ mode: "jev", timeoutMs: 3500 })
+    expect(reopened.get().jev_api_key).toBe("selector-private-key")
+    expect(JSON.stringify(reopened.getPublic())).not.toContain("selector-private-key")
+    expect(fs.readFileSync(filePath, "utf8")).not.toContain("selector-private-key")
+    expect(() => reopened.updatePublic({ decision_layer: { mode: "local", localUrl: "https://example.com/v1" } })).toThrow()
+    expect(reopened.get().decision_layer.mode).toBe("jev")
+  })
+
   it("rejects undeclared root settings instead of persisting or returning unknown secrets", () => {
     const service = new SettingsService(filePath)
 
