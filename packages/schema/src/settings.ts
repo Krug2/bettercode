@@ -9,6 +9,7 @@ import { DEFAULT_DESIGN_DEFAULTS, designDefaultsSchema } from "./design"
 import { guardrailRuleSchema } from "./guardrails"
 import { pipelineDefinitionSchema } from "./pipelines"
 import { orchestratorTeamSchema } from "./orchestrator"
+import { decisionSettingsSchema } from "./decisions"
 export {
   secretPatchSchema,
   secretStateSchema,
@@ -212,6 +213,7 @@ const settingsObjectSchema = z
     voice_language: optionalSettingsString,
     jev_search_enabled: z.boolean().default(false),
     orchestrator_enabled: z.boolean().default(false),
+    decision_layer: decisionSettingsSchema.default(() => decisionSettingsSchema.parse({})),
     orchestrator_team: orchestratorTeamSchema.nullable().default(null),
     jev_api_key: z.preprocess(
       (value) => value === null ? undefined : value,
