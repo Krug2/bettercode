@@ -1,5 +1,6 @@
 import fs from "node:fs/promises"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { z } from "zod"
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import {
@@ -108,7 +109,7 @@ describe("coordinator-scoped MCP harness", () => {
     expect(context.structuredContent).toMatchObject({ context: { id: grant.id, body: "Main only" } })
     const routed = await f.client.callTool({ name: "route_task", arguments: { requestId: "routed", name: "Review", role: "Inspect", task: "Inspect the source" } })
     expect(routed.isError).toBeFalsy()
-    const job = orchestratorJobSchema.parse(routed.structuredContent?.job)
+    const { job } = z.object({ job: orchestratorJobSchema }).parse(routed.structuredContent)
     expect(job.memberId).toBe("builder")
     expect(f.dispatch).toHaveBeenCalledOnce()
     const recovery = await f.client.callTool({ name: "choose_recovery", arguments: { task: "A focused check failed" } })
