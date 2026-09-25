@@ -1,5 +1,7 @@
 import path from "node:path"
 import fs from "node:fs/promises"
+import { createServer } from "node:http"
+import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   chatSendSchema,
@@ -7,6 +9,7 @@ import {
   orchestratorTeamSchema,
   providerRuntimeEventSchema,
   type OrchestratorSession,
+  type DecisionSnapshot,
 } from "@betterc0de/schema"
 import { OrchestratorService, type OrchestratorDependencies } from "./service"
 import { DecisionService } from "../decisions/service"
@@ -19,6 +22,48 @@ const selector = (choice = "grok") => new DecisionService({
 })
 
 describe("automatic worker routing", () => {
+  it("routes through a local HTTP selector and publishes real outcomes", async () => {
+    const published: DecisionSnapshot[] = []
+    const requests: { url?: string; body: string }[] = []
+    let choice = "grok"
+    const server = createServer(async (request, response) => {
+      const chunks: Buffer[] = []
+      for await (const chunk of request) chunks.push(Buffer.from(chunk))
+      requests.push({ url: request.url, body: Buffer.concat(chunks).toString("utf8") })
+      response.writeHead(200, { "Content-Type": "application/json" })
+      response.end(JSON.stringify({
+        choices: [{ message: { content: JSON.stringify({ choice }) } }],
+        usage: { prompt_tokens: 18, completion_tokens: 4 },
+      }))
+    })
+    await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve))
+    const config = decisionSettingsSchema.parse({ mode: "local", localModel: "fixture", localUrl: `http://127.0.0.1:${(server.address() as AddressInfo).port}/v1` })
+    const decisions = new DecisionService({
+      settings: () => ({ decision_layer: config }),
+      load: () => null,
+      publish: snapshot => published.push(snapshot),
+    })
+    try {
+      const f = await fixture({ decisions })
+      f.prepare("read-only")
+      const assignment = { name: "Inspect", role: "Review" }
+      const job = await f.service.routeTask(f.session.threadId, "Inspect auth", "http1", assignment)
+      expect(job?.memberId).toBe("grok")
+      await vi.waitFor(() => expect(f.dispatch).toHaveBeenCalledTimes(1))
+      expect(f.dispatch.mock.calls[0]?.[0].permission_level).toBe("read-only")
+      expect(requests[0]?.url).toBe("/v1/chat/completions")
+      expect(JSON.parse(requests[0]!.body)).toMatchObject({ model: "fixture", response_format: { type: "json_object" } })
+      choice = "unauthorized-model"
+      expect(await f.service.routeTask(f.session.threadId, "Inspect another file", "http2", assignment)).toBeNull()
+      expect(f.dispatch).toHaveBeenCalledTimes(1)
+      expect(published.map(snapshot => snapshot.records.at(-1)?.status)).toEqual(["deciding", "selected", "deciding", "fallback"])
+      expect(f.service.decisionSnapshot(f.session.threadId)).toMatchObject({ calls: 2, selected: 1, fallbacks: 1, inputTokens: 36, outputTokens: 8, unreported: 0 })
+    } finally {
+      decisions.close()
+      server.closeAllConnections()
+      await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
+    }
+  })
   it("dispatches the selected authorized model once across duplicate requests", async () => {
     const f = await fixture({ decisions: selector() })
     f.prepare("read-only")
