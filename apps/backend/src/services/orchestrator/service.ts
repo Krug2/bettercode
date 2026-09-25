@@ -479,7 +479,7 @@ export class OrchestratorService {
     const fingerprint = JSON.stringify(entries.map(entry => [entry.id, entry.body]))
     const choice = await this.deps.decisions.choose({
       threadId: session.threadId, kind: "context", task, signal,
-      candidates: entries.map(entry => ({ id: entry.id, label: entry.title,
+      candidates: entries.map(entry => ({ id: entry.id, label: entry.title || "Shared context",
         description: `${entry.title}\n${entry.body.slice(0, 400)}` })),
       valid: () => this.canUseTools(threadId, session.projectPath) && JSON.stringify(eligible().map(entry => [entry.id, entry.body])) === fingerprint,
     })

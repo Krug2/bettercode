@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   chatSendSchema,
   decisionSettingsSchema,
+  decisionSnapshotSchema,
   orchestratorTeamSchema,
   providerRuntimeEventSchema,
   type OrchestratorSession,
@@ -22,6 +23,19 @@ const selector = (choice = "grok") => new DecisionService({
 })
 
 describe("automatic worker routing", () => {
+  it("keeps an untitled shared reference valid in the decision stream", async () => {
+    const decisions = new DecisionService({
+      settings: () => ({ decision_layer: decisionSettingsSchema.parse({ mode: "local", localModel: "fixture" }) }),
+      load: () => null, publish: () => undefined,
+      select: async input => ({ choice: input.candidates[0]!.id, model: "fixture", confidence: null, inputTokens: 1, outputTokens: 1 }),
+    })
+    const f = await fixture({ decisions, readContextSource: source => ({ source, title: "", body: "Shared text", truncated: false }) })
+    f.prepare()
+    f.service.grantContext({ threadId: f.session.threadId, requestId: "untitled", recipient: { kind: "team" }, content: { kind: "thread", threadId: "source" } })
+    expect((await f.service.selectContext(f.session.threadId, "Find the reference"))?.body).toBe("Shared text")
+    const snapshot = decisionSnapshotSchema.parse(f.service.decisionSnapshot(f.session.threadId))
+    expect(snapshot.records[0]?.candidates[0]?.label).toBe("Shared context")
+  })
   it("routes through a local HTTP selector and publishes real outcomes", async () => {
     const published: DecisionSnapshot[] = []
     const requests: { url?: string; body: string }[] = []
