@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { orchestratorSessionSchema } from "@betterc0de/schema"
 import type { OrchestratorJob, OrchestratorSession } from "@betterc0de/schema"
 import {
   UsersIcon,
@@ -35,13 +36,22 @@ const JOB_LABELS = {
   interrupted: "Interrupted",
 } satisfies Record<OrchestratorJob["status"], string>
 
-/** Poll only while this team is visible. Worker output stays in worker chats/MCP results. */
 export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
   const thread = useThreadById(threadId)
   const [snapshot, setSnapshot] = useState<OrchestratorSession | null>(null)
   const isWorker =
     snapshot?.jobs.some((job) => job.threadId === threadId) === true
   const rootId = isWorker ? snapshot.threadId : threadId
+  const livePayload = useChatStore(
+    (state) =>
+      state.activitiesByThread[rootId]?.find(
+        (activity) => activity.id === `orchestrator:${rootId}`
+      )?.payload
+  )
+  const liveSession = useMemo(
+    () => orchestratorSessionSchema.safeParse(livePayload),
+    [livePayload]
+  )
   const wantsOrchestration = useChatStore(
     (state) => state.settingsByThread[rootId]?.orchestration?.enabled === true
   )
@@ -56,6 +66,13 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
   const mounted = useRef(false)
   const providers = useProviders(session?.projectPath)
   const choices = teamModelChoices(providers)
+  useEffect(() => {
+    if (liveSession.success) {
+      ++revision.current
+      setSnapshot(liveSession.data)
+      setError(null)
+    }
+  }, [liveSession])
   useEffect(() => {
     if (session) restoreOrchestrationSelection(session)
     if (
@@ -83,7 +100,11 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
           if (parent?.jobs.some((job) => job.threadId === threadId))
             next = parent
         }
-        if (controller.signal.aborted || current !== revision.current) return
+        if (controller.signal.aborted) return
+        if (current !== revision.current) {
+          timer = setTimeout(() => void refresh(), 30_000)
+          return
+        }
         setSnapshot(next)
         setError(null)
         if (
@@ -93,12 +114,16 @@ export function OrchestratorTeamStatus({ threadId }: { threadId: string }) {
             ["running", "waiting", "cancelling"].includes(job.status)
           )
         )
-          timer = setTimeout(() => void refresh(), 2500)
+          timer = setTimeout(() => void refresh(), 30_000)
       } catch (failure) {
         if (failure instanceof HttpError && failure.status === 403) return
-        if (!controller.signal.aborted && current === revision.current) {
-          setError("Team status unavailable. Retrying…")
-          timer = setTimeout(() => void refresh(), 5000)
+        if (!controller.signal.aborted) {
+          if (current === revision.current)
+            setError("Team status unavailable. Retrying…")
+          timer = setTimeout(
+            () => void refresh(),
+            current === revision.current ? 5000 : 30_000
+          )
         }
       }
     }
